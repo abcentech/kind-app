@@ -1,0 +1,19 @@
+{
+  "name": "KIND — Daily Family Devotional",
+  "short_name": "KIND",
+  "description": "Kids Inspiring Nation daily family devotional. Raising goDs, building nations.",
+  "id": "kind-devotional",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#131c36",
+  "theme_color": "#131c36",
+  "categories": ["education", "lifestyle"],
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
