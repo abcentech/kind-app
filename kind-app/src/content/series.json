@@ -1,0 +1,1085 @@
+{
+ "series": {
+  "title": "Secrets of Longevity",
+  "subtitle": "Seven Decades of Serving God",
+  "month": "July",
+  "year": 2026,
+  "monthNum": 7,
+  "themeScripture": {
+   "text": "With long life will I satisfy him, and shew him my salvation.",
+   "ref": "Psalm 91:16 (KJV)"
+  },
+  "treeVerse": {
+   "text": "For as the days of a tree are the days of my people.",
+   "ref": "Isaiah 65:22"
+  },
+  "weeks": [
+   {
+    "f": "FOUNDATION",
+    "title": "Life Begins with God",
+    "emoji": "🌱"
+   },
+   {
+    "f": "FAITH",
+    "title": "Strengthening the Spirit",
+    "emoji": "🛡️"
+   },
+   {
+    "f": "FOCUS",
+    "title": "Renewing the Mind",
+    "emoji": "🧠"
+   },
+   {
+    "f": "FITNESS",
+    "title": "Stewarding the Body",
+    "emoji": "💪"
+   },
+   {
+    "f": "FINISHING",
+    "title": "Leaving a Legacy",
+    "emoji": "🏁"
+   }
+  ],
+  "channel": "https://www.youtube.com/@KidsInspiringNation",
+  "shortsUrl": "https://www.youtube.com/@KidsInspiringNation/shorts",
+  "streamsUrl": "https://www.youtube.com/@KidsInspiringNation/streams"
+ },
+ "calendar": [
+  {
+   "day": 1,
+   "type": "intro",
+   "videoId": "wbZw4faMAyE"
+  },
+  {
+   "day": 2,
+   "type": "teaching",
+   "episode": 1,
+   "week": 0,
+   "videoId": "OMQJ8xYN-4w"
+  },
+  {
+   "day": 3,
+   "type": "teaching",
+   "episode": 2,
+   "week": 0,
+   "videoId": "oFi8w0QHN4A"
+  },
+  {
+   "day": 4,
+   "type": "teaching",
+   "episode": 3,
+   "week": 0,
+   "videoId": "0Aw9_HS3JUI"
+  },
+  {
+   "day": 5,
+   "type": "selah",
+   "week": 0,
+   "videoId": null
+  },
+  {
+   "day": 6,
+   "type": "teaching",
+   "episode": 4,
+   "week": 1,
+   "videoId": "RgNBB67cTPc"
+  },
+  {
+   "day": 7,
+   "type": "teaching",
+   "episode": 5,
+   "week": 1,
+   "videoId": "FiSPoqD8GUg"
+  },
+  {
+   "day": 8,
+   "type": "teaching",
+   "episode": 6,
+   "week": 1,
+   "videoId": "zSSbcuJ7Zbk"
+  },
+  {
+   "day": 9,
+   "type": "teaching",
+   "episode": 7,
+   "week": 1,
+   "videoId": "JK_mV9i-6lI"
+  },
+  {
+   "day": 10,
+   "type": "teaching",
+   "episode": 8,
+   "week": 1,
+   "videoId": null
+  },
+  {
+   "day": 11,
+   "type": "selah",
+   "week": 1,
+   "videoId": null
+  },
+  {
+   "day": 12,
+   "type": "teaching",
+   "episode": 9,
+   "week": 2,
+   "videoId": null
+  },
+  {
+   "day": 13,
+   "type": "teaching",
+   "episode": 10,
+   "week": 2,
+   "videoId": null
+  },
+  {
+   "day": 14,
+   "type": "teaching",
+   "episode": 11,
+   "week": 2,
+   "videoId": null
+  },
+  {
+   "day": 15,
+   "type": "teaching",
+   "episode": 12,
+   "week": 2,
+   "videoId": null
+  },
+  {
+   "day": 16,
+   "type": "teaching",
+   "episode": 13,
+   "week": 2,
+   "videoId": null
+  },
+  {
+   "day": 17,
+   "type": "selah",
+   "week": 2,
+   "videoId": null
+  },
+  {
+   "day": 18,
+   "type": "teaching",
+   "episode": 14,
+   "week": 3,
+   "videoId": null
+  },
+  {
+   "day": 19,
+   "type": "teaching",
+   "episode": 15,
+   "week": 3,
+   "videoId": null
+  },
+  {
+   "day": 20,
+   "type": "teaching",
+   "episode": 16,
+   "week": 3,
+   "videoId": null
+  },
+  {
+   "day": 21,
+   "type": "teaching",
+   "episode": 17,
+   "week": 3,
+   "videoId": null
+  },
+  {
+   "day": 22,
+   "type": "teaching",
+   "episode": 18,
+   "week": 3,
+   "videoId": null
+  },
+  {
+   "day": 23,
+   "type": "selah",
+   "week": 3,
+   "videoId": null
+  },
+  {
+   "day": 24,
+   "type": "teaching",
+   "episode": 19,
+   "week": 4,
+   "videoId": null
+  },
+  {
+   "day": 25,
+   "type": "teaching",
+   "episode": 20,
+   "week": 4,
+   "videoId": null
+  },
+  {
+   "day": 26,
+   "type": "teaching",
+   "episode": 21,
+   "week": 4,
+   "videoId": null
+  },
+  {
+   "day": 27,
+   "type": "teaching",
+   "episode": 22,
+   "week": 4,
+   "videoId": null
+  },
+  {
+   "day": 28,
+   "type": "teaching",
+   "episode": 23,
+   "week": 4,
+   "videoId": null
+  },
+  {
+   "day": 29,
+   "type": "selah",
+   "week": 4,
+   "videoId": null
+  },
+  {
+   "day": 30,
+   "type": "review",
+   "week": 4,
+   "videoId": null
+  },
+  {
+   "day": 31,
+   "type": "celebration",
+   "week": 4,
+   "videoId": null
+  }
+ ],
+ "intro": {
+  "title": "The Gift of Long Life",
+  "scripture": {
+   "text": "With long life will I satisfy him, and shew him my salvation.",
+   "ref": "Psalm 91:16 (KJV)"
+  },
+  "hook": "What if the secret to a long life wasn't found in medicine...\n\nor money...\n\nor even genetics...\n\nbut in a promise from God?\n\nWhat if living well is not measured by how many years you have, but by how faithfully you\nwalk with God through those years?\n\n> **\"With long life will I satisfy him, and shew him my salvation.\" — Psalm 91:16**",
+  "bigIdea": "God's desire is not merely that you live long — but that you live long for Him.",
+  "why": "Listen to God's vision for His people.\n\n> **\"For as the days of a tree are the days of my people...\" — Isaiah 65:22**\n\nA healthy tree is deeply rooted.\n\nIt stands through storms.\n\nIt continues to grow.\n\nIt keeps bearing fruit year after year.\n\nThat is God's picture of your life.\n\nNot a life cut short.\n\nNot a life merely existing.\n\nBut a life that is **rooted, fruitful, enduring, and finished well.**",
+  "prayer": "Father,\n\nThank You for the gift of life and for every day You place in my hands.\n\nTeach me, over these weeks, not just to live longer — but to live wholly for You.\n\nRoot me like a tree planted by Your rivers, that I may bear fruit in every season.\n\nIn Jesus' Name,\n\nAmen.",
+  "talk": "If you knew your exact number of days, what would you change today?",
+  "shortHook": "Even if you live to be 100, you'll only ever hold **36,500 days**. That's it."
+ },
+ "episodes": {
+  "1": {
+   "num": 1,
+   "title": "Life Is Authored by God",
+   "scripture": {
+    "text": "And the LORD God formed man of the dust of the ground, and breathed into his nostrils the breath of life; and man became a living soul.",
+    "ref": "Genesis 2:7 (KJV)"
+   },
+   "hook": "Have you ever wondered where your very first breath came from?\n\nYou didn't ask for it.\n\nYou didn't earn it.\n\nOne moment there was nothing — and the next, there was *you*.\n\nBefore you had a name...\n\nbefore anyone held you...\n\nbefore your heart beat even once...\n\nLife had to be *given*.",
+   "bigIdea": "You are not an accident, and you are not self-made — life begins with the breath of God.",
+   "why": "People spend years trying to discover the meaning of life while ignoring the One who gave\nthem life.\n\nIf God is the Author of life...\n\nthen He alone defines its purpose.\n\nBefore God gave Adam work, a wife, or a garden — He gave him *life*.\n\nEvery heartbeat is borrowed from God.",
+   "teachingPoints": [
+    "God Is the Source of Life",
+    "Life Is Sacred",
+    "Life Is Given for a Purpose"
+   ],
+   "application": [
+    "Thank God *specifically* for the gift of today — name it out loud.",
+    "Live this day as borrowed time entrusted to you, not owned by you.",
+    "Ask one question before every major decision today: *\"Does this honor the One who gave"
+   ],
+   "reflection": [
+    "Who gave me life?",
+    "Am I living for the One who gave it?",
+    "How can I honor God with the life He has entrusted to me?"
+   ],
+   "prayer": "Father,\n\nThank You for the gift of life.\n\nThank You for every breath You have placed within me.\n\nHelp me never to waste the life You have given me.\n\nMay every day bring glory to Your Name.\n\nIn Jesus' Name,\n\nAmen.",
+   "challenge": "Every morning this week, pray:\n\n*\"Lord, thank You for the gift of today. Help me live this day for Your glory. May every\nbreath, every decision, and every opportunity bring honor to You.\"*",
+   "insight": "Before doctors ever measured your pulse, God gave you your first heartbeat. Medicine can\noften prolong life, but only God is its Author. The greatest question is not *How long\nwill I live?* but *Why has God given me this day?*",
+   "talk": "What would change if you treated today as a gift you have to give an account for?",
+   "shortHook": "You only have 36,500 days if you live to be 100. Who gave you *today*?",
+   "quote": "Every heartbeat is borrowed from God."
+  },
+  "2": {
+   "num": 2,
+   "title": "Long Life Is God's Blessing",
+   "scripture": {
+    "text": "With long life will I satisfy him, and shew him my salvation.",
+    "ref": "Psalm 91:16 (KJV)"
+   },
+   "hook": "Did you know the first promise of long life in the Bible wasn't about medicine?\n\nIt wasn't about diet.\n\nIt wasn't about good genes.\n\nIt was about *walking with God*.\n\nWhen God wanted to bless His people, one of the gifts He named was **length of days**.",
+   "bigIdea": "Long life is not merely the absence of death — it is one of God's covenant blessings.",
+   "why": "Many people fear growing old.\n\nBut Scripture treats long life as something God *gives*, not merely something that\n*happens*.\n\nIf long life is a blessing from God, then the years ahead are not a burden to dread —\nthey are an inheritance to steward.",
+   "teachingPoints": [
+    "God Delights in Blessing His Children",
+    "Long Life Allows Greater Fruitfulness",
+    "Long Life Lets Us Influence More Generations"
+   ],
+   "application": [
+    "Thank God for the years you have *already* been given.",
+    "Name one way your current season could bless someone younger than you.",
+    "Stop viewing aging as decline; start viewing added years as added opportunity."
+   ],
+   "reflection": [
+    "Do I see my years as a blessing or a burden?",
+    "What fruit could my life produce if I steward my years for God?"
+   ],
+   "prayer": "Father,\n\nThank You that long life is Your blessing, not my burden.\n\nSatisfy my days with Your presence and Your purpose.\n\nMake me fruitful in every season You give me.\n\nLet my years bless the generations that come after me.\n\nIn Jesus' Name,\n\nAmen.",
+   "challenge": "Every morning this week, pray:\n\n*\"Lord, thank You for the gift of today. Help me live this day for Your glory. May every\nbreath, every decision, and every opportunity bring honor to You.\"*",
+   "insight": "Researchers studying the world's longest-living communities keep finding the same\nthreads: faith, purpose, and deep relationships. Long before the studies, God said it\nfirst — He satisfies with long life *and* shows His salvation. Years and meaning were\nalways meant to travel together.",
+   "talk": "What's the difference between a long life and a *satisfying* one?",
+   "shortHook": "Did you know the first promise of long life in the Bible wasn't about medicine? It was about walking with God.",
+   "quote": "God doesn't just promise a long life. He promises a satisfying one."
+  },
+  "3": {
+   "num": 3,
+   "title": "Long Life Is God's Purpose",
+   "scripture": {
+    "text": "...the number of thy days I will fulfil.",
+    "ref": "Exodus 23:26 (KJV)"
+   },
+   "hook": "God has never called anyone to retire from His purpose.\n\nYou can retire from a job.\n\nYou can step back from a title.\n\nBut there is no retirement from the assignment God gave your life.\n\nAs long as you have breath, you have a purpose to fulfill.",
+   "bigIdea": "God preserves us not merely so we can live longer, but so we can finish our assignment.",
+   "why": "God didn't promise to fill your *calendar*.\n\nHe promised to fulfill your *days*.\n\nThere is a difference between merely passing time and completing a God-given course.\n\nLong life is not the goal. **Finishing well** is the goal.",
+   "teachingPoints": [
+    "Every Life Has an Assignment",
+    "God Numbers Our Days",
+    "The Goal Is to Finish Well"
+   ],
+   "application": [
+    "Name the \"baton\" God has put in your hands — the assignment you must not drop.",
+    "Refuse the lie that your useful years are behind you.",
+    "Take one concrete step today that moves your God-given assignment forward."
+   ],
+   "reflection": [
+    "What has God assigned me that I have not yet finished?",
+    "Am I living to pass time, or to fulfill my days?"
+   ],
+   "prayer": "Father,\n\nThank You that my days are numbered by You and held in Your hand.\n\nTeach me to number them, that I may live with wisdom.\n\nKeep me faithful to the assignment You have given me.\n\nHelp me not only to live long, but to finish well — still carrying the faith.\n\nIn Jesus' Name,\n\nAmen.",
+   "challenge": "Every morning this week, pray:\n\n*\"Lord, thank You for the gift of today. Help me live this day for Your glory. May every\nbreath, every decision, and every opportunity bring honor to You.\"*",
+   "insight": "Studies of healthy aging keep landing on one word: *purpose*. People with a clear\nreason to get up in the morning tend to live longer — and live better. God said it\nfirst. He doesn't just add days to your life; He gives your days something worth\nliving for.",
+   "talk": "What is the one assignment you don't want to leave unfinished?",
+   "shortHook": "God has never called anyone to retire from His purpose.",
+   "quote": "God didn't promise to fill your calendar. He promised to fulfill your days."
+  },
+  "4": {
+   "num": 4,
+   "title": "Feed Your Spirit",
+   "scripture": {
+    "text": "But he answered and said, It is written, Man shall not live by bread alone, but by every word that proceedeth out of the mouth of God.",
+    "ref": "Matthew 4:4 (KJV)"
+   },
+   "hook": "You will eat three meals today without being told.\n\nYour stomach will remind you.\n\nIt will growl. It will ache. It will demand to be fed.\n\nBut your spirit?\n\nYour spirit can starve for weeks...\n\nfor months...\n\nand never make a sound.\n\nThat is the danger.\n\nThe part of you that lives forever is the part most easily neglected.",
+   "bigIdea": "What you feed grows, and what you starve dies — so feed your spirit daily on the Word, prayer, and worship.",
+   "why": "A weak body can still serve God.\n\nA weak mind can still be renewed.\n\nBut a starved spirit cannot sustain a long, fruitful life.\n\nYou cannot pour out for seventy years from a well you never fill.\n\nThe secret to lasting isn't found in lasting harder — it's found in feeding deeper.",
+   "teachingPoints": [
+    "The Spirit Is Fed by the Word of God",
+    "The Spirit Is Fed by Prayer",
+    "The Spirit Is Fed by Worship",
+    "A Starved Spirit Cannot Sustain a Long Life"
+   ],
+   "application": [
+    "Feed your spirit *first* — before your phone, before the news, before email.",
+    "Read until one verse feeds you, then pray it back to God.",
+    "Give five minutes to worship before your tasks begin.",
+    "Tonight, ask: *\"Did I feed my spirit today, or only my body?\"*"
+   ],
+   "reflection": [
+    "What have I been feeding most — my body, my mind, or my spirit?",
+    "When did I last sit with God's Word and let it actually feed me?",
+    "What one daily habit could keep my spirit fed for the long haul?"
+   ],
+   "prayer": "Father,\n\nI confess I have fed my body and starved my spirit.\n\nForgive me, and teach me to hunger for You.\n\nFeed me with Your Word.\n\nDraw me into prayer.\n\nLift my heart into worship.\n\nKeep my spirit strong all the days of my life,\n\nthat I may serve You to the very end.\n\nIn Jesus' Name,\n\nAmen.",
+   "challenge": "This week, set aside 15 minutes each morning to feed your spirit — open the Word, pray, and worship before you touch your phone.",
+   "insight": "Doctors will tell you that what you eat daily shapes how long you live. The same law governs the spirit. The believers who finish strong at eighty are not the ones who had a powerful moment at twenty — they are the ones who fed their spirits every ordinary day in between. Small meals, taken faithfully, outlast every feast you forget to repeat.",
+   "talk": "Be honest — what have you been feeding most this week, and what has it cost your spirit?",
+   "shortHook": "Your stomach tells you when it's hungry. Your spirit can starve for months and never make a sound.",
+   "quote": "What you feed grows. Feed your spirit daily."
+  },
+  "5": {
+   "num": 5,
+   "title": "Walk with God Daily",
+   "scripture": {
+    "text": "And Enoch walked with God: and he was not; for God took him.",
+    "ref": "Genesis 5:24 (KJV)"
+   },
+   "hook": "In a chapter full of funerals, one man never had one.\n\nGenesis 5 is the Bible's first obituary column.\n\n\"And he died... and he died... and he died\" — eight times the same phrase falls like a hammer.\n\nThen, suddenly, it stops.\n\nOne man breaks the pattern.\n\n\"And Enoch walked with God: and he was not; for God took him.\"\n\nNo deathbed. No grave.\n\nJust a walk so close it never had to end.",
+   "bigIdea": "Longevity isn't built in a single moment with God — it's built in a daily walk with Him.",
+   "why": "You will not coast into closeness with God.\n\nNobody drifts into intimacy.\n\nThe believers who last decades are not the ones who had one mountaintop experience. They are the ones who showed up, day after ordinary day, and walked.\n\nA relationship measured in years is built in steps you take today.",
+   "teachingPoints": [
+    "A Walk Means Daily, Consistent Fellowship",
+    "A Walk Means a Life That Pleases God",
+    "A Walk Means Obedience in an Ungodly World",
+    "A Walk Stretches Across a Lifetime"
+   ],
+   "application": [
+    "Set a fixed daily appointment with God and treat it as unmissable.",
+    "Take today's step: read a little, pray a little, obey what you hear.",
+    "Before each decision, ask: *\"Does this keep me walking beside God?\"*",
+    "Walk God's direction in one area, even if you walk it alone."
+   ],
+   "reflection": [
+    "Am I walking *with* God daily, or only visiting Him occasionally?",
+    "Would my life carry Enoch's testimony — that it pleased God?",
+    "Where is the crowd walking one way while God walks another?"
+   ],
+   "prayer": "Father,\n\nI want to walk with You — not just visit You.\n\nTeach me to take a step toward You every single day.\n\nKeep me beside You in an ungodly world.\n\nLet my life please You all my days.\n\nAnd like Enoch, may I walk so closely with You\n\nthat I am never far from home.\n\nIn Jesus' Name,\n\nAmen.",
+   "challenge": "This week, set aside 15 minutes each morning to feed your spirit — open the Word, pray, and worship before you touch your phone.",
+   "insight": "Researchers who study the longest-lived people keep finding the same humble habit: a daily walk. Steady, unhurried, repeated for decades. The spirit obeys the same law. It is not the rare spiritual sprint that produces a long, fruitful life — it is the daily walk with God, taken so faithfully that after seventy years you can hardly remember a day you walked alone.",
+   "talk": "Is your faith a finished decision or a continuing walk — and when did you last take a step?",
+   "shortHook": "Genesis 5 says \"and he died\" eight times. Then one man breaks the pattern — and never has a funeral.",
+   "quote": "Nobody drifts into closeness with God. You walk into it — one day at a time."
+  },
+  "6": {
+   "num": 6,
+   "title": "Love God Wholeheartedly",
+   "scripture": {
+    "text": "Because he hath set his love upon me, therefore will I deliver him: I will set him on high, because he hath known my name.",
+    "ref": "Psalm 91:14 (KJV)"
+   },
+   "hook": "Read Psalm 91 carefully and you'll find a hinge.\n\nFor thirteen verses, God is the One acting — covering, sheltering, delivering, protecting.\n\nThen verse 14 turns, and for the first time the man does something.\n\nWhat does he do?\n\nHe doesn't perform a ritual.\n\nHe doesn't recite a formula.\n\n\"*Because he hath set his love upon me...*\"\n\nHe loves God.\n\nAnd out of that love flows every promise in the chapter — including the great one: *\"With long life will I satisfy him.\"*",
+   "bigIdea": "Long, satisfied life is rooted not in religious activity but in wholehearted love for God.",
+   "why": "You can do everything right and still miss the one thing.\n\nYou can attend, serve, give, and recite — and never love.\n\nGod is not first looking for your performance. He is looking for your heart.\n\nReligion can be sustained for a while on willpower. But only love lasts a lifetime — and only love makes that lifetime satisfying.",
+   "teachingPoints": [
+    "God Wants Your Whole Heart, Not Part of It",
+    "Relationship Comes Before Religion",
+    "Love Is the Root of a Long, Satisfied Life",
+    "We Love Because He First Loved Us"
+   ],
+   "application": [
+    "Tell God you love Him — out loud, before you do anything for Him.",
+    "Name and surrender the rival competing for your heart's first place.",
+    "Turn one religious \"task\" today back into a relationship.",
+    "Sit a few minutes in His love for you at the cross, and let yours rise in answer."
+   ],
+   "reflection": [
+    "Do I love God, or do I only serve Him out of habit?",
+    "What is competing for the first place in my heart?",
+    "When did I last simply enjoy God, rather than work for Him?"
+   ],
+   "prayer": "Father,\n\nI don't want religion without relationship.\n\nI don't want to serve You with cold hands and a far-off heart.\n\nForgive me for the ways I have performed without love.\n\nHelp me to love You with all my heart, all my soul, all my might.\n\nYou first loved me — let me love You in return,\n\nall the days of my long life.\n\nIn Jesus' Name,\n\nAmen.",
+   "challenge": "This week, set aside 15 minutes each morning to feed your spirit — open the Word, pray, and worship before you touch your phone.",
+   "insight": "The longest, most thorough study of adult life ever conducted spent decades searching for what makes a life satisfying, and landed on one word: love — warm, committed relationship. Scripture said it first. God does not promise merely *long* life in Psalm 91; He promises to *satisfy* you with it. And the satisfaction begins exactly where the psalm says it does — with a heart that has set its love upon Him.",
+   "talk": "Is your faith mostly tasks or mostly love — and which one is wearing you out?",
+   "shortHook": "Psalm 91 lists God's promises for thirteen verses. Then it reveals the one thing the man actually does to unlock them.",
+   "quote": "God wants your heart before your hands."
+  },
+  "7": {
+   "num": 7,
+   "title": "Live by Faith",
+   "scripture": {
+    "text": "Now the just shall live by faith: but if any man draw back, my soul shall have no pleasure in him.",
+    "ref": "Hebrews 10:38 (KJV)"
+   },
+   "hook": "At eighty-five, most people are slowing down.\n\nCaleb was asking for a mountain.\n\nForty-five years earlier, ten spies looked at giants and saw defeat. Two looked at the same giants and saw God.\n\nFour decades later, while a whole generation had died in the wilderness, Caleb stood up — strong, sharp, undaunted — and said:\n\n\"Now therefore give me this mountain.\"\n\nWhat kept him standing when everyone else lay down?\n\nOne thing.\n\nFaith for the long haul.",
+   "bigIdea": "Faith is not a single leap — it is the endurance that carries you across decades.",
+   "why": "Anyone can believe for a moment.\n\nThe crowd believed at the Red Sea and complained three days later.\n\nThe question is not whether you can start by faith. The question is whether your faith can *last* — through delay, through wilderness, through forty silent years.\n\nA long life for God is impossible without a faith that endures. \"The just shall live by faith\" — not flare and fade, but *live*.",
+   "teachingPoints": [
+    "Faith Believes God Before It Sees the Result",
+    "Faith Holds On Through the Long Delay",
+    "Faith Refuses to Draw Back",
+    "Faith Stays Strong to the Very End"
+   ],
+   "application": [
+    "Take the first step on one thing God told you to do, even without proof.",
+    "Name the promise you're waiting on, and choose to keep believing through the delay.",
+    "Draw a line where you're tempted to quit: *\"I will not draw back.\"*",
+    "Ask God for a \"mountain\" in this season — and step toward it."
+   ],
+   "reflection": [
+    "Where am I living by sight when God is calling me to live by faith?",
+    "What delay is tempting me to draw back?",
+    "Is my faith built like a firework or like a marathon?"
+   ],
+   "prayer": "Father,\n\nGive me faith that does not quit.\n\nWhen I cannot see, help me trust Your Word.\n\nWhen the wait is long, keep me believing.\n\nWhen giants stand in the way, make me bold like Caleb.\n\nLet me not draw back, but live by faith —\n\nall the way to the finish line.\n\nIn Jesus' Name,\n\nAmen.",
+   "challenge": "This week, set aside 15 minutes each morning to feed your spirit — open the Word, pray, and worship before you touch your phone.",
+   "insight": "Studies of remarkable longevity keep surfacing the same trait: resilience — the refusal to quit when life delivers loss and delay. Scripture calls it faith. \"The just shall live by faith.\" It is not the believer who starts fastest who finishes the course, but the one who, like Caleb at eighty-five, is still strong enough to ask for the mountain. Faith is what carries you across the decades.",
+   "talk": "Is your faith built like a firework or like a marathon — and what's tempting you to stop?",
+   "shortHook": "At eighty-five, most people slow down. Caleb stood up and asked for a mountain still guarded by giants.",
+   "quote": "Faith is not a single leap. It's the endurance that carries you across decades."
+  },
+  "8": {
+   "num": 8,
+   "title": "Serve God Through Every Season",
+   "scripture": {
+    "text": "They shall still bring forth fruit in old age; they shall be fat and flourishing.",
+    "ref": "Psalm 92:14 (KJV)"
+   },
+   "hook": "We treat life like a stadium.\n\nA short window in the middle is \"the game\" — your twenties, thirties, forties.\n\nChildhood is the warm-up. Old age is the cool-down.\n\nAnd the parts before and after? We treat them like the stands. Just watching.\n\nBut God doesn't run a stadium.\n\nIn God's economy, there are no spectator seasons.\n\nA child can serve Him. A teenager can serve Him. A grandparent can serve Him.\n\n**Every decade has a divine assignment, and not one of them is wasted.**",
+   "bigIdea": "Every season of life carries a God-given assignment — there is no wasted decade.",
+   "why": "The enemy steals seasons by convincing you they don't count.\n\n\"You're too young to matter.\"\n\n\"You're too old to be used.\"\n\n\"This in-between season is just waiting.\"\n\nAll lies.\n\nIf God has given you breath in this season, He has given you an assignment in it. Longevity for God means serving Him faithfully through every chapter — not just the convenient ones.",
+   "teachingPoints": [
+    "Childhood Has an Assignment",
+    "Youth Has an Assignment",
+    "Adulthood Has an Assignment",
+    "Old Age Has an Assignment"
+   ],
+   "application": [
+    "Name the season you are in right now and ask: *\"What is my God-given assignment here?\"*",
+    "Stop waiting for a \"real\" season — serve God in this one.",
+    "Offer one current responsibility to God as worship today.",
+    "Bless someone in a different season than yours — younger or older."
+   ],
+   "reflection": [
+    "What season of life am I in — and have I accepted its assignment?",
+    "Have I believed the lie that I'm too young, too old, or just waiting?",
+    "Whom in another season could I serve or encourage this week?"
+   ],
+   "prayer": "Father,\n\nThank You that no season of my life is wasted.\n\nForgive me for the years I treated as waiting rooms.\n\nShow me my assignment in the season I am in today.\n\nWhether young or old, busy or slow,\n\nlet me bring forth fruit for You —\n\nflourishing all the way to the end.\n\nIn Jesus' Name,\n\nAmen.",
+   "challenge": "This week, set aside 15 minutes each morning to feed your spirit — open the Word, pray, and worship before you touch your phone.",
+   "insight": "Gerontologists have found that people who keep a sense of purpose live measurably longer and stay sharper than those who simply retire from meaning. Scripture said it long ago: the righteous \"shall still bring forth fruit in old age.\" God has no spectator seasons and no surplus decades. The secret to a long, fruitful life is to keep showing up for your assignment — in every season, until the very last one.",
+   "talk": "Have you been treating your current season as a waiting room — and what assignment might you be missing?",
+   "shortHook": "We treat life like a stadium — a short game in the middle, and everything else is just the stands. God doesn't run a stadium.",
+   "quote": "In God's kingdom there are no wasted decades."
+  },
+  "9": {
+   "num": 9,
+   "title": "Think Life",
+   "scripture": {
+    "text": "And be not conformed to this world: but be ye transformed by the renewing of your mind, that ye may prove what is that good, and acceptable, and perfect, will of God.",
+    "ref": "Romans 12:2 (KJV)"
+   },
+   "hook": "What is the longest conversation you have ever had?\n\nIt isn't with your spouse.\n\nIt isn't with your closest friend.\n\nIt's the one happening inside your own head — right now — and it never stops.\n\nYou wake to it.\n\nYou fall asleep to it.\n\nAnd that quiet, endless conversation is slowly shaping the kind of person you are becoming.\n\nSo here is the question that decides a life:\n\nWhat are you telling yourself all day long?",
+   "bigIdea": "A long, fruitful life is not built on what happens to you, but on the thoughts you allow\nto live in your mind.",
+   "why": "Your thoughts today become your words tomorrow.\n\nYour words become your actions.\n\nYour actions become your habits — and your habits become your life.\n\nFear, worry, and bitterness do not just trouble the soul; they wear down the body and rob\nthe years. A mind set on death cannot produce a life of peace. But a mind renewed by God's\nWord can carry you, strong and steady, into every decade He has given you.",
+   "teachingPoints": [
+    "The Mind Must Be Renewed, Not Just Restrained",
+    "The Mind Set on Life Produces Peace",
+    "Reject Fear — It Was Not Given by God",
+    "Think According to God's Word"
+   ],
+   "application": [
+    "Catch the very next fearful or negative thought — and say it out loud so you can hear it.",
+    "Answer it out loud with one verse of Scripture (start with 2 Timothy 1:7).",
+    "Choose one true, lovely, good-report thing from Philippians 4:8 and dwell on it on"
+   ],
+   "reflection": [
+    "What is the most common thought I rehearse when no one is watching?",
+    "Is my mind set on life and peace, or on fear and death?",
+    "What one verse could I carry into every hard moment this week?"
+   ],
+   "prayer": "Father,\n\nYou see every thought before I think it.\n\nRenew my mind by Your Word.\n\nTear down the fear I have rehearsed for years, and teach me to think life.\n\nSet my mind on what is true, and let Your peace guard my heart.\n\nIn Jesus' Name,\n\nAmen.",
+   "challenge": "This week, catch one fearful or negative thought each day, and replace it out loud with\nwhat God's Word says instead.",
+   "insight": "Doctors now know that chronic fear and worry keep the body flooded with stress, wearing\ndown the heart and stealing years. What Scripture said long before the studies, the body\nhas been quietly confirming: *a mind at peace is a mind built to last.* Renewing your\nmind is not only obedience — it is longevity.",
+   "talk": "What thought have you rehearsed so long it has carved a channel in your mind — and what verse will you dig a new channel with?",
+   "shortHook": "The longest conversation of your life is the one inside your own head — and it never stops. What are you telling yourself all day?",
+   "quote": "Where you fix your mind, there you will live."
+  },
+  "10": {
+   "num": 10,
+   "title": "Speak Life",
+   "scripture": {
+    "text": "Death and life are in the power of the tongue: and they that love it shall eat the fruit thereof.",
+    "ref": "Proverbs 18:21 (KJV)"
+   },
+   "hook": "Lean in close, because Solomon is about to hand you one of the most dangerous and most\nbeautiful truths in all of Scripture.\n\nIn your mouth — right now — you carry both death and life.\n\nNot a little of each.\n\nThe full power of both.\n\nA few words can crush a child for forty years.\n\nA few words can lift a broken man off the floor.\n\nYou speak hundreds of times a day.\n\nSo the question is not *whether* you have this power —\n\nit's *which one* you've been handing out.",
+   "bigIdea": "Your words are seeds, and the life you live tomorrow is the harvest of what your mouth\nplants today.",
+   "why": "You have been talking your whole life — but have you ever stopped to weigh what you've been\nsaying?\n\nMany people pray for a blessed future while speaking defeat over their present. They ask\nGod for hope at church and rehearse despair at home.\n\nWords set direction. The same tongue that can bless God can curse a brother; the same mouth\nthat can speak faith can plant fear. If you want to walk in life through every season, you\nmust learn to *speak* life — over yourself, your family, and your future.",
+   "teachingPoints": [
+    "Words Carry Real Power",
+    "You Will Eat the Fruit of Your Words",
+    "Speak Faith, Not Fear",
+    "Speak Life Over Others"
+   ],
+   "application": [
+    "Catch one negative or fearful word before it leaves your mouth — and replace it out loud",
+    "Speak one specific blessing over yourself this morning from Scripture.",
+    "Say one true word of life over another person before the day ends."
+   ],
+   "reflection": [
+    "If my words became my future, what kind of life am I building?",
+    "Whose voice in my past spoke life or death over me — and which do I now repeat?",
+    "What is one sentence I keep saying that I need to stop planting?"
+   ],
+   "prayer": "Father,\n\nSet a watch over my mouth, and keep the door of my lips.\n\nTake the power You placed in my tongue and turn it toward life.\n\nLet my words plant faith, hope, and blessing — over myself, my family, and everyone I meet.\n\nLet the words of my mouth be acceptable in Your sight.\n\nIn Jesus' Name,\n\nAmen.",
+   "challenge": "This week, catch one fearful or negative thought each day, and replace it out loud with\nwhat God's Word says instead.",
+   "insight": "Researchers have found that a hopeful, encouraging outlook — spoken and practiced — is\nlinked to longer, healthier living, while a steady diet of negative speech feeds stress\nand decline. Solomon wrote the headline three thousand years ago: *death and life are in\nthe power of the tongue.* The mouth that speaks life is also helping the body live it.",
+   "talk": "What is one sentence you keep speaking that you need to stop planting — and what will you plant instead?",
+   "shortHook": "Right now, in your mouth, you carry both death and life — at full power. Which one have you been handing out?",
+   "quote": "If you don't like your harvest, change the seed in your mouth."
+  },
+  "11": {
+   "num": 11,
+   "title": "Choose Joy",
+   "scripture": {
+    "text": "A merry heart doeth good like a medicine: but a broken spirit drieth the bones.",
+    "ref": "Proverbs 17:22 (KJV)"
+   },
+   "hook": "What if I told you there is a medicine that costs nothing...\n\nneeds no prescription...\n\nhas no harmful side effects...\n\nand that you already carry it inside you, every single day?\n\nYou don't have to drive to a pharmacy for it.\n\nYou don't have to wait for the doctor's office to open.\n\nThe Bible named this medicine three thousand years before the first hospital was ever built.\n\nAnd it lives in your *heart*.",
+   "bigIdea": "Joy is not a reward for an easy life — it is a daily choice that strengthens you to live a\nlong one.",
+   "why": "Hard seasons come to everyone. Bad news comes to everyone. The question is not whether\ntrouble will visit, but what it will find living in you when it arrives.\n\nA broken spirit, Solomon says, *dries the bones* — it drains the strength right out of a\nperson. But a merry heart works like medicine, day after day, quietly healing and steadying\nthe one who carries it.\n\nYou will not always control your circumstances. But by God's grace, you can choose your\njoy — and that choice may carry you further than you know.",
+   "teachingPoints": [
+    "Joy Is a Medicine for the Whole Person",
+    "The Joy of the Lord Is Your Strength",
+    "Gratitude Changes the Picture",
+    "Hope Fuels Endurance"
+   ],
+   "application": [
+    "Take your daily dose of joy on purpose — choose it before you feel it.",
+    "Out loud, thank God for three specific mercies before you voice a single complaint.",
+    "When a fearful or negative thought comes, replace it out loud with a promise of God, and"
+   ],
+   "reflection": [
+    "Is my heart functioning as a medicine, or is a broken spirit drying my bones?",
+    "Where am I waiting for joy *after* the trouble lifts, when God offers it *in* the trouble?",
+    "What three mercies of God have I overlooked today?"
+   ],
+   "prayer": "Father,\n\nThank You that joy in You does not depend on an easy day.\n\nHeal my heart and steady my spirit.\n\nWhen trouble comes, let me sing like Paul in the prison.\n\nFill me with all joy and peace in believing, that I may abound in hope.\n\nIn Jesus' Name,\n\nAmen.",
+   "challenge": "This week, catch one fearful or negative thought each day, and replace it out loud with\nwhat God's Word says instead.",
+   "insight": "Study after study now links joy, gratitude, and hope to lower stress, stronger immunity,\nand longer life — while chronic despair quietly erodes the body. Solomon needed no\nlaboratory to know it: *a merry heart doeth good like a medicine.* The joy of the Lord is\nnot only your strength for today — it is, in God's design, a quiet keeper of your years.",
+   "talk": "Where in your life are you waiting for joy *after* the trouble lifts, instead of choosing it *in* the trouble?",
+   "shortHook": "There's a medicine that costs nothing, needs no prescription, and you already carry it inside you. The Bible named it three thousand years before the first hospital.",
+   "quote": "The merry heart is the medicine you choose for yourself."
+  },
+  "12": {
+   "num": 12,
+   "title": "Keep Learning",
+   "scripture": {
+    "text": "A wise man will hear, and will increase learning; and a man of understanding shall attain unto wise counsels.",
+    "ref": "Proverbs 1:5 (KJV)"
+   },
+   "hook": "When do you think a person stops growing?\n\nMost people answer with an age.\n\nBut here is something strange.\n\nThe body stops growing taller in our teens.\n\nThe mind, though — the mind can keep growing until your very last day on earth.\n\nSo why do so many people stop?\n\nWhy do we treat learning like school — something you finish, graduate from, and leave\nbehind?\n\nThe wisest man in the Bible never graduated.\n\nAnd neither should you.",
+   "bigIdea": "A heart that keeps learning never grows old, because every decade can know more of God\nthan the one before it.",
+   "why": "There is a quiet danger that comes with age and experience: we begin to think we already\nknow.\n\nBut the moment you stop learning is the moment you start shrinking. A closed mind grows\nstale; a teachable heart stays alive.\n\nGod designed you to grow all the way home. Your eyes may dim and your steps may slow, but\nyour knowledge of God can deepen every single year. The believer who keeps learning keeps\nbearing fruit — and a fruitful mind helps make for a fruitful life.",
+   "teachingPoints": [
+    "The Wise Keep Learning — Fools Think They Know",
+    "Keep Learning the Word of God Above All",
+    "Learning Keeps the Mind Sharp and the Life Fruitful",
+    "The Humble Keep Learning All Their Lives"
+   ],
+   "application": [
+    "Ask one honest question today instead of assuming you already know the answer.",
+    "Study one verse — don't just read it — and write down one new thing it shows you about God.",
+    "Begin learning one worthwhile thing this week, and let someone else teach you part of it."
+   ],
+   "reflection": [
+    "Have I quietly decided I already know enough?",
+    "Do I know more of God this year than I did last year?",
+    "Whom could I humbly let teach me something this week?"
+   ],
+   "prayer": "Father,\n\nKeep my heart teachable all the days of my life.\n\nGive me a hunger to know You more this year than I did the last.\n\nSave me from the pride that thinks it has arrived.\n\nLet me, like Paul, be still learning when the end draws near.\n\nIn Jesus' Name,\n\nAmen.",
+   "challenge": "This week, catch one fearful or negative thought each day, and replace it out loud with\nwhat God's Word says instead.",
+   "insight": "Researchers studying healthy aging keep finding the same thing: minds that stay curious and\nkeep learning stay sharper and steadier into old age, while idle minds decline faster.\nScripture pointed there first — the wise *increase learning*, and the righteous \"still\nbring forth fruit in old age.\" A learning mind is a living mind, and a living mind helps\nsustain a long, fruitful life.",
+   "talk": "Do you know more of God this year than you did last year — and what's your plan to know more next year?",
+   "shortHook": "Your body stops growing in your teens — but your mind can keep growing until your very last day. So why do so many people stop?",
+   "quote": "A mind that stops learning becomes a fence post. A mind that keeps learning stays a tree."
+  },
+  "13": {
+   "num": 13,
+   "title": "Grow in Wisdom",
+   "scripture": {
+    "text": "Length of days is in her right hand; and in her left hand riches and honour.",
+    "ref": "Proverbs 3:16 (KJV)"
+   },
+   "hook": "Here is a riddle worth more than gold.\n\nA man can have a head full of facts and still ruin his life.\n\nAnother can have far less information and live full of peace, fruitful to the end.\n\nWhat's the difference between them?\n\nIt isn't *what they know*.\n\nIt's something deeper — something the Bible says you can ask God for, and He will give it.\n\nSolomon called it the principal thing.\n\nAnd he said it carries *length of days* in its very right hand.",
+   "bigIdea": "Knowledge fills your head, understanding opens your eyes, but wisdom directs your steps —\nand wisdom multiplies your fruitful years.",
+   "why": "We live in an age drowning in information and starving for wisdom. Never have people known so\nmuch and lived so foolishly.\n\nA renewed mind is not just a *full* mind — it is a *wise* one. Wisdom is the skill of living\nlife God's way, and it is the crown of everything Week 3 has been building toward: think\nlife, speak life, choose joy, keep learning — and let it all become wisdom.\n\nSolomon says wisdom holds *length of days* in her right hand. This is where renewing the mind\nand a long, fruitful life finally meet.",
+   "teachingPoints": [
+    "Know the Difference: Knowledge, Understanding, Wisdom",
+    "Wisdom Begins with the Fear of the Lord",
+    "Ask God for Wisdom — He Gives It Freely",
+    "Wisdom Multiplies Your Fruitful Years"
+   ],
+   "application": [
+    "Ask God plainly for wisdom this morning, trusting James 1:5 that He gives it freely.",
+    "In your next decision, lean not on your own understanding — pause and ask, *\"Lord, what is",
+    "Take one fearful or negative thought and replace it out loud with what God's Word says,"
+   ],
+   "reflection": [
+    "Am I gathering knowledge but failing to live wisely?",
+    "Where am I leaning on my own understanding instead of trusting the Lord?",
+    "What is one foolish path I keep choosing because it's faster?"
+   ],
+   "prayer": "Father,\n\nYou give wisdom liberally to all who ask — so I ask.\n\nMake me wise, not merely informed.\n\nTeach me to fear You, to trust You with all my heart, and to do the right thing with what I\nknow.\n\nBe a tree of life to me, and let me bear fruit through every season You give.\n\nIn Jesus' Name,\n\nAmen.",
+   "challenge": "This week, catch one fearful or negative thought each day, and replace it out loud with\nwhat God's Word says instead.",
+   "insight": "Wise living quietly lengthens life: the wise avoid ruinous choices, keep their peace, and\nguard their health — while folly burns through the years. Christ Himself \"increased in\nwisdom and stature, and in favour with God and man\" (Luke 2:52). And He is \"made unto us\nwisdom\" (1 Corinthians 1:30). To grow in wisdom is to grow in Christ — and Proverbs\npromises that *length of days is in her right hand.*",
+   "talk": "Where in your life do you have the knowledge but still need the wisdom to act on it?",
+   "shortHook": "A man can have a head full of facts and still ruin his life. Another knows far less and lives full of peace. The difference isn't *what they know*.",
+   "quote": "Knowledge informs. Understanding explains. Wisdom applies."
+  },
+  "14": {
+   "num": 14,
+   "title": "Honor the Temple",
+   "scripture": {
+    "text": "What? know ye not that your body is the temple of the Holy Ghost which is in you, which ye have of God, and ye are not your own? For ye are bought with a price: therefore glorify God in your body, and in your spirit, which are God's.",
+    "ref": "1 Corinthians 6:19–20 (KJV)"
+   },
+   "hook": "Imagine you were handed the keys to a building.\n\nNot just any building —\n\na temple.\n\nHoly ground.\n\nA place where God Himself chose to dwell.\n\nNow imagine you let it crumble.\n\nYou never cleaned it.\n\nYou filled it with junk.\n\nYou ran it into the ground because you thought it was yours to ruin.\n\nHere is the truth most people never hear:\n\n**you are already holding those keys.**\n\nThe temple is your body.",
+   "bigIdea": "Your body is not your own — it is God's temple, and stewarding it well is an act of worship.",
+   "why": "We live in a world that treats the body in two extremes.\n\nSome worship it — chasing vanity, mirrors, and applause.\n\nOthers neglect it — abusing it as if it doesn't matter.\n\nBut God offers a third way.\n\nThe body is not a god to be worshipped, and not a thing to be wasted.\n\nIt is a temple to be *honored* — for the glory of the One who lives in it.",
+   "teachingPoints": [
+    "Your Body Belongs to God",
+    "Honor Begins with Reverence, Not Vanity",
+    "You Were Bought with a Price",
+    "Stewardship Is Worship, and Worship Is Daily"
+   ],
+   "application": [
+    "Thank God that your body is His temple, not your possession.",
+    "Identify one way you have been neglecting or idolizing your body — and repent of it.",
+    "Offer one concrete act of care today as worship: a glass of water, a walk, an early night.",
+    "Before a choice about food, rest, or habit, ask: *\"Does this honor the One who lives in me?\"*"
+   ],
+   "reflection": [
+    "Do I treat my body as my own, or as God's temple?",
+    "Is my care for my body driven by worship or by vanity?",
+    "What would change if I remembered the price that was paid for me?"
+   ],
+   "prayer": "Father,\n\nThank You that by Your Spirit You have chosen to dwell in me.\n\nForgive me for the times I have neglected or misused the temple You purchased.\n\nTeach me to honor my body — not for vanity, but for Your glory.\n\nLet everything I do with this body bring honor to the One who bought me with a price.\n\nIn Jesus' Name,\n\nAmen.",
+   "challenge": "This week, honor God with your body in one concrete way each day — a healthier meal, a\nwalk, earlier sleep, or a fast — as worship, not vanity.",
+   "insight": "The buildings that last for centuries are the ones that are maintained — cleaned,\nrepaired, and treated as valuable. Neglect is the silent destroyer; it asks nothing of\nyou today and takes everything tomorrow. Your body is the same. To steward it now, as\nGod's temple, is to invest in a life that can serve Him for many decades. You are not\nmaintaining a possession — you are honoring a place where God lives.",
+   "talk": "If you truly believed your body was God's temple, what one habit would you change this week?",
+   "shortHook": "What if the most sacred building on earth isn't made of stone — it's *you*?",
+   "quote": "Your body is not your own — it's God's temple."
+  },
+  "15": {
+   "num": 15,
+   "title": "Eat for Life",
+   "scripture": {
+    "text": "And God said, Behold, I have given you every herb bearing seed, which is upon the face of all the earth, and every tree, in the which is the fruit of a tree yielding seed; to you it shall be for meat.",
+    "ref": "Genesis 1:29 (KJV)"
+   },
+   "hook": "Three times a day, you make a decision most people never think twice about.\n\nYou decide what to eat.\n\nA small choice — a fork, a plate, a snack.\n\nBut multiply it.\n\nThree meals a day.\n\nA thousand meals a year.\n\nTens of thousands of choices over a lifetime.\n\nFew habits shape your body, your energy, and your years more quietly —\n\nand more powerfully —\n\nthan what you do at the table.\n\nThe table is not just where you feed your body.\n\nIt is where you practice stewardship —\n\nor surrender it.",
+   "bigIdea": "What you eat is a matter of stewardship, and discipline at the table is an act of worship.",
+   "why": "The very first test in the Bible was about food.\n\n\"Of every tree of the garden thou mayest freely eat: but of the tree of the knowledge of\ngood and evil, thou shalt not eat\" (Genesis 2:16–17).\n\nEden's first command involved the table.\n\nAnd it still does.\n\nHow we handle appetite reveals whether we are mastering ourselves —\n\nor being mastered.",
+   "teachingPoints": [
+    "God Designed Food for Life, Not Just Pleasure",
+    "Discipline at the Table Is Stewardship",
+    "Moderation Is God's Wisdom",
+    "The Heart Behind the Plate"
+   ],
+   "application": [
+    "Thank God for your food before you eat — out loud, on purpose.",
+    "Choose one meal today and make it a *stewardship* meal: simpler, healthier, enough.",
+    "Stop eating before you're full; practice the discipline of \"sufficient.\"",
+    "Ask before a craving: *\"Am I feeding the temple, or feeding the flesh?\"*"
+   ],
+   "reflection": [
+    "Does my appetite serve me, or do I serve my appetite?",
+    "Where do I need the discipline that Daniel showed at the table?",
+    "Am I eating for momentary pleasure, or for a long life of service to God?"
+   ],
+   "prayer": "Father,\n\nThank You for the gift of food and for Your provision for my body.\n\nForgive me where appetite has ruled instead of wisdom.\n\nGive me, like Daniel, a purposed heart — to honor You with what I eat.\n\nMake me temperate, thankful, and strong for Your service.\n\nIn Jesus' Name,\n\nAmen.",
+   "challenge": "This week, honor God with your body in one concrete way each day — a healthier meal, a\nwalk, earlier sleep, or a fast — as worship, not vanity.",
+   "insight": "Across the world, the places where people most often live past one hundred share a quiet\npattern: they eat simply, they eat in moderation, and they stop before they are full.\nWhat modern study confirms, Scripture taught long ago — \"eat so much as is sufficient for\nthee\" (Proverbs 25:16). Daniel's ten-day test became a seventy-year career of service.\nDiscipline at the table is not deprivation; it is one of the simplest, oldest secrets of\na long life lived for God.",
+   "talk": "What would it look like for you to \"purpose in your heart\" about food this week?",
+   "shortHook": "Did you know the very first test in the Bible was about *food*?",
+   "quote": "Daniel's seventy years of service began with one meal."
+  },
+  "16": {
+   "num": 16,
+   "title": "Rest for Life",
+   "scripture": {
+    "text": "It is vain for you to rise up early, to sit up late, to eat the bread of sorrows: for so he giveth his beloved sleep.",
+    "ref": "Psalm 127:2 (KJV)"
+   },
+   "hook": "There is something you do for roughly a third of your entire life.\n\nYou will spend about twenty-five years of your time on earth doing it.\n\nIt costs nothing.\n\nIt heals the body.\n\nIt clears the mind.\n\nIt is one of God's oldest gifts —\n\nand one of the first things we sacrifice when life gets busy.\n\nIt is rest.\n\nAnd the strange truth is this:\n\nthe world tells you that you'll get ahead by skipping it.\n\nGod says you were never meant to live without it.",
+   "bigIdea": "Rest is not laziness — it is trust, and God built it into the rhythm of a long life.",
+   "why": "We wear exhaustion like a badge of honor.\n\n\"I'm so busy.\" \"I barely sleep.\" \"I'll rest when I'm dead.\"\n\nBut a body that never rests breaks down.\n\nA spirit that never stops cannot hear God.\n\nTo refuse rest is, quietly, to say: *\"It all depends on me.\"*\n\nRest says the opposite.\n\nRest says: *\"God is still working while I sleep.\"*",
+   "teachingPoints": [
+    "Rest Is Woven into Creation",
+    "Sleep Is God's Gift to His Beloved",
+    "Rest Is an Act of Trust",
+    "Even Jesus Rested"
+   ],
+   "application": [
+    "Set a bedtime tonight and keep it — receive sleep as God's gift.",
+    "Hand your worries to God in prayer before you close your eyes.",
+    "Plan one true day of rest this week to stop, worship, and recover.",
+    "Ask: *\"Am I living as if it all depends on me, or trusting the God who never sleeps?\"*"
+   ],
+   "reflection": [
+    "Do I treat rest as laziness or as trust?",
+    "What am I trying to control by refusing to stop?",
+    "How would my week change if I honored God's rhythm of work and rest?"
+   ],
+   "prayer": "Father,\n\nThank You that You never slumber, so that I can rest.\n\nForgive me for living as if everything depends on me.\n\nTeach me to receive sleep as Your gift and rest as an act of trust.\n\nRestore my strength, like Elijah's, that I may serve You for many years.\n\nIn Jesus' Name,\n\nAmen.",
+   "challenge": "This week, honor God with your body in one concrete way each day — a healthier meal, a\nwalk, earlier sleep, or a fast — as worship, not vanity.",
+   "insight": "Doctors now know that during deep sleep the body repairs cells, the heart and blood\nvessels heal, and the brain clears away waste that builds up while we are awake. Chronic\nsleeplessness is linked to nearly every disease that shortens life. Yet long before the\nresearch, the Scripture said it plainly: \"he giveth his beloved sleep\" (Psalm 127:2).\nRest is not the enemy of a productive life — it is the secret fuel of a long one. The God\nwho never sleeps invites you to.",
+   "talk": "What are you trying to control by refusing to rest?",
+   "shortHook": "You'll spend about twenty-five years of your life asleep. What if that's not wasted time — but a gift?",
+   "quote": "Rest is the body's confession that God is in control."
+  },
+  "17": {
+   "num": 17,
+   "title": "Move for Life",
+   "scripture": {
+    "text": "And the LORD God took the man, and put him into the garden of Eden to dress it and to keep it.",
+    "ref": "Genesis 2:15 (KJV)"
+   },
+   "hook": "Before there was sin...\n\nbefore there was sorrow...\n\nbefore there was even a single tear in all the world —\n\nthere was work.\n\nGod placed the first man in a garden and gave him something to do:\n\n\"to dress it and to keep it.\"\n\nAdam was made to move.\n\nTo tend. To labor. To use his hands and his strength.\n\nWe often imagine paradise as endless lounging.\n\nBut God's first gift to man, after life and breath, was *purposeful activity*.\n\nYour body was not designed to sit still.\n\nIt was designed to move.",
+   "bigIdea": "God designed your body to move and work, and keeping it active is part of stewarding it for His service.",
+   "why": "Our world has made stillness easy.\n\nScreens. Chairs. Cars. Convenience at every turn.\n\nWe can now go days barely moving our bodies at all.\n\nBut a body built for the garden does not thrive in a chair.\n\nStrength fades when it is never used.\n\nAnd a weakened body cannot serve God, family, and neighbor the way it was made to.\n\nMovement is not vanity. It is readiness — keeping the temple fit for its purpose.",
+   "teachingPoints": [
+    "Work and Movement Were God's Original Design",
+    "The Body Grows Strong Through Use",
+    "Bodily Exercise Profits — In Proportion",
+    "Diligence Honors God; Slothfulness Wastes the Temple"
+   ],
+   "application": [
+    "Take a walk today — even ten minutes — and use it to pray and thank God for your body.",
+    "Choose the active option once: the stairs, the longer route, the standing task.",
+    "Do one honest piece of physical work as worship, \"as to the Lord\" (Colossians 3:23).",
+    "Keep it in proportion: care for the body, but feed your soul first."
+   ],
+   "reflection": [
+    "Am I keeping my body ready for the work God has for me?",
+    "Have I let convenience make me weak?",
+    "Is my care for my body in right proportion to my care for my soul?"
+   ],
+   "prayer": "Father,\n\nThank You for a body designed to move, to work, and to serve.\n\nForgive me where laziness has let Your gift grow weak.\n\nHelp me keep this temple strong and ready — like Caleb, willing to climb mountains for You.\n\nAnd keep my heart in proportion: my body fit, but my soul fed first.\n\nIn Jesus' Name,\n\nAmen.",
+   "challenge": "This week, honor God with your body in one concrete way each day — a healthier meal, a\nwalk, earlier sleep, or a fast — as worship, not vanity.",
+   "insight": "Researchers studying the longest-lived people on earth found that almost none of them\n\"exercise\" the way we picture it — no gyms, no machines. Instead, movement is woven into\ntheir whole day: they walk, they garden, they work with their hands, they keep moving\ninto their nineties. It is remarkably close to Eden — a man in a garden \"to dress it and\nto keep it\" (Genesis 2:15). You were not built for the chair. Keep moving, keep tending,\nand keep your body ready for a long life of service.",
+   "talk": "What's one way you could weave more movement into your ordinary day this week?",
+   "shortHook": "At eighty-five, Caleb didn't ask for a recliner. He said, \"Give me this mountain.\"",
+   "quote": "You were not built for the chair — you were built for the garden."
+  },
+  "18": {
+   "num": 18,
+   "title": "Cleanse for Life",
+   "scripture": {
+    "text": "Having therefore these promises, dearly beloved, let us cleanse ourselves from all filthiness of the flesh and spirit, perfecting holiness in the fear of God.",
+    "ref": "2 Corinthians 7:1 (KJV)"
+   },
+   "hook": "Picture a clear mountain spring.\n\nCold. Pure. Life-giving.\n\nNow imagine someone, day after day, tossing in a little poison.\n\nJust a little.\n\nA small habit here.\n\nA toxin there.\n\nNothing dramatic — no one would notice for a while.\n\nBut over time the spring grows cloudy.\n\nThen bitter.\n\nThen it can no longer give the life it was made to give.\n\nThat is what unclean habits do to the temple of God.\n\nSlowly. Quietly. One small compromise at a time.\n\nBut there is good news:\n\nwhat is defiled can be cleansed.",
+   "bigIdea": "Stewarding the body means keeping it clean — in purity, temperance, and self-control — for the glory of God.",
+   "why": "The things that shorten a life are rarely a single dramatic event.\n\nThey are habits.\n\nWhat we keep putting in. What we refuse to put down.\n\nThe slow poisons — of the body and of the soul — that we tolerate because they feel small.\n\nBut God calls His temple to be clean.\n\nNot perfect by our striving —\n\nbut cleansed, guarded, and kept pure for His use.",
+   "teachingPoints": [
+    "God Calls Us to Cleanse Body and Spirit",
+    "Temperance Is the Fruit of the Spirit",
+    "Flee What Defiles",
+    "Fasting Cleanses and Refocuses"
+   ],
+   "application": [
+    "Ask God to reveal one \"filthiness of flesh or spirit\" — and confess it to Him today.",
+    "Flee one thing that defiles you; remove it rather than manage it.",
+    "Plan a fast this week — one meal or one day — to humble the body and seek God.",
+    "Pray for the Spirit's fruit of temperance over your strongest craving."
+   ],
+   "reflection": [
+    "What small \"poisons\" have I been tolerating in God's temple?",
+    "Where do I need to flee instead of negotiate?",
+    "Am I trusting willpower, or the Spirit, to make me temperate?"
+   ],
+   "prayer": "Father,\n\nThank You that what is defiled can be cleansed by Your grace.\n\nSearch me, and show me the filthiness of flesh and spirit I have tolerated.\n\nWash me, and grow in me the fruit of temperance by Your Spirit.\n\nGive me, like Joseph, the courage to flee what defiles and to keep Your temple holy.\n\nIn Jesus' Name,\n\nAmen.",
+   "challenge": "This week, honor God with your body in one concrete way each day — a healthier meal, a\nwalk, earlier sleep, or a fast — as worship, not vanity.",
+   "insight": "The habits that most quietly steal years — tobacco, drunkenness, impurity, the slow drip\nof toxins we tolerate — almost never feel urgent in the moment. That is exactly why they\nare so dangerous. Yet the body is remarkably forgiving: when the poison stops, healing\nbegins, often within days. Scripture and science agree — cleansing the temple, and\nkeeping it clean, adds life. \"Let us cleanse ourselves from all filthiness of the flesh\nand spirit\" (2 Corinthians 7:1). What is defiled can be cleansed — and a cleansed temple\nserves God longer.",
+   "talk": "What is one \"small poison\" you've tolerated that God may be asking you to cleanse?",
+   "shortHook": "What shortens most lives isn't one disaster — it's the small poisons we tolerate every day.",
+   "quote": "Don't negotiate with what defiles you — flee it."
+  },
+  "19": {
+   "num": 19,
+   "title": "Live One Day at a Time",
+   "scripture": {
+    "text": "Take therefore no thought for the morrow: for the morrow shall take thought for the things of itself. Sufficient unto the day is the evil thereof.",
+    "ref": "Matthew 6:34 (KJV)"
+   },
+   "hook": "No one has ever lived a single year all at once.\n\nNo one has ever lived a whole decade in a day.\n\nA long life is not given to you in bulk.\n\nIt is handed to you the same way bread was given in the wilderness —\n\none morning at a time.\n\nYou don't get tomorrow's strength today.\n\nYou get *today's* strength, today.",
+   "bigIdea": "A faithful life is not built in great leaps; it is built one obedient day at a time.",
+   "why": "We worry about a future we cannot live in yet.\n\nWe carry tomorrow's burden on today's shoulders — and break under weight God never asked\nus to lift.\n\nGod does not give grace for an imagined tomorrow.\n\nHe gives grace for the day you are actually in.\n\nIf you want to finish a long race, stop trying to run all the miles at once. **Run the\nmile you are on.**",
+   "teachingPoints": [
+    "God Gives Strength for the Day, Not the Decade",
+    "Faithfulness Is a Daily Word, Not a Lifetime Word",
+    "Worry Steals from the Life God Gave You",
+    "Today Is the Only Day You Can Honor God In"
+   ],
+   "application": [
+    "Name one thing God is asking of you *today* — and do that one thing.",
+    "The next time you feel anxious, locate the worry: is it a *today* problem or a",
+    "End the day with a single sentence of thanks: *\"Lord, You gave me strength for today.\"*"
+   ],
+   "reflection": [
+    "Am I carrying tomorrow's weight on today's strength?",
+    "If I am only ever asked to be faithful *today*, what does faithfulness look like in the"
+   ],
+   "prayer": "Father,\n\nThank You for the gift of this single day.\n\nI will not borrow tomorrow's troubles, and I will not waste today's strength on them.\n\nGive me grace for today. Give me bread for today. Give me obedience for today.\n\nAs my days are, so let my strength be — fresh from Your hand each morning.\n\nTeach me to build a faithful life one ordinary day at a time, until the last day is done.\n\nIn Jesus' Name,\n\nAmen.",
+   "challenge": "This week, take one deliberate step that outlives you — mentor someone, write down your\ntestimony, or invest in the next generation.",
+   "insight": "Doctors who study stress have a name for it: *anticipatory anxiety* — the body pouring\nout stress hormones over events that have not happened and often never will. It wears\nthe heart, the gut, and the mind. Jesus prescribed the cure two thousand years ago:\n*take no thought for the morrow.* People who learn to live in the present day sleep\nbetter, age slower, and finish stronger. God gives strength by the day — and the day is\nalways enough.",
+   "talk": "What tomorrow are you trying to live in that God hasn't given you yet?",
+   "shortHook": "You will never have to live your whole life in a single day. So why are you carrying it all at once?",
+   "quote": "God gives strength by the day — and the day is always enough."
+  },
+  "20": {
+   "num": 20,
+   "title": "Multiply Your Life",
+   "scripture": {
+    "text": "And the things that thou hast heard of me among many witnesses, the same commit thou to faithful men, who shall be able to teach others also.",
+    "ref": "2 Timothy 2:2 (KJV)"
+   },
+   "hook": "There is a kind of life that ends when you do.\n\nAnd there is a kind of life that keeps going long after your funeral.\n\nThe difference is not how famous you were.\n\nIt is not how much you accumulated.\n\nIt is whether you poured what God gave you into someone else —\n\nsomeone who will pour it into someone else —\n\nafter you are gone.\n\nThe longest life is not the one with the most years.\n\nIt is the one that **multiplies.**",
+   "bigIdea": "You will not live forever in your body, so pour your life into people who will carry it\nafter you.",
+   "why": "Most of what you own will be sold, spent, or thrown away within a generation.\n\nBut what you *deposit* in a person can travel through centuries.\n\nJesus did not write a book. He did not build a building. He invested His three years in\ntwelve men — and that investment is still spreading across the earth today.\n\nIf you want a life that outlives you, stop trying to be irreplaceable. Start trying to be\n*reproducible.*",
+   "teachingPoints": [
+    "Spiritual Multiplication Is God's Strategy",
+    "Invest in the Next Generation on Purpose",
+    "Leave Spiritual Sons and Daughters, Not Just Heirs",
+    "Multiplication Costs You — and That's the Point"
+   ],
+   "application": [
+    "Name one person you could pour into — and reach out to them this week. Don't wait to feel",
+    "Write down three things God has taught you that you want to make sure get passed on.",
+    "Pray for a \"Timothy\" by name — ask God to show you who to invest your life in."
+   ],
+   "reflection": [
+    "When I am gone, what will keep going because I poured it into a person?",
+    "Am I trying to be irreplaceable, or am I making myself reproducible?"
+   ],
+   "prayer": "Father,\n\nThank You for everyone who poured into me so the faith could reach my generation.\n\nI do not want my life to end when my body does.\n\nShow me my Timothy. Show me the next generation You want me to invest in.\n\nMake me a spiritual father, a spiritual mother — leaving sons and daughters in the faith.\n\nLet what You have placed in me multiply through faithful people, long after I am gone, to\nthe glory of Jesus Christ.\n\nIn Jesus' Name,\n\nAmen.",
+   "challenge": "This week, take one deliberate step that outlives you — mentor someone, write down your\ntestimony, or invest in the next generation.",
+   "insight": "Researchers studying the world's longest-living communities keep finding the same thing:\nthe elders are not set aside — they are *engaged*, teaching, mentoring, and pouring into\nthe young. Generativity, the psychologists call it: investing in those who come after\nyou. It adds years to the giver and life to the receiver. God designed it that way. The\nlife that pours itself out into others is the life that refuses to die.",
+   "talk": "Who is your Timothy — and what's stopping you from pouring into them?",
+   "shortHook": "Jesus never wrote a book or built a building. He poured into twelve men — and it's still spreading across the earth today.",
+   "quote": "You can count the seeds in an apple, but never the apples in a seed."
+  },
+  "21": {
+   "num": 21,
+   "title": "Remain Fruitful",
+   "scripture": {
+    "text": "The righteous shall flourish like the palm tree: he shall grow like a cedar in Lebanon. ...They shall still bring forth fruit in old age; they shall be fat and flourishing.",
+    "ref": "Psalm 92:12, 14 (KJV)"
+   },
+   "hook": "The world tells you that fruitfulness has a deadline.\n\nBe useful while you're young.\n\nProduce while you're strong.\n\nThen step aside, sit down, and fade.\n\nBut God never said that.\n\nGod planted a different picture in His Word —\n\na tree that does not wither with age,\n\na tree that bears its *best* fruit in its *oldest* season.\n\nIn the kingdom of God, your last decades are not your least.",
+   "bigIdea": "In God's economy, growing older is meant to increase your fruit, not end it.",
+   "why": "Many believers quietly retire from usefulness long before they retire from breathing.\n\nThey assume their fruitful years are behind them.\n\nBut Psalm 92 dismantles that assumption completely: the righteous *\"shall still bring forth\nfruit in old age.\"*\n\nNot *some* fruit. Not *leftover* fruit. Fruit so abundant the psalmist calls them \"fat and\nflourishing.\"\n\nIf you belong to God, your most fruitful season may not be behind you. It may be ahead.",
+   "teachingPoints": [
+    "Righteousness, Not Age, Determines Fruitfulness",
+    "Abiding Is the Source of Fruit",
+    "The Fruit of Age Is Often the Sweetest",
+    "Increasing Influence, Not Ending Influence"
+   ],
+   "application": [
+    "Reject the lie that your fruitful years are over — say out loud, *\"I shall still bring",
+    "Tend your roots today: spend unhurried time abiding in Christ, the source of all fruit.",
+    "Identify one piece of fruit only your years have grown — and give it away to someone this"
+   ],
+   "reflection": [
+    "Have I quietly retired from usefulness while I still have breath?",
+    "What fruit is God still wanting to grow through me in this season of my life?"
+   ],
+   "prayer": "Father,\n\nThank You that in Your kingdom, age is not the end of fruitfulness but the deepening of it.\n\nPlant me firmly in Your house, that my roots may go down and my fruit may keep coming.\n\nKeep me abiding in Christ the Vine, so that even in old age I bring forth fruit.\n\nLet my last decades be my most fruitful — fat and flourishing, full of Your glory.\n\nUse my years, my wisdom, and my testimony to bless the generation coming after me.\n\nIn Jesus' Name,\n\nAmen.",
+   "challenge": "This week, take one deliberate step that outlives you — mentor someone, write down your\ntestimony, or invest in the next generation.",
+   "insight": "Foresters know a strange truth: many trees keep growing their entire lives. A tree never\nreaches an age where it decides to stop. As long as the roots draw water, the tree adds\nrings. Scientists who study human aging see something similar — people who stay engaged,\nlearning, and contributing into their later years stay sharper and live longer. God said\nit first in Psalm 92: the righteous *\"shall still bring forth fruit in old age.\"* Stay\nrooted, keep abiding, and keep bearing.",
+   "talk": "What fruit could God still grow through you that only your years could produce?",
+   "shortHook": "Did you know some olive trees are over a thousand years old — and still bearing fruit? The oldest ones often make the richest oil.",
+   "quote": "In God's kingdom, your last decades are not your least."
+  },
+  "22": {
+   "num": 22,
+   "title": "Finish Your Race",
+   "scripture": {
+    "text": "I have fought a good fight, I have finished my course, I have kept the faith.",
+    "ref": "2 Timothy 4:7 (KJV)"
+   },
+   "hook": "Anyone can start.\n\nThe blocks are crowded at the beginning of every race.\n\nThe hard part is not the gun.\n\nThe hard part is the last lap —\n\nwhen the legs are heavy,\n\nthe crowd has thinned,\n\nand no one would blame you for slowing down.\n\nHeaven does not celebrate the fastest start.\n\nHeaven celebrates the **finish.**\n\nAnd the question that will matter on your final day is not *How did you begin?*\n\nIt is *Did you finish?*",
+   "bigIdea": "God's goal for your life is not merely a long race, but a finished one — run with faith,\njoy, and confidence to the very end.",
+   "why": "The Bible is honest: many start well and fail to finish.\n\nSaul began as a humble king and ended consulting a witch. Demas walked with Paul, then\n\"forsook me, having loved this present world\" (2 Timothy 4:10).\n\nStarting is no guarantee of finishing.\n\nBut Scripture also shows us finishers — people who crossed the line with the baton still\nin hand, still believing, still rejoicing. They were not superhuman. They simply refused\nto quit.\n\nYou are still running. The line is still ahead. **How you finish is still being decided.**",
+   "teachingPoints": [
+    "Finish with Faith — Keep Believing to the End",
+    "Finish with Strength — Don't Coast to the Line",
+    "Finish with Joy — Count It a Privilege, Not a Burden",
+    "Finish with Confidence — Know Whose Hand Holds You"
+   ],
+   "application": [
+    "Take inventory: where are you tempted to slow down, coast, or quit? Name it honestly.",
+    "Ask God for a fresh \"mountain\" — a new assignment for this season, not just a rest from",
+    "Fix one image in your mind for the hard miles ahead: the crown, the \"well done,\" the face"
+   ],
+   "reflection": [
+    "Am I running to coast across the line, or to finish strong?",
+    "Is my faith something I am keeping all the way to the end, or quietly setting down?"
+   ],
+   "prayer": "Father,\n\nThank You that You did not call me only to start, but to finish.\n\nWhen my legs are heavy and the crowd has thinned, hold me up.\n\nLet me finish with faith — still believing.\n\nLet me finish with strength — still climbing mountains for You.\n\nLet me finish with joy — my eyes on the crown and on the face of Jesus.\n\nLet me finish with confidence — resting in Your faithfulness, not my own.\n\nKeep me, that I may one day say with Paul: *I have fought a good fight, I have finished my\ncourse, I have kept the faith.*\n\nIn Jesus' Name,\n\nAmen.",
+   "challenge": "This week, take one deliberate step that outlives you — mentor someone, write down your\ntestimony, or invest in the next generation.",
+   "insight": "Marathon coaches know that most runners don't lose the race in the first miles — they\nlose it in the mind, in the final stretch, when the body screams and the will gives way.\nThe finishers are the ones who fixed their eyes on the line and refused to listen to\ntheir legs. The Christian life is the ultimate distance race. The crown is not given for\na fast start, but for a faithful finish. Keep your eyes on Jesus, and *don't stop running\nuntil you cross the line.*",
+   "talk": "Where in your walk are you tempted to coast — and what would finishing strong look like there?",
+   "shortHook": "An Olympic runner once finished a marathon over an hour after the winner — bleeding and limping. Why? \"My country sent me to *finish* the race, not to start it.\"",
+   "quote": "Heaven doesn't celebrate the fastest start. Heaven celebrates the finish."
+  },
+  "23": {
+   "num": 23,
+   "title": "Satisfied with Long Life",
+   "scripture": {
+    "text": "With long life will I satisfy him, and shew him my salvation.",
+    "ref": "Psalm 91:16 (KJV)"
+   },
+   "hook": "We have come to the end of the journey.\n\nFor an entire month we have walked through the secrets of a long, fruitful life —\n\nthrough Foundation,\n\nthrough Faith,\n\nthrough Focus,\n\nthrough Fitness,\n\nand now to the Finish.\n\nAnd here, at the last episode, God brings us back to where we began:\n\nto one verse —\n\none promise —\n\nthat has been the heartbeat of this whole series.\n\n*\"With long life will I satisfy him, and shew him my salvation.\"*\n\nThis is not just how a life gets *longer.*\n\nThis is how a life ends **satisfied.**",
+   "bigIdea": "The true secret of longevity is not merely to live long, but to reach the end satisfied —\nwith no regret, seeing God's salvation, and hearing \"Well done.\"",
+   "why": "A person can live a hundred years and reach the end empty.\n\nAnd a person can be deeply satisfied — full, complete, at peace — because they spent their\nyears on the only thing that lasts.\n\nGod's promise in Psalm 91:16 has two halves, and we must not separate them.\n\nHe does not merely promise *length* of days. He promises to *satisfy.* And He defines that\nsatisfaction by what comes next: *\"and shew him my salvation.\"*\n\nLong life without salvation is just a long road to an empty end. But a life given to God is\na life that arrives **full.**",
+   "teachingPoints": [
+    "God's Promise Is Satisfaction, Not Just Length",
+    "The End Goal Is Seeing His Salvation",
+    "Looking Back Without Regret",
+    "Hearing \"Well Done, Good and Faithful Servant\""
+   ],
+   "application": [
+    "Make sure of your salvation in Jesus Christ — the one thing the whole series has been",
+    "Live this day so that, looking back from the end, you would have no regret about it.",
+    "Order one decision today by the only verdict that lasts: *Would this earn a \"Well done\"?*"
+   ],
+   "reflection": [
+    "If my life ended today, would I be satisfied — having seen God's salvation?",
+    "What am I spending my years on that I might one day regret? What would I never regret?",
+    "Am I living for the applause of people, or for the \"Well done\" of God?"
+   ],
+   "prayer": "Father,\n\nYou have walked with me through this whole journey — Foundation, Faith, Focus, Fitness, and\nnow Finishing.\n\nThank You that Your promise was never merely a longer life, but a *satisfied* one.\n\nI do not want to reach the end empty. I want to reach it full — having seen Your salvation\nin Jesus Christ.\n\nLet me look back one day without regret, knowing my years were spent on what truly matters.\n\nAnd grant me, by Your grace, to hear the only words I long to hear: *\"Well done, thou good\nand faithful servant; enter thou into the joy of thy lord.\"*\n\nWith long life satisfy me, O Lord — and show me Your salvation.\n\nIn Jesus' Name,\n\nAmen.",
+   "challenge": "This week, take one deliberate step that outlives you — mentor someone, write down your\ntestimony, or invest in the next generation.",
+   "insight": "Researchers who interview people at the very end of life find that almost no one regrets\nworking less or owning less. The deepest regrets are relational and spiritual — *I wish I\nhad loved more, forgiven sooner, lived truer to what mattered.* God's promise cuts to the\nheart of it: He does not merely offer length of days; He offers *satisfaction* — a life\nthat arrives full and sees His salvation. The longest life is not the one with the most\nyears. It is the one that ends able to say, *\"It was worth every season — and I have seen\nthe Lord.\"*",
+   "talk": "If your life ended today, would you arrive satisfied — having seen God's salvation?",
+   "shortHook": "People at the very end of life almost never regret owning less or working less. The deepest regrets are always about what truly mattered.",
+   "quote": "The longest life is the one that ends able to say: 'It was worth every season — and I have seen the Lord.'"
+  }
+ },
+ "shorts": [
+  {
+   "day": 1,
+   "videoId": "57osZrTgQTk",
+   "title": "The Truth about INSTANT Prayers"
+  },
+  {
+   "day": 2,
+   "videoId": "FOmSVQtZra8",
+   "title": "No one is a 1 million Hours Rich when they die!"
+  },
+  {
+   "day": 3,
+   "videoId": "CDLRdTFkFfo",
+   "title": "What to ask before you pray 🙏"
+  },
+  {
+   "day": 4,
+   "videoId": "jiLEyJsZXgI",
+   "title": "Why they don't care how much you KNOW"
+  },
+  {
+   "day": 5,
+   "videoId": "dvbXeHbEBFg",
+   "title": "A world without medical intervention 🌍"
+  },
+  {
+   "day": 6,
+   "videoId": "EtbBbdi8M7U",
+   "title": "Why God might \"unsend\" you 🤔"
+  },
+  {
+   "day": 7,
+   "videoId": "ApH9DNRV-zE",
+   "title": "Some People Don't Want To Be Healed — WHY?"
+  },
+  {
+   "day": 8,
+   "videoId": "vIhBGh8IXW8",
+   "title": "This One Choice Changes How People See You 💡"
+  },
+  {
+   "day": 9,
+   "videoId": "WBavB-EUyTw",
+   "title": "The One Word Hospitals Can't Explain 🏥"
+  },
+  {
+   "day": 10,
+   "videoId": "PLfBvHrf6gk",
+   "title": "Why People Care More About Your Love Than You 🤔"
+  }
+ ],
+ "shortsPlaylist": null
+}

@@ -1,0 +1,26 @@
+{
+  "_comment": "Day-by-day YouTube mapping for July 2026 (Secrets of Longevity). Evening premieres (~8PM WAT) = episode videos; ~6AM uploads = daily Shorts. Update as new videos premiere.",
+  "days": {
+    "1": "wbZw4faMAyE",
+    "2": "OMQJ8xYN-4w",
+    "3": "oFi8w0QHN4A",
+    "4": "0Aw9_HS3JUI",
+    "6": "RgNBB67cTPc",
+    "7": "FiSPoqD8GUg",
+    "8": "zSSbcuJ7Zbk",
+    "9": "JK_mV9i-6lI"
+  },
+  "shorts": [
+    { "day": 1, "videoId": "57osZrTgQTk", "title": "The Truth about INSTANT Prayers" },
+    { "day": 2, "videoId": "FOmSVQtZra8", "title": "No one is a 1 million Hours Rich when they die!" },
+    { "day": 3, "videoId": "CDLRdTFkFfo", "title": "What to ask before you pray 🙏" },
+    { "day": 4, "videoId": "jiLEyJsZXgI", "title": "Why they don't care how much you KNOW" },
+    { "day": 5, "videoId": "dvbXeHbEBFg", "title": "A world without medical intervention 🌍" },
+    { "day": 6, "videoId": "EtbBbdi8M7U", "title": "Why God might \"unsend\" you 🤔" },
+    { "day": 7, "videoId": "ApH9DNRV-zE", "title": "Some People Don't Want To Be Healed — WHY?" },
+    { "day": 8, "videoId": "vIhBGh8IXW8", "title": "This One Choice Changes How People See You 💡" },
+    { "day": 9, "videoId": "WBavB-EUyTw", "title": "The One Word Hospitals Can't Explain 🏥" },
+    { "day": 10, "videoId": "PLfBvHrf6gk", "title": "Why People Care More About Your Love Than You 🤔" }
+  ],
+  "shortsPlaylist": null
+}
