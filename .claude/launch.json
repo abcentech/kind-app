@@ -7,6 +7,19 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "port": 5183
+    },
+    {
+      "name": "remotion-studio",
+      "cwd": "C:\\Users\\ADMIN\\Documents\\KIN\\Animation_MySpirit&Death\\video",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "node_modules/@remotion/cli/remotion-cli.js",
+        "studio",
+        "--port",
+        "3123",
+        "--no-open"
+      ],
+      "port": 3123
     }
   ]
 }

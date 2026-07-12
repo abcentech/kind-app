@@ -19,6 +19,14 @@ export function segmentsFor(day) {
       { id: 'hook', k: 'Hook', icon: '🪝', title: hookTitle(ep), body: ep.hook },
       { id: 'scripture', k: 'Scripture', icon: '📖', title: ep.scripture.ref, body: `"${ep.scripture.text}"`, scripture: true },
       { id: 'idea', k: 'Big Idea', icon: '💡', title: 'The one thing to remember', body: ep.bigIdea, idea: true },
+      {
+        id: 'deeper', k: 'Go Deeper', icon: '⛏️',
+        title: ep.teachingPoints.length ? `${ep.teachingPoints.length} truths to explore` : 'Why this matters',
+        body: [
+          ep.teachingPoints.map((t, i) => `${i + 1}. ${t}`).join('\n'),
+          ep.insight ? `🌳 Longevity insight: ${ep.insight}` : '',
+        ].filter(Boolean).join('\n\n'),
+      },
       { id: 'apply', k: 'Do This Today', icon: '👟', title: 'Put it into practice', body: ep.application.map((a) => '• ' + a).join('\n') },
       { id: 'prayer', k: 'Pray Together', icon: '🙏', title: 'Family prayer', body: ep.prayer, scripture: true },
       { id: 'talk', k: 'Talk About It · Family', icon: '💬', title: 'Tonight’s question', body: ep.talk || ep.reflection.join('\n'), talk: true },

@@ -1,6 +1,7 @@
 // Family progress persisted in localStorage.
 import { useEffect, useState } from 'react'
 import { calendar, dayInfo, segmentsFor } from './lib.js'
+import { reportCheckin } from './api.js'
 
 const KEY = 'kind-app-v1'
 
@@ -52,6 +53,7 @@ export function toggleSegment(day, segId) {
     }
   }
   commit({ ...state, completed, gems, streak, lastDoneDate })
+  if (justCompleted) reportCheckin({ day, streak, gems })
   return justCompleted
 }
 

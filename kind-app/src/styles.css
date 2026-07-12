@@ -215,3 +215,42 @@ a{color:var(--leaf-dark)}
 .badge .bic{width:52px;height:52px;margin:0 auto 5px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;
       background:radial-gradient(circle at 35% 30%,#fff,var(--gold-soft));box-shadow:0 4px 12px rgba(217,154,43,.35),inset 0 0 0 2px var(--gold);}
 .badge.locked .bic{background:#ecece2;box-shadow:inset 0 0 0 2px #d8d8cb;filter:grayscale(1);opacity:.55;}
+.fp.muted{color:var(--muted);font-size:13px;}
+.fp.err{color:#a8321e;font-weight:600;font-size:13px;}
+.linkbtn{background:none;border:0;color:var(--leaf-dark);font:700 12px system-ui;cursor:pointer;text-decoration:underline;padding:0;}
+
+/* ---------- goDs University (Family) ---------- */
+.gu{border-top:4px solid var(--gold);}
+.gu-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
+.child{border-top:1px solid var(--line);padding:12px 0 6px;margin-top:10px;}
+.child:first-of-type{border-top:0;margin-top:4px;}
+.child-head{display:flex;align-items:center;gap:12px;width:100%;background:none;border:0;font:inherit;text-align:left;cursor:pointer;padding:0;}
+.child-head .cmeta b{display:block;font-size:14.5px;}
+.child-head .cmeta small{color:var(--muted);font-size:11.5px;}
+.att-pill{margin-left:auto;font:800 13px system-ui;border-radius:99px;padding:5px 12px;background:#fdeae2;color:#a8321e;font-variant-numeric:tabular-nums;flex:none;}
+.att-pill[data-good="true"]{background:var(--leaf-soft);color:var(--leaf-dark);}
+.att-strip{display:flex;gap:4px;margin:10px 0 4px;}
+.att-strip .wk{flex:1;max-width:26px;height:8px;border-radius:99px;background:#e8e8dd;}
+.att-strip .wk.in{background:var(--leaf);}
+.child-body{padding:8px 0 6px;}
+.report{margin-top:10px;background:var(--gold-soft);border-radius:14px;padding:12px 14px;font-size:13.5px;}
+.report p{margin:6px 0;}
+
+/* ---------- KIN tab ---------- */
+.kinhead{position:relative;background:linear-gradient(165deg,var(--leaf-deep) 0%,var(--leaf-dark) 55%,#2c6e48 100%);color:#fff;padding:26px 20px 22px;border-radius:0 0 32px 32px;overflow:hidden;}
+.kinhead h1{font-family:Georgia,serif;font-weight:400;font-size:26px;margin:6px 0 4px;position:relative;}
+.kinhead .sub{font-size:13px;opacity:.85;position:relative;max-width:36ch;}
+.impact{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:16px;position:relative;}
+.impact div{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:10px 4px;text-align:center;}
+.impact b{display:block;font-size:19px;font-variant-numeric:tabular-nums;color:#f6c35c;}
+.impact span{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;opacity:.85;font-weight:700;}
+.kinhead + .fcard{margin-top:14px;}
+.linkrow,.vidrow{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--ink);}
+.linkrow:last-child,.vidrow:last-child{border-bottom:0;}
+.lic{width:40px;height:40px;border-radius:13px;background:var(--leaf-soft);display:flex;align-items:center;justify-content:center;font-size:19px;flex:none;}
+.lmeta b,.vmeta b{display:block;font-size:14px;line-height:1.3;}
+.lmeta small,.vmeta small{color:var(--muted);font-size:11.5px;}
+.chev{margin-left:auto;color:var(--muted);font-size:20px;}
+.vthumb{width:74px;aspect-ratio:16/9;border-radius:10px;background-size:cover;background-position:center;background-color:var(--night2);flex:none;}
+.vmeta{min-width:0;}
+.vmeta b{overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
