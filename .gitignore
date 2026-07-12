@@ -3,3 +3,5 @@ kind-app/dist/
 ~$*.docx
 *.log
 .DS_Store
+kin-site/
+kin-site.tgz
