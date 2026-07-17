@@ -1,6 +1,6 @@
 import { series, calendar, todayNumber, dayInfo, dayTitle, dayRef, dayEyebrow, dayHookline, segmentsFor, fmtDate, greeting, cap, episodes } from '../lib.js'
 import { useStore, doneSegs, perfectWeeks } from '../store.js'
-import { Stars, Countdown, Mountain } from './bits.jsx'
+import { Stars, Countdown, Mountain, CountUp } from './bits.jsx'
 
 export default function Today({ goDay }) {
   const s = useStore()
@@ -35,10 +35,17 @@ export default function Today({ goDay }) {
 
       <div className="float-up">
         <div className="statrow">
-          <div className="stat"><b><span className="flame">🔥</span> {s.streak}</b><span>family streak</span></div>
-          <div className="stat"><b>⭐ {perfectWeeks(s)}</b><span>perfect weeks</span></div>
-          <div className="stat"><b>💎 {s.gems}</b><span>family gems</span></div>
+          <div className="stat"><b><span className="flame" style={{ fontSize: Math.min(28, 17 + s.streak) }}>🔥</span> <CountUp value={s.streak} /></b><span>family streak</span></div>
+          <div className="stat"><b>⭐ <CountUp value={perfectWeeks(s)} /></b><span>perfect weeks</span></div>
+          <div className="stat"><b>💎 <CountUp value={s.gems + s.kids.reduce((t, k) => t + (k.gems || 0), 0)} /></b><span>family gems</span></div>
         </div>
+        {s.kids.length > 0 && (
+          <div className="kidbar">
+            {s.kids.map((k, i) => (
+              <span key={i} className="kidgem">{k.emoji} {k.name} <b><CountUp value={k.gems || 0} />💎</b></span>
+            ))}
+          </div>
+        )}
 
         <div className="daycard">
           <div className={'daycover cover-' + d.type + (d.week != null ? ' w' + d.week : '')}>

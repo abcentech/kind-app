@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Splash from './screens/Splash.jsx'
 import Today from './screens/Today.jsx'
 import Journey from './screens/Journey.jsx'
 import DayView from './screens/DayView.jsx'
@@ -6,6 +7,7 @@ import Shorts from './screens/Shorts.jsx'
 import Family from './screens/Family.jsx'
 import Kin from './screens/Kin.jsx'
 import { todayNumber } from './lib.js'
+import { useStore } from './store.js'
 
 const TABS = [
   { id: 'today', label: 'Today', icon: <path d="M3 11.5 12 4l9 7.5M5.5 10v9h13v-9" /> },
@@ -18,6 +20,10 @@ const TABS = [
 export default function App() {
   const [tab, setTab] = useState('today')
   const [openDay, setOpenDay] = useState(null)
+  const s = useStore()
+  const [splash, setSplash] = useState(true)
+
+  if (splash) return <div className="app"><Splash onboarded={s.onboarded} done={() => setSplash(false)} /></div>
 
   const goDay = (n) => { setOpenDay(n); setTab('day') }
   const go = (t) => { setOpenDay(null); setTab(t) }

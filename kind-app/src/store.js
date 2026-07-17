@@ -5,7 +5,12 @@ import { reportCheckin } from './api.js'
 
 const KEY = 'kind-app-v1'
 
-const empty = { completed: {}, gems: 0, streak: 0, lastDoneDate: null, familyName: '' }
+const empty = {
+  completed: {}, gems: 0, streak: 0, lastDoneDate: null, familyName: '',
+  kids: [],            // [{name, emoji, gems}]
+  kidDone: {},         // {dayNumber: [kidIndex, ...]}
+  onboarded: false,
+}
 
 function load() {
   try {
@@ -85,4 +90,21 @@ export function perfectWeeks(s) {
 
 export function setFamilyName(name) {
   commit({ ...state, familyName: name })
+}
+
+export function completeOnboarding(familyName, kids) {
+  commit({ ...state, familyName, kids: kids.map((k) => ({ ...k, gems: 0 })), onboarded: true })
+}
+
+export function toggleKidDone(day, kidIndex) {
+  const cur = new Set(state.kidDone[day] || [])
+  const kids = state.kids.map((k) => ({ ...k }))
+  if (cur.has(kidIndex)) {
+    cur.delete(kidIndex)
+    if (kids[kidIndex]) kids[kidIndex].gems = Math.max(0, (kids[kidIndex].gems || 0) - 3)
+  } else {
+    cur.add(kidIndex)
+    if (kids[kidIndex]) kids[kidIndex].gems = (kids[kidIndex].gems || 0) + 3
+  }
+  commit({ ...state, kids, kidDone: { ...state.kidDone, [day]: [...cur] } })
 }

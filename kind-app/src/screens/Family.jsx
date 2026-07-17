@@ -38,7 +38,7 @@ export default function Family({ goJourney }) {
         <div className="sub">Raising goDs, building nations — one declaration at a time.</div>
       </div>
 
-      <div className="fcard">
+      <div className="fcard pull">
         <span className="eyebrow">This month together</span>
         <div className="bigstats">
           <div><b>🔥 {s.streak}</b><span>day streak</span></div>

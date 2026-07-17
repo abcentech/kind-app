@@ -1,22 +1,25 @@
 import { useState } from 'react'
 import { series, dayInfo, dayTitle, dayRef, dayEyebrow, segmentsFor } from '../lib.js'
-import { useStore, doneSegs, toggleSegment, isDayDone } from '../store.js'
-import { Stars, Confetti } from './bits.jsx'
+import { useStore, doneSegs, toggleSegment, isDayDone, toggleKidDone } from '../store.js'
+import { Stars, buzz } from './bits.jsx'
+import Celebrate from './Celebrate.jsx'
+import MemoryGame from './MemoryGame.jsx'
 
 export default function DayView({ day, back, goJourney }) {
   const s = useStore()
   const segs = segmentsFor(day)
   const done = new Set(doneSegs(s, day))
-  const [burst, setBurst] = useState(0)
+  const [celebrating, setCelebrating] = useState(false)
   const [open, setOpen] = useState(() => segs.find((x) => !done.has(x.id))?.id ?? segs[0].id)
+  const d = dayInfo(day)
   const complete = isDayDone(s, day)
 
   const onToggle = (id) => {
     const wasDone = done.has(id)
     const justCompleted = toggleSegment(day, id)
-    if (justCompleted) setBurst((b) => b + 1)
+    if (justCompleted) setCelebrating(true)
     else if (!wasDone) {
-      // marking done: open the next unfinished segment
+      buzz(14)
       const idx = segs.findIndex((x) => x.id === id)
       const next = segs.slice(idx + 1).find((x) => !done.has(x.id)) || segs.find((x) => x.id !== id && !done.has(x.id))
       if (next) setOpen(next.id)
@@ -24,20 +27,31 @@ export default function DayView({ day, back, goJourney }) {
   }
 
   return (
-    <section className="screen dayview">
-      <Confetti fire={burst} key={burst} />
+    <section className={'screen dayview theme-' + (d.week ?? 'x') + ' type-' + d.type}>
+      {celebrating && (
+        <Celebrate day={day} streak={s.streak} kids={s.kids} kidDone={s.kidDone[day]} onClose={() => setCelebrating(false)} />
+      )}
       <div className="dayhead">
         <Stars n={16} />
         <button className="back" onClick={back}>‹ Back</button>
         <span className="eyebrow gold-ey">{dayEyebrow(day)}</span>
         <h1>{dayTitle(day)}</h1>
         <div className="ref">{dayRef(day)} · {series.title}</div>
+        <div className="seg-dots" aria-hidden="true">
+          {segs.map((x) => <i key={x.id} className={done.has(x.id) ? 'on' : ''} />)}
+        </div>
       </div>
 
-      {dayInfo(day).type !== 'selah' && <Video day={day} />}
+      {d.type !== 'selah' && <Video day={day} />}
+      {(d.type === 'selah' || d.type === 'review') && (
+        <div className="fcard memcard">
+          <span className="eyebrow">🧠 Memory verse game</span>
+          <MemoryGame text={series.themeScripture.text} refr={series.themeScripture.ref} />
+        </div>
+      )}
 
-      {complete && (
-        <div className="complete-banner show">🎉 Day {day} complete! Streak → 🔥 {s.streak} · +6 gems for the family</div>
+      {complete && !celebrating && (
+        <div className="complete-banner show">🎉 Day {day} complete · 🔥 {s.streak} · tap any segment to revisit</div>
       )}
 
       {segs.map((seg) => (
@@ -52,6 +66,7 @@ export default function DayView({ day, back, goJourney }) {
           {open === seg.id && (
             <div className="body">
               <Body seg={seg} />
+              {seg.talk && s.kids.length > 0 && <KidRow day={day} s={s} />}
               {!done.has(seg.id) && (
                 <button className="mark" onClick={() => onToggle(seg.id)}>Mark done ✓</button>
               )}
@@ -64,6 +79,23 @@ export default function DayView({ day, back, goJourney }) {
         <button className="btn ghost" onClick={goJourney}>View the full climb →</button>
       </div>
     </section>
+  )
+}
+
+/** Each child taps their own “I did it!” — their gems, their moment. */
+function KidRow({ day, s }) {
+  const marked = new Set(s.kidDone[day] || [])
+  return (
+    <div className="kidrow">
+      <span className="kidrow-l">Who did it?</span>
+      {s.kids.map((k, i) => (
+        <button key={i} className={'kidchip' + (marked.has(i) ? ' on' : '')}
+          onClick={() => { toggleKidDone(day, i); buzz(12) }}>
+          <span className="ke">{k.emoji}</span>{k.name}
+          {marked.has(i) && <span className="kplus">+3💎</span>}
+        </button>
+      ))}
+    </div>
   )
 }
 
