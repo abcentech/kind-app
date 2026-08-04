@@ -1,29 +1,44 @@
-// Family progress persisted in localStorage.
+// Progress persisted in localStorage, namespaced per series.
+// One rule drives everything: you finish a day by swiping its deck to the end.
+// That awards the day's Code Card, moves the streak, and keeps your written answer.
 import { useEffect, useState } from 'react'
-import { calendar, dayInfo, segmentsFor } from './lib.js'
+import { dayInfo, getSeries, codeFor } from './lib.js'
 import { reportCheckin } from './api.js'
 
-const KEY = 'kind-app-v1'
+const KEY = 'kind-app-v4'
 
+const emptySeries = () => ({
+  done: {},     // { day: 'YYYY-MM-DD' }  — the date you finished it
+  pos: {},      // { day: cardIndex }     — resume where you stopped
+  notes: {},    // { day: 'your answer' }
+  cards: [],    // unlocked code-card numbers
+})
 const empty = {
-  completed: {}, gems: 0, streak: 0, lastDoneDate: null, familyName: '',
-  kids: [],            // [{name, emoji, gems}]
-  kidDone: {},         // {dayNumber: [kidIndex, ...]}
+  v: 4,
+  name: '', role: 'family', emoji: '🌟', familyName: '',
+  kids: [],            // [{ name, emoji }]
   onboarded: false,
+  reminderHour: 20,
+  streak: 0, best: 0, lastDone: null, gems: 0,
+  series: {},
 }
+
+const iso = (d = new Date()) => new Date(d.getTime() - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10)
+const dayDiff = (a, b) => Math.round((new Date(b) - new Date(a)) / 864e5)
 
 function load() {
   try {
-    return { ...empty, ...JSON.parse(localStorage.getItem(KEY) || '{}') }
+    const raw = JSON.parse(localStorage.getItem(KEY) || '{}')
+    return { ...empty, ...raw, series: raw.series || {} }
   } catch {
-    return { ...empty }
+    return { ...empty, series: {} }
   }
 }
 let state = load()
 const listeners = new Set()
 function commit(next) {
   state = next
-  localStorage.setItem(KEY, JSON.stringify(state))
+  try { localStorage.setItem(KEY, JSON.stringify(state)) } catch {}
   listeners.forEach((fn) => fn(state))
 }
 
@@ -35,76 +50,98 @@ export function useStore() {
   }, [])
   return s
 }
+export const snapshot = () => state
 
-export const doneSegs = (s, day) => s.completed[day] || []
-export const isDayDone = (s, day) => doneSegs(s, day).length >= segmentsFor(day).length
+/* ---- reads -------------------------------------------------------------- */
+export const sub = (s, id) => s.series[id] || emptySeries()
+export const isDayDone = (s, id, day) => Boolean(sub(s, id).done[day])
+export const noteFor = (s, id, day) => sub(s, id).notes[day] || ''
+export const posFor = (s, id, day) => sub(s, id).pos[day] || 0
+export const unlockedCards = (s, id) => sub(s, id).cards
+export const doneDays = (s, id) => Object.keys(sub(s, id).done).map(Number).sort((a, b) => a - b)
 
-export function toggleSegment(day, segId) {
-  const cur = new Set(doneSegs(state, day))
-  const wasDone = isDayDone(state, day)
-  cur.has(segId) ? cur.delete(segId) : cur.add(segId)
-  const completed = { ...state.completed, [day]: [...cur] }
-  let { gems, streak, lastDoneDate } = state
-  const nowDone = cur.size >= segmentsFor(day).length
-  let justCompleted = false
-  if (nowDone && !wasDone) {
-    justCompleted = true
-    gems += 6
-    const today = new Date().toDateString()
-    if (lastDoneDate !== today) {
-      const yesterday = new Date(Date.now() - 864e5).toDateString()
-      streak = lastDoneDate === yesterday || streakCovered(lastDoneDate) ? streak + 1 : 1
-      lastDoneDate = today
-    }
-  }
-  commit({ ...state, completed, gems, streak, lastDoneDate })
-  if (justCompleted) reportCheckin({ day, streak, gems })
-  return justCompleted
-}
-
-// Selah grace: a single missed day that was a Selah/review day doesn't break the streak.
-function streakCovered(lastDoneDate) {
-  if (!lastDoneDate) return false
-  const gap = Math.round((Date.now() - new Date(lastDoneDate)) / 864e5)
-  if (gap !== 2) return false
-  const missed = dayInfo(Math.max(1, Math.min(calendar.length, new Date(Date.now() - 864e5).getDate())))
-  return missed && (missed.type === 'selah' || missed.type === 'review')
-}
-
-export const daysCompleted = (s) =>
-  calendar.filter((d) => (s.completed[d.day] || []).length >= segmentsFor(d.day).length).map((d) => d.day)
-
-export function weekProgress(s) {
-  // fraction complete per series week (teaching + selah days)
-  const byWeek = [[], [], [], [], []]
-  calendar.forEach((d) => {
-    if (d.week != null) byWeek[d.week].push(d.day)
+export function weekProgress(s, id) {
+  const series = getSeries(id)
+  const done = new Set(doneDays(s, id))
+  return series.weeks.map((_, wi) => {
+    const days = series.calendar.filter((d) => d.week === wi)
+    return days.length ? days.filter((d) => done.has(d.day)).length / days.length : 0
   })
-  const done = new Set(daysCompleted(s))
-  return byWeek.map((days) => (days.length ? days.filter((x) => done.has(x)).length / days.length : 0))
+}
+export const perfectWeeks = (s, id) => weekProgress(s, id).filter((p) => p >= 1).length
+
+/** Days you were meant to do but haven't — the honest "catch up" list. */
+export function missedDays(s, id, today) {
+  const series = getSeries(id)
+  return series.calendar
+    .filter((d) => d.day < today && d.type !== 'rest' && !isDayDone(s, id, d.day))
+    .map((d) => d.day)
 }
 
-export function perfectWeeks(s) {
-  return weekProgress(s).filter((p) => p === 1).length
+/* ---- writes ------------------------------------------------------------- */
+export function setPos(id, day, pos) {
+  const cur = sub(state, id)
+  if ((cur.pos[day] || 0) >= pos) return
+  commit({ ...state, series: { ...state.series, [id]: { ...cur, pos: { ...cur.pos, [day]: pos } } } })
 }
 
-export function setFamilyName(name) {
-  commit({ ...state, familyName: name })
+export function saveNote(id, day, text) {
+  const cur = sub(state, id)
+  commit({ ...state, series: { ...state.series, [id]: { ...cur, notes: { ...cur.notes, [day]: text } } } })
 }
 
-export function completeOnboarding(familyName, kids) {
-  commit({ ...state, familyName, kids: kids.map((k) => ({ ...k, gems: 0 })), onboarded: true })
-}
+/**
+ * Finish a day. Returns { code, streak, first } for the celebration screen,
+ * or null if it was already done.
+ */
+export function finishDay(id, day) {
+  const cur = sub(state, id)
+  if (cur.done[day]) return null
+  const series = getSeries(id)
+  const code = codeFor(series, day)
+  const today = iso()
 
-export function toggleKidDone(day, kidIndex) {
-  const cur = new Set(state.kidDone[day] || [])
-  const kids = state.kids.map((k) => ({ ...k }))
-  if (cur.has(kidIndex)) {
-    cur.delete(kidIndex)
-    if (kids[kidIndex]) kids[kidIndex].gems = Math.max(0, (kids[kidIndex].gems || 0) - 3)
-  } else {
-    cur.add(kidIndex)
-    if (kids[kidIndex]) kids[kidIndex].gems = (kids[kidIndex].gems || 0) + 3
+  let { streak, best, lastDone, gems } = state
+  if (lastDone !== today) {
+    const gap = lastDone ? dayDiff(lastDone, today) : null
+    streak = gap === 1 || graceGap(series, lastDone, gap) ? streak + 1 : 1
+    lastDone = today
+    best = Math.max(best, streak)
   }
-  commit({ ...state, kids, kidDone: { ...state.kidDone, [day]: [...cur] } })
+  gems += 10 + (code?.rare ? 15 : 0)
+
+  const next = {
+    ...cur,
+    done: { ...cur.done, [day]: today },
+    cards: code && !cur.cards.includes(code.no) ? [...cur.cards, code.no] : cur.cards,
+  }
+  commit({ ...state, streak, best, lastDone, gems, series: { ...state.series, [id]: next } })
+  reportCheckin({ series: id, day, streak, gems })
+  return { code, streak, first: Object.keys(cur.done).length === 0 }
+}
+
+/** Selah grace: skipping a single Selah day does not break the streak. */
+function graceGap(series, lastDone, gap) {
+  if (gap !== 2 || !lastDone) return false
+  const missed = new Date(lastDone)
+  missed.setDate(missed.getDate() + 1)
+  if (missed.getMonth() + 1 !== series.monthNum) return false
+  const d = dayInfo(series, missed.getDate())
+  return d.type === 'selah' || d.type === 'rest'
+}
+
+export function completeOnboarding({ name, role, emoji, familyName, kids }) {
+  commit({ ...state, name, role, emoji, familyName, kids, onboarded: true })
+}
+export function updateProfile(fields) {
+  commit({ ...state, ...fields })
+}
+export function addKid(kid) {
+  commit({ ...state, kids: [...state.kids, kid] })
+}
+export function removeKid(i) {
+  commit({ ...state, kids: state.kids.filter((_, x) => x !== i) })
+}
+export function resetAll() {
+  commit({ ...empty, series: {} })
 }

@@ -1,0 +1,22 @@
+{
+  "name": "stewardship-code-trailer",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "studio": "remotion studio",
+    "render:16x9": "remotion render Trailer16x9 out/stewardship-trailer-16x9.mp4 --gl=angle --codec h264 --log=error",
+    "render:9x16": "remotion render Trailer9x16 out/stewardship-trailer-9x16.mp4 --gl=angle --codec h264 --log=error",
+    "render:1x1": "remotion render Trailer1x1 out/stewardship-trailer-1x1.mp4 --gl=angle --codec h264 --log=error"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.246",
+    "@remotion/media-utils": "4.0.246",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "remotion": "4.0.246"
+  },
+  "devDependencies": {
+    "@types/react": "18.3.12",
+    "typescript": "5.6.3"
+  }
+}

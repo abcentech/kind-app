@@ -1,0 +1,39 @@
+{
+  "episode": 1,
+  "title": "THE OWNERSHIP CODE",
+  "note": "Line ids are beat-role-index so a stem's place in the cut is readable from its filename. Order here is script order.",
+  "lines": [
+    {"id": "b1-mic-1", "who": "MICAH",  "text": "Three months. Three months of washing cars for this."},
+    {"id": "b1-ada-1", "who": "ADA",    "text": "Ouch. Is it dead?"},
+    {"id": "b1-mic-2", "who": "MICAH",  "text": "It still works. That's not the point."},
+    {"id": "b1-ada-2", "who": "ADA",    "text": "So what is the point?"},
+    {"id": "b1-mic-3", "who": "MICAH",  "text": "It was mine, Ada. I earned it. And now it's ruined."},
+
+    {"id": "b3-oka-1", "who": "OKAFOR", "text": "Screen replacement. Twelve thousand."},
+    {"id": "b3-mic-1", "who": "MICAH",  "text": "I don't have twelve thousand. I had twelve thousand. It's in this phone."},
+    {"id": "b3-oka-2", "who": "OKAFOR", "text": "Mm. Tell me how you bought it."},
+    {"id": "b3-mic-2", "who": "MICAH",  "text": "I washed cars. Every Saturday, all through the holiday. Forty-one cars."},
+    {"id": "b3-oka-3", "who": "OKAFOR", "text": "Good. And the water?"},
+    {"id": "b3-mic-3", "who": "MICAH",  "text": "The water?"},
+    {"id": "b3-oka-4", "who": "OKAFOR", "text": "The water you washed them with. Did you make it?"},
+    {"id": "b3-mic-4", "who": "MICAH",  "text": "It's from the tap."},
+    {"id": "b3-oka-5", "who": "OKAFOR", "text": "And the arms."},
+    {"id": "b3-oka-6", "who": "OKAFOR", "text": "Forty-one cars is real work. I am not taking it from you. I am asking who gave you the strength for the forty-first one."},
+
+    {"id": "b4-oka-1", "who": "OKAFOR", "text": "Every owner can show a receipt. Where is yours?"},
+    {"id": "b4-nar-1", "who": "NARRATOR", "text": "The earth is the Lord's, and the fulness thereof."},
+    {"id": "b4-nar-2", "who": "NARRATOR", "text": "He is not a partner in the economy. He is the Owner. And there has never been a second name on the deed."},
+
+    {"id": "b5-nar-1", "who": "NARRATOR", "text": "Stewardship begins the moment you stop behaving like an absolute owner."},
+    {"id": "b5-ada-1", "who": "ADA",    "text": "When I lent you my brother's laptop, you carried it in two hands. You put it down slowly. You didn't eat near it."},
+    {"id": "b5-mic-1", "who": "MICAH",  "text": "Because it wasn't mine."},
+    {"id": "b5-ada-2", "who": "ADA",    "text": "Right. So why do you handle your own life more carelessly than a laptop you borrowed for a week?"},
+    {"id": "b5-nar-2", "who": "NARRATOR", "text": "There are only two positions available to you. Owner, or manager. One of them is already taken."},
+
+    {"id": "b6-mic-1", "who": "MICAH",  "text": "What God owns, but has placed in my hands."},
+    {"id": "b6-mic-2", "who": "MICAH",  "text": "Number one. This phone. Cracked. Still working. Still not mine."},
+
+    {"id": "b7-nar-1", "who": "NARRATOR", "text": "This week, make that list. Seven things, minimum. Time, money, devices, skills, opportunities. Then handle one of them the way you'd handle something borrowed."},
+    {"id": "b7-mic-1", "who": "MICAH",  "text": "Christ my Master. Money my servant."}
+  ]
+}

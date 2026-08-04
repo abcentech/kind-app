@@ -1,53 +1,59 @@
-import { useState } from 'react'
-import Splash from './screens/Splash.jsx'
-import Today from './screens/Today.jsx'
-import Journey from './screens/Journey.jsx'
-import DayView from './screens/DayView.jsx'
+import { useEffect, useState } from 'react'
+import Onboard from './screens/Onboard.jsx'
+import Home from './screens/Home.jsx'
+import Path from './screens/Path.jsx'
+import Vault from './screens/Vault.jsx'
 import Shorts from './screens/Shorts.jsx'
-import Family from './screens/Family.jsx'
-import Kin from './screens/Kin.jsx'
-import { todayNumber } from './lib.js'
+import Me from './screens/Me.jsx'
+import Drop from './screens/Drop.jsx'
+import { activeSeriesId, getSeries, todayNumber } from './lib.js'
 import { useStore } from './store.js'
 
 const TABS = [
-  { id: 'today', label: 'Today', icon: <path d="M3 11.5 12 4l9 7.5M5.5 10v9h13v-9" /> },
-  { id: 'journey', label: 'Journey', icon: <><path d="m3 20 6-11 4 6 3-4 5 9z" /><circle cx="17" cy="5" r="2" /></> },
+  { id: 'home', label: 'Today', icon: <path d="M3 11.5 12 4l9 7.5M5.5 10v9h13v-9" /> },
+  { id: 'path', label: 'Journey', icon: <><path d="m3 20 6-11 4 6 3-4 5 9z" /><circle cx="17" cy="5" r="2" /></> },
+  { id: 'vault', label: 'Vault', icon: <><rect x="3" y="5" width="18" height="15" rx="3" /><circle cx="12" cy="12.5" r="3" /><path d="M12 3v2" /></> },
   { id: 'shorts', label: 'Shorts', icon: <><rect x="7" y="3" width="10" height="18" rx="3" /><path d="m11 9 4 3-4 3z" /></> },
-  { id: 'family', label: 'Family', icon: <><circle cx="8.5" cy="8" r="3" /><circle cx="16.5" cy="9.5" r="2.3" /><path d="M3.5 19c0-3 2.2-5 5-5s5 2 5 5M14.5 19c.2-2.4 1.6-4 3.8-4 1.4 0 2.6.7 3.2 2" /></> },
-  { id: 'kin', label: 'KIN', icon: <><circle cx="12" cy="12" r="9" /><path d="M3.6 9h16.8M3.6 15h16.8M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18" /></> },
+  { id: 'me', label: 'Me', icon: <><circle cx="12" cy="8.5" r="3.4" /><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6" /></> },
 ]
 
 export default function App() {
-  const [tab, setTab] = useState('today')
-  const [openDay, setOpenDay] = useState(null)
-  const s = useStore()
+  const st = useStore()
+  const [seriesId, setSeriesId] = useState(activeSeriesId)
+  const [tab, setTab] = useState('home')
+  const [drop, setDrop] = useState(null)
   const [splash, setSplash] = useState(true)
+  const s = getSeries(seriesId)
 
-  if (splash) return <div className="app"><Splash onboarded={s.onboarded} done={() => setSplash(false)} /></div>
+  useEffect(() => {
+    document.documentElement.style.setProperty('--series', s.accent)
+  }, [s.accent])
 
-  const goDay = (n) => { setOpenDay(n); setTab('day') }
-  const go = (t) => { setOpenDay(null); setTab(t) }
+  if (splash)
+    return <div className="app"><Onboard s={s} onboarded={st.onboarded} done={() => setSplash(false)} /></div>
+
+  const openDay = (n) => setDrop(Math.max(1, Math.min(s.calendar.length, n)))
 
   return (
     <div className="app">
       <div className="screens">
-        {tab === 'today' && <Today goDay={goDay} />}
-        {tab === 'journey' && <Journey goDay={goDay} />}
-        {tab === 'day' && <DayView day={openDay ?? todayNumber()} back={() => go('today')} goJourney={() => go('journey')} />}
-        {tab === 'shorts' && <Shorts />}
-        {tab === 'family' && <Family goJourney={() => go('journey')} />}
-        {tab === 'kin' && <Kin />}
+        {tab === 'home' && <Home s={s} openDay={openDay} goVault={() => setTab('vault')} goPath={() => setTab('path')} />}
+        {tab === 'path' && <Path s={s} openDay={openDay} />}
+        {tab === 'vault' && <Vault s={s} openDay={openDay} />}
+        {tab === 'shorts' && <Shorts s={s} />}
+        {tab === 'me' && <Me s={s} seriesId={seriesId} setSeriesId={(id) => { setSeriesId(id); setTab('home') }} />}
       </div>
+
       <nav className="tabbar" aria-label="Main navigation">
         {TABS.map((t) => (
-          <button key={t.id}
-            className={'tab' + (tab === t.id || (tab === 'day' && t.id === 'today') ? ' on' : '')}
-            onClick={() => go(t.id)}>
+          <button key={t.id} className={'tab' + (tab === t.id ? ' on' : '')} onClick={() => setTab(t.id)}>
             <svg viewBox="0 0 24 24" aria-hidden="true">{t.icon}</svg>
             {t.label}
           </button>
         ))}
       </nav>
+
+      {drop && <Drop s={s} day={drop} close={() => setDrop(null)} />}
     </div>
   )
 }

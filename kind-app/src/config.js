@@ -1,4 +1,14 @@
 // Deployment configuration.
+// ---- Neon (database + auth) ----
+// From console.neon.tech after enabling Neon Auth + Data API on the project:
+//   NEON_DATA_API : the Data API (PostgREST) endpoint URL
+//   STACK_PROJECT_ID / STACK_PUBLISHABLE_KEY : Neon Auth client credentials
+// Leave empty for local-only mode — the app works fully on this device;
+// accounts/family sync simply stay hidden.
+export const NEON_DATA_API = ''
+export const STACK_PROJECT_ID = ''
+export const STACK_PUBLISHABLE_KEY = ''
+
 // KIND_API: the Apps Script web app /exec URL (see apps-script/SETUP.md).
 // Leave empty for demo mode — the app works fully, parent login shows a
 // "coming soon" state instead of calling a backend.
