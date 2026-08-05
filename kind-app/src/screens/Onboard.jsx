@@ -1,28 +1,22 @@
 import { useEffect, useState } from 'react'
 import { completeOnboarding } from '../store.js'
-import { buzz, reducedMotion, Stars } from './bits.jsx'
+import { Icon } from '../icons.jsx'
+import { buzz, reducedMotion } from './bits.jsx'
 
-const EMOJIS = ['🌟', '🦁', '🦋', '🦅', '🌺', '🚀', '🐘', '🎈', '🔑', '👑']
-
-/** Splash, then three questions. Nothing optional is asked twice. */
+/** The mark, then three questions. Nothing decorative, nothing asked twice. */
 export default function Onboard({ s, onboarded, done }) {
-  const [phase, setPhase] = useState('splash')
+  const [phase, setPhase] = useState('mark')
   useEffect(() => {
-    const wait = reducedMotion() ? 400 : 2100
-    const id = setTimeout(() => setPhase(onboarded ? 'done' : 'ask'), wait)
+    const id = setTimeout(() => setPhase(onboarded ? 'done' : 'ask'), reducedMotion() ? 300 : 1700)
     return () => clearTimeout(id)
   }, [onboarded])
   useEffect(() => { if (phase === 'done') done() }, [phase])
 
   if (phase !== 'ask')
     return (
-      <div className="splash">
-        <Stars n={26} />
-        <div className="sun" />
-        <div className="wordmark">
-          <span>K</span><span>I</span><span>N</span><span>D</span>
-        </div>
-        <p className="tag">Raising goDs, Building Nations</p>
+      <div className="open-screen">
+        <div className="mark"><span>K</span><span>I</span><span>N</span><span>D</span></div>
+        <p className="mark-sub">Raising goDs, Building Nations</p>
       </div>
     )
 
@@ -33,86 +27,91 @@ function Ask({ s, finish }) {
   const [step, setStep] = useState(0)
   const [role, setRole] = useState('')
   const [name, setName] = useState('')
-  const [emoji, setEmoji] = useState('🌟')
   const [familyName, setFamilyName] = useState('')
   const [kids, setKids] = useState([])
   const [kid, setKid] = useState('')
 
-  const next = () => { buzz(10); setStep(step + 1) }
+  const next = () => { buzz(6); setStep(step + 1) }
   const go = () => {
-    completeOnboarding({ name: name.trim(), role: role || 'family', emoji, familyName: familyName.trim(), kids })
-    buzz([12, 40, 18])
+    completeOnboarding({ name: name.trim(), role: role || 'family', emoji: '', familyName: familyName.trim(), kids })
+    buzz([8, 26, 10])
     finish()
   }
 
   return (
     <div className="onb">
-      <div className="onb-pips">{[0, 1, 2].map((i) => <i key={i} className={i <= step ? 'on' : ''} />)}</div>
+      <div className="onb-rail">{[0, 1, 2].map((i) => <i key={i} className={i <= step ? 'on' : ''} />)}</div>
 
       {step === 0 && (
         <div className="onb-step">
-          <span className="eyebrow">Welcome to the KIND App</span>
-          <h1>{s.title}</h1>
-          <p className="lede">{s.month} {s.year} — {s.subtitle}. A two-minute daily deck, a code card for every day you show up.</p>
-          <p className="q">Who’s holding the phone?</p>
-          <div className="pickrow">
-            <button className={'pick' + (role === 'teen' ? ' on' : '')} onClick={() => { setRole('teen'); next() }}>
-              <b>🎧</b>I’m a teen<small>This month is written for you</small>
-            </button>
-            <button className={'pick' + (role === 'parent' ? ' on' : '')} onClick={() => { setRole('parent'); next() }}>
-              <b>🏠</b>I’m a parent<small>Lead it with your children</small>
-            </button>
-          </div>
+          <span className="kicker">{s.month} {s.year}</span>
+          <h1 className="title">{s.title}</h1>
+          <p className="dek">{s.subtitle}. A two-minute deck each day, and a pass to keep for every day you show up.</p>
+          <p className="onb-q">Who’s holding the phone?</p>
+          <button className="choice" onClick={() => { setRole('teen'); next() }}>
+            <span className="choice-n">01</span>
+            <span className="choice-m"><b>I’m a teen</b><small>This month was written for you</small></span>
+            <span className="row-a"><Icon.chevron /></span>
+          </button>
+          <button className="choice" onClick={() => { setRole('parent'); next() }}>
+            <span className="choice-n">02</span>
+            <span className="choice-m"><b>I’m a parent</b><small>Lead it with your children</small></span>
+            <span className="row-a"><Icon.chevron /></span>
+          </button>
         </div>
       )}
 
       {step === 1 && (
         <div className="onb-step">
-          <span className="eyebrow">Step 2 of 3</span>
-          <h1>What should we call you?</h1>
-          <input className="bigin" value={name} onChange={(e) => setName(e.target.value)}
-            placeholder="Your first name" maxLength={20} autoFocus />
-          <p className="q">Pick your mark</p>
-          <div className="emojirow">
-            {EMOJIS.map((e) => (
-              <button key={e} className={'em' + (emoji === e ? ' on' : '')} onClick={() => { setEmoji(e); buzz(6) }}>{e}</button>
-            ))}
+          <span className="kicker">Two of three</span>
+          <h1 className="title">What should we call you?</h1>
+          <div style={{ marginTop: 26 }}>
+            <input className="field" value={name} onChange={(e) => setName(e.target.value)}
+              placeholder="First name" maxLength={20} autoFocus />
           </div>
-          <button className="btn big" disabled={!name.trim()} onClick={next}>Continue</button>
+          <div className="onb-foot">
+            <button className="btn wide" disabled={!name.trim()} onClick={next}>Continue</button>
+          </div>
         </div>
       )}
 
       {step === 2 && (
         <div className="onb-step">
-          <span className="eyebrow">Step 3 of 3</span>
-          <h1>{role === 'parent' ? 'Who’s doing it with you?' : 'Almost in'}</h1>
+          <span className="kicker">Three of three</span>
+          <h1 className="title">{role === 'parent' ? 'Who’s doing it with you?' : 'That’s everything'}</h1>
           {role === 'parent' ? (
             <>
-              <input className="bigin" value={familyName} onChange={(e) => setFamilyName(e.target.value)}
-                placeholder="Family name (e.g. Adeyemi)" maxLength={24} />
-              <form className="addrow" onSubmit={(e) => {
-                e.preventDefault()
-                if (!kid.trim()) return
-                setKids([...kids, { name: kid.trim(), emoji: EMOJIS[(kids.length + 1) % EMOJIS.length] }])
-                setKid(''); buzz(8)
-              }}>
-                <input value={kid} onChange={(e) => setKid(e.target.value)} placeholder="Add a child’s name" maxLength={20} />
-                <button type="submit">Add</button>
-              </form>
-              <div className="kidchips">
-                {kids.map((k, i) => (
-                  <button key={i} className="kchip" onClick={() => setKids(kids.filter((_, x) => x !== i))}>
-                    {k.emoji} {k.name} <i>✕</i>
-                  </button>
-                ))}
+              <div style={{ marginTop: 24, display: 'grid', gap: 10 }}>
+                <input className="field" value={familyName} onChange={(e) => setFamilyName(e.target.value)}
+                  placeholder="Family name" maxLength={24} />
+                <form className="inline-form" onSubmit={(e) => {
+                  e.preventDefault()
+                  if (!kid.trim()) return
+                  setKids([...kids, { name: kid.trim() }]); setKid(''); buzz(6)
+                }}>
+                  <input className="field" value={kid} onChange={(e) => setKid(e.target.value)}
+                    placeholder="Add a child’s name" maxLength={20} />
+                  <button className="link" type="submit">Add</button>
+                </form>
               </div>
-              <p className="fine">You can change all of this later. Nothing leaves this device unless you sign in.</p>
+              {kids.length > 0 && (
+                <div className="chips" style={{ padding: '14px 0 0' }}>
+                  {kids.map((k, i) => (
+                    <button key={i} className="chip" onClick={() => setKids(kids.filter((_, x) => x !== i))}>
+                      {k.name}<Icon.close />
+                    </button>
+                  ))}
+                </div>
+              )}
+              <p className="dek" style={{ marginTop: 18 }}>All of this can change later. Nothing leaves this device.</p>
             </>
           ) : (
-            <p className="lede">Your answers and code cards stay on this device. Finish a day, unlock a code —
-              {' '}{s.codes.length} of them this month.</p>
+            <p className="dek">Your answers and your passes stay on this device — {s.codes.length} passes to
+              collect this month.</p>
           )}
-          <button className="btn big" onClick={go}>Start day one</button>
+          <div className="onb-foot">
+            <button className="btn wide" onClick={go}>Open day one</button>
+          </div>
         </div>
       )}
     </div>

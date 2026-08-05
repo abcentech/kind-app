@@ -1,73 +1,66 @@
-import { cap, dayEyebrow, dayLabel, dayInfo, todayNumber } from '../lib.js'
+import { dayEyebrow, dayLabel, fmtDay, title as sentence, todayNumber } from '../lib.js'
 import { isDayDone, useStore, weekProgress } from '../store.js'
+import { Icon } from '../icons.jsx'
 
-/** The whole month at a glance — four codes, 31 days, honest state on each. */
+/** The month as chapters and hairline rows — a table of contents, not a map. */
 export default function Path({ s, openDay }) {
   const st = useStore()
   const today = todayNumber(s)
   const prog = weekProgress(st, s.id)
-
-  const groups = s.weeks.map((w, wi) => ({ w, wi, days: s.calendar.filter((d) => d.week === wi) }))
   const loose = s.calendar.filter((d) => d.week == null)
 
   return (
-    <section className="screen path">
-      <header className="h-top">
-        <div>
-          <span className="eyebrow">{s.month} {s.year}</span>
-          <h1>The journey</h1>
-          <p className="sub">{s.tagline}</p>
+    <section className="screen">
+      <div className="hdr">
+        <div className="hdr-l">
+          <span className="kicker">{s.month} {s.year}</span>
+          <h1 className="title">The journey</h1>
         </div>
-      </header>
-
-      <div className="themeverse">
-        <blockquote>“{s.themeScripture.text}”</blockquote>
-        <cite>{s.themeScripture.ref}</cite>
       </div>
 
-      {groups.map(({ w, wi, days }) => (
-        <div className={'weekblock w' + (wi + 1)} key={wi}>
-          <div className="wb-head">
-            <span className="wb-emoji">{w.emoji}</span>
-            <div>
-              <h2>The {cap(w.f)} Code</h2>
-              <p>{w.title}</p>
-            </div>
-            <span className="wb-pct">{Math.round(prog[wi] * 100)}%</span>
+      <p className="pull">“{s.themeScripture.text}”</p>
+      <span className="pull-c">{s.themeScripture.ref}</span>
+
+      {s.weeks.map((w, wi) => (
+        <section className={'chapter tone' + (wi + 1)} key={wi}>
+          <div className="chapter-h">
+            <span className="ord">{String(wi + 1).padStart(2, '0')}</span>
+            <h2>The {sentence(w.f)} Code</h2>
+            <em>{Math.round(prog[wi] * 100)}%</em>
           </div>
-          {w.question && <p className="wb-q">“{w.question}”</p>}
-          <div className="bar"><i style={{ width: `${prog[wi] * 100}%` }} /></div>
-          <div className="daylist">
-            {days.map((d) => <DayRow key={d.day} s={s} d={d} today={today} openDay={openDay} />)}
+          <p>{w.title}</p>
+          <div className="meter"><i style={{ width: `${prog[wi] * 100}%` }} /></div>
+          <div className="group">
+            {s.calendar.filter((d) => d.week === wi).map((d) => <Row key={d.day} s={s} d={d} today={today} openDay={openDay} />)}
           </div>
-        </div>
+        </section>
       ))}
 
       {loose.length > 0 && (
-        <div className="weekblock">
-          <div className="wb-head"><span className="wb-emoji">🕊️</span><div><h2>Around the month</h2><p>Launch, Selah and the finale</p></div></div>
-          <div className="daylist">
-            {loose.map((d) => <DayRow key={d.day} s={s} d={d} today={today} openDay={openDay} />)}
+        <section className="chapter">
+          <div className="chapter-h"><span className="ord">—</span><h2>Around the month</h2></div>
+          <p>The launch, the Selah days and the finale</p>
+          <div className="group">
+            {loose.map((d) => <Row key={d.day} s={s} d={d} today={today} openDay={openDay} />)}
           </div>
-        </div>
+        </section>
       )}
     </section>
   )
 }
 
-function DayRow({ s, d, today, openDay }) {
+function Row({ s, d, today, openDay }) {
   const st = useStore()
   const done = isDayDone(st, s.id, d.day)
-  const future = d.day > today
+  const state = done ? ' is-done' : d.day === today ? ' is-now' : d.day > today ? ' is-ahead' : ''
   return (
-    <button className={'dayrow' + (done ? ' done' : '') + (d.day === today ? ' now' : '') + (future ? ' future' : '')}
-      onClick={() => openDay(d.day)}>
-      <span className="dr-n">{done ? '✓' : d.day}</span>
-      <span className="dr-meta">
+    <button className={'row inset' + state} onClick={() => openDay(d.day)}>
+      <span className="tick">{done ? <Icon.check /> : <span>{d.day}</span>}</span>
+      <span className="row-m">
         <b>{dayLabel(s, d.day)}</b>
-        <small>{dayEyebrow(s, d.day)}{d.videoId ? ' · 🎬 video' : ''}</small>
+        <small>{fmtDay(s, d.day)} · {dayEyebrow(s, d.day)}{d.videoId ? ' · video' : ''}</small>
       </span>
-      {d.day === today && <span className="dr-tag">Today</span>}
+      <span className="row-a">{d.day === today ? 'Today' : <Icon.chevron />}</span>
     </button>
   )
 }

@@ -1,53 +1,52 @@
-import { title, todayNumber } from '../lib.js'
+import { title as sentence, todayNumber } from '../lib.js'
+import { Icon } from '../icons.jsx'
 
-/** The 60-second rail. Real channel videos when mapped, the written Shorts otherwise. */
+/** The 60-second rail. Real thumbnails when a video is mapped, typography when not. */
 export default function Shorts({ s }) {
   const today = todayNumber(s)
   const mapped = s.shortsVideos || []
-  const playlistUrl = s.shortsPlaylist ? `https://www.youtube.com/playlist?list=${s.shortsPlaylist}` : s.shortsUrl
+  const playlist = s.shortsPlaylist ? `https://www.youtube.com/playlist?list=${s.shortsPlaylist}` : s.shortsUrl
 
-  const cards = mapped.length
+  const clips = mapped.length
     ? mapped.slice().reverse().map((v) => ({
-        key: v.videoId,
-        title: v.title,
-        line: v.day ? `Day ${v.day}` : 'Short',
-        tag: v.day === today ? '✦ Today' : v.day ? `Day ${v.day}` : 'Short',
+        key: v.videoId, title: v.title, line: '',
+        tag: v.day === today ? 'TODAY' : v.day ? 'DAY ' + v.day : 'SHORT',
         url: `https://www.youtube.com/shorts/${v.videoId}`,
         img: `https://i.ytimg.com/vi/${v.videoId}/oardefault.jpg`,
+        tone: 1,
       }))
     : s.shorts.map((sh) => {
-        const day = s.calendar.find((d) => d.episode === sh.n)?.day
+        const d = s.calendar.find((x) => x.episode === sh.n)
         return {
-          key: 'w' + sh.n,
-          title: title(sh.title),
-          line: sh.hook,
-          tag: day === today ? '✦ Today' : day ? `Day ${day}` : `Short ${sh.n}`,
-          url: s.shortsUrl,
-          img: null,
-          quote: sh.quote,
+          key: 'w' + sh.n, title: sentence(sh.title), line: sh.quote || sh.hook,
+          tag: d?.day === today ? 'TODAY' : d ? 'DAY ' + d.day : 'SHORT ' + sh.n,
+          url: s.shortsUrl, img: null, tone: (d?.week ?? 0) + 1,
         }
       })
 
   return (
-    <section className="screen shorts">
-      <header className="h-top">
-        <div>
-          <span className="eyebrow">{s.title}</span>
-          <h1>60-second shorts</h1>
-          <p className="sub">One sharp truth a day — made to send to a friend.</p>
+    <section className="screen">
+      <div className="hdr">
+        <div className="hdr-l">
+          <span className="kicker">{s.title}</span>
+          <h1 className="title">Sixty seconds</h1>
+          <p className="dek">One sharp truth a day — made to send to someone.</p>
         </div>
-      </header>
-      <a className="btn ghost wide" href={playlistUrl} target="_blank" rel="noopener">Open on YouTube ↗</a>
-      <div className="shortgrid">
-        {cards.map((c, i) => (
-          <a key={c.key} className={'sh s' + (i % 3 + 1)} href={c.url} target="_blank" rel="noopener">
+      </div>
+
+      <a className="btn quiet wide" href={playlist} target="_blank" rel="noopener"
+        style={{ marginBottom: 20 }}>Watch on YouTube</a>
+
+      <div className="reel">
+        {clips.map((c) => (
+          <a key={c.key} className={'clip tone' + c.tone + (c.img ? '' : ' plain')} href={c.url} target="_blank" rel="noopener">
             {c.img && <img src={c.img} alt="" loading="lazy" />}
-            <span className="sh-tag">{c.tag}</span>
-            <div className="sh-body">
+            <span className="clip-tag">{c.tag}</span>
+            <Icon.play />
+            <span className="clip-b">
               <b>{c.title}</b>
-              {c.quote ? <em>“{c.quote}”</em> : <small>{c.line}</small>}
-            </div>
-            <span className="sh-play">▶</span>
+              {c.line && <p>{c.line}</p>}
+            </span>
           </a>
         ))}
       </div>

@@ -26,7 +26,7 @@ const SERIES = [
     audience: 'Teens & families',
     month: 'August', year: 2026, monthNum: 8,
     calendar: 'dated',
-    accent: '#c8901f',
+    accent: '#a8791f', accentDark: '#d9a441',
     themeScripture: {
       text: 'He that is faithful in that which is least is faithful also in much.',
       ref: 'Luke 16:10 (KJV)',
@@ -56,7 +56,7 @@ const SERIES = [
     audience: 'Families with kids',
     month: 'July', year: 2026, monthNum: 7,
     calendar: 'synthetic',
-    accent: '#2e7d4f',
+    accent: '#25704a', accentDark: '#4fbf85',
     themeScripture: {
       text: 'With long life will I satisfy him, and shew him my salvation.',
       ref: 'Psalm 91:16 (KJV)',
@@ -329,7 +329,8 @@ function buildSeries(cfg, videos) {
   return {
     id: cfg.id,
     title: cfg.title, subtitle: cfg.subtitle, tagline: cfg.tagline, audience: cfg.audience,
-    month: cfg.month, year: cfg.year, monthNum: cfg.monthNum, accent: cfg.accent,
+    month: cfg.month, year: cfg.year, monthNum: cfg.monthNum,
+    accent: cfg.accent, accentDark: cfg.accentDark || cfg.accent,
     themeScripture: cfg.themeScripture, declaration: cfg.declaration,
     weeks: cfg.weeks.map(({ f, title, emoji, question, passage }) => ({ f, title, emoji, question: question || '', passage: passage || '' })),
     channel: CHANNEL,

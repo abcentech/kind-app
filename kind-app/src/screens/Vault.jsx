@@ -1,46 +1,46 @@
 import { useState } from 'react'
-import { dayLabel, fmtDay, title } from '../lib.js'
-import { noteFor, sub, unlockedCards, useStore } from '../store.js'
+import { dayLabel, fmtDay, title as sentence } from '../lib.js'
+import { sub, unlockedCards, useStore } from '../store.js'
+import { Icon } from '../icons.jsx'
 
-/** What you own after showing up: the codes you unlocked and the words you wrote. */
+/** What showing up leaves behind: the passes you hold and the words you wrote. */
 export default function Vault({ s, openDay }) {
   const st = useStore()
-  const [tab, setTab] = useState('codes')
-  const got = unlockedCards(st, s.id)
-  const notes = Object.entries(sub(st, s.id).notes).filter(([, v]) => v.trim()).sort((a, b) => a[0] - b[0])
+  const [tab, setTab] = useState('passes')
   const [open, setOpen] = useState(null)
+  const held = unlockedCards(st, s.id)
+  const notes = Object.entries(sub(st, s.id).notes).filter(([, v]) => v.trim()).sort((a, b) => a[0] - b[0])
 
   return (
-    <section className="screen vault">
-      <header className="h-top">
-        <div>
-          <span className="eyebrow">{s.month} {s.year}</span>
-          <h1>Your vault</h1>
-          <p className="sub">{got.length} of {s.codes.length} codes · {notes.length} entries in your ledger</p>
+    <section className="screen">
+      <div className="hdr">
+        <div className="hdr-l">
+          <span className="kicker">{s.month} {s.year}</span>
+          <h1 className="title">Your vault</h1>
+          <p className="dek">{held.length} of {s.codes.length} passes · {notes.length} written {notes.length === 1 ? 'entry' : 'entries'}</p>
         </div>
-      </header>
-
-      <div className="segs">
-        <button className={tab === 'codes' ? 'on' : ''} onClick={() => setTab('codes')}>Codes</button>
-        <button className={tab === 'ledger' ? 'on' : ''} onClick={() => setTab('ledger')}>My ledger</button>
       </div>
 
-      {tab === 'codes' && (
+      <div className="seg">
+        <button className={tab === 'passes' ? 'on' : ''} onClick={() => setTab('passes')}>Passes</button>
+        <button className={tab === 'ledger' ? 'on' : ''} onClick={() => setTab('ledger')}>Ledger</button>
+      </div>
+
+      {tab === 'passes' && (
         <>
-          <div className="declbox">
-            <span className="eyebrow">The monthly declaration</span>
+          <div className="creed-block">
+            <p className="group-t" style={{ padding: '0 0 8px' }}>The monthly declaration</p>
             {s.declaration.map((l, i) => <p key={i}>{l}</p>)}
           </div>
-          <div className="cardgrid">
+          <div className="passgrid">
             {s.codes.map((c) => {
-              const has = got.includes(c.no)
+              const has = held.includes(c.no)
               return (
-                <button key={c.no} className={'gc' + (has ? ' got' : ' locked') + (c.rare ? ' rare' : '')}
+                <button key={c.no} className={'mini tone' + (c.week + 1) + (has ? '' : ' shut') + (c.rare && has ? ' is-gold' : '')}
                   onClick={() => (has ? setOpen(c) : openDay(c.day))}>
-                  <span className="gc-no">{String(c.no).padStart(2, '0')}</span>
-                  {has ? <b>{c.line}</b> : <b className="hidden">Locked</b>}
-                  <small>{has ? title(c.title) : 'Day ' + c.day}</small>
-                  <i className="gc-seal">{has ? s.weeks[c.week]?.emoji || '🔑' : '🔒'}</i>
+                  <span className="pass-no">PASS {String(c.no).padStart(2, '0')}</span>
+                  {has ? <q>{c.line}</q> : <Icon.lock />}
+                  <small>{has ? sentence(c.title) : fmtDay(s, c.day)}</small>
                 </button>
               )
             })}
@@ -49,14 +49,14 @@ export default function Vault({ s, openDay }) {
       )}
 
       {tab === 'ledger' && (
-        <div className="ledger">
+        <div className="entries">
           {notes.length === 0 && (
-            <p className="empty">Every day’s deck asks you one question. Your answers land here —
+            <p className="blank">Every day’s deck asks you one question. Your answers collect here —
               a month of your own thinking, kept on this device.</p>
           )}
           {notes.map(([day, text]) => (
-            <button key={day} className="lg" onClick={() => openDay(+day)}>
-              <span className="eyebrow">{fmtDay(s, +day)} · Day {day}</span>
+            <button key={day} className="entry" onClick={() => openDay(+day)}>
+              <span className="lead-day">{fmtDay(s, +day).toUpperCase()}</span>
               <b>{dayLabel(s, +day)}</b>
               <p>{text}</p>
             </button>
@@ -65,15 +65,19 @@ export default function Vault({ s, openDay }) {
       )}
 
       {open && (
-        <div className="unlock" role="dialog" onClick={() => setOpen(null)}>
-          <div className={'codecard' + (open.rare ? ' rare' : '')}>
-            <span className="cc-no">Code {String(open.no).padStart(2, '0')}{open.rare ? ' · gold' : ''}</span>
-            <h2>{open.line}</h2>
-            <p className="cc-ep">{title(open.title)}</p>
-            <div className="cc-seal">{s.weeks[open.week]?.emoji || '🔑'}</div>
+        <div className={'reward tone' + (open.week + 1)} role="dialog" onClick={() => setOpen(null)}>
+          <div className={'pass' + (open.rare ? ' is-gold' : '')}>
+            <div className="pass-top">
+              <span className="pass-no">PASS {String(open.no).padStart(2, '0')}</span>
+              {open.rare && <span className="pass-gold">Gold</span>}
+            </div>
+            <q>{open.line}</q>
+            <p className="pass-ep">{sentence(open.title)} · {fmtDay(s, open.day)}</p>
           </div>
-          <button className="btn big" onClick={() => setOpen(null)}>Close</button>
-          <button className="linkbtn" onClick={(e) => { e.stopPropagation(); openDay(open.day) }}>Revisit day {open.day}</button>
+          <div className="reward-foot">
+            <button className="btn" onClick={() => setOpen(null)}>Done</button>
+            <button className="link" onClick={(e) => { e.stopPropagation(); openDay(open.day) }}>Read day {open.day} again</button>
+          </div>
         </div>
       )}
     </section>
