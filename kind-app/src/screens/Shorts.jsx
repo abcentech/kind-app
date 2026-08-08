@@ -1,7 +1,8 @@
 import { title as sentence, todayNumber } from '../lib.js'
 import { Icon } from '../icons.jsx'
+import { Hud } from './Learn.jsx'
 
-/** The 60-second rail. Real thumbnails when a video is mapped, typography when not. */
+/** The 60-second rail — real thumbnails when a video is mapped, colour when not. */
 export default function Shorts({ s }) {
   const today = todayNumber(s)
   const mapped = s.shortsVideos || []
@@ -13,43 +14,43 @@ export default function Shorts({ s }) {
         tag: v.day === today ? 'TODAY' : v.day ? 'DAY ' + v.day : 'SHORT',
         url: `https://www.youtube.com/shorts/${v.videoId}`,
         img: `https://i.ytimg.com/vi/${v.videoId}/oardefault.jpg`,
-        tone: 1,
+        unit: 1,
       }))
     : s.shorts.map((sh) => {
         const d = s.calendar.find((x) => x.episode === sh.n)
         return {
           key: 'w' + sh.n, title: sentence(sh.title), line: sh.quote || sh.hook,
           tag: d?.day === today ? 'TODAY' : d ? 'DAY ' + d.day : 'SHORT ' + sh.n,
-          url: s.shortsUrl, img: null, tone: (d?.week ?? 0) + 1,
+          url: s.shortsUrl, img: null, unit: (d?.week ?? 0) + 1,
         }
       })
 
   return (
-    <section className="screen">
-      <div className="hdr">
-        <div className="hdr-l">
-          <span className="kicker">{s.title}</span>
-          <h1 className="title">Sixty seconds</h1>
-          <p className="dek">One sharp truth a day — made to send to someone.</p>
+    <>
+      <Hud s={s} />
+      <section className="screen">
+        <span className="kicker">{s.title}</span>
+        <h1 className="title">Sixty seconds</h1>
+        <p className="dek">One sharp truth a day — made to send to someone.</p>
+
+        <a className="btn wide ghost" href={playlist} target="_blank" rel="noopener"
+          style={{ margin: '18px 0' }}>Watch on YouTube</a>
+
+        <div className="reel">
+          {clips.map((c) => (
+            <a key={c.key} className={'clip' + (c.img ? '' : ' flat')} href={c.url} target="_blank" rel="noopener"
+              style={{ '--unit': `var(--u${c.unit})`, '--unit-e': `var(--u${c.unit}-e)` }}>
+              {c.img && <img src={c.img} alt="" loading="lazy" />}
+              <span className="clip-tag">{c.tag}</span>
+              <Icon.play />
+              <span className="clip-b">
+                <b>{c.title}</b>
+                {c.line && <p>{c.line}</p>}
+              </span>
+            </a>
+          ))}
         </div>
-      </div>
-
-      <a className="btn quiet wide" href={playlist} target="_blank" rel="noopener"
-        style={{ marginBottom: 20 }}>Watch on YouTube</a>
-
-      <div className="reel">
-        {clips.map((c) => (
-          <a key={c.key} className={'clip tone' + c.tone + (c.img ? '' : ' plain')} href={c.url} target="_blank" rel="noopener">
-            {c.img && <img src={c.img} alt="" loading="lazy" />}
-            <span className="clip-tag">{c.tag}</span>
-            <Icon.play />
-            <span className="clip-b">
-              <b>{c.title}</b>
-              {c.line && <p>{c.line}</p>}
-            </span>
-          </a>
-        ))}
-      </div>
-    </section>
+      </section>
+    </>
   )
 }

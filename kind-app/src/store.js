@@ -14,14 +14,23 @@ const emptySeries = () => ({
   cards: [],    // unlocked code-card numbers
 })
 const empty = {
-  v: 4,
-  name: '', role: 'family', emoji: '🌟', familyName: '',
-  kids: [],            // [{ name, emoji }]
+  v: 5,
+  name: '', role: 'family', emoji: '', familyName: '',
+  kids: [],            // [{ name }]
   onboarded: false,
   reminderHour: 20,
   streak: 0, best: 0, lastDone: null, gems: 0,
+  xp: 0,
+  daily: { date: null, xp: 0, right: 0, lessons: 0 },
   series: {},
 }
+
+/** Today's quest board — resets itself at midnight. */
+export const QUESTS = [
+  { id: 'lesson', label: 'Finish today’s lesson', goal: 1, of: (t) => t.lessons },
+  { id: 'xp', label: 'Earn 40 XP', goal: 40, of: (t) => t.xp },
+  { id: 'right', label: 'Get 3 answers right', goal: 3, of: (t) => t.right },
+]
 
 const iso = (d = new Date()) => new Date(d.getTime() - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10)
 const dayDiff = (a, b) => Math.round((new Date(b) - new Date(a)) / 864e5)
@@ -70,6 +79,14 @@ export function weekProgress(s, id) {
 }
 export const perfectWeeks = (s, id) => weekProgress(s, id).filter((p) => p >= 1).length
 
+/** Today's quest tallies (a stale day reads as zero rather than yesterday's). */
+export const todayTally = (s) =>
+  s.daily?.date === iso() ? s.daily : { date: iso(), xp: 0, right: 0, lessons: 0 }
+export const questState = (s) => {
+  const t = todayTally(s)
+  return QUESTS.map((q) => ({ ...q, at: Math.min(q.of(t), q.goal), done: q.of(t) >= q.goal }))
+}
+
 /** Days you were meant to do but haven't — the honest "catch up" list. */
 export function missedDays(s, id, today) {
   const series = getSeries(id)
@@ -90,34 +107,53 @@ export function saveNote(id, day, text) {
   commit({ ...state, series: { ...state.series, [id]: { ...cur, notes: { ...cur.notes, [day]: text } } } })
 }
 
+/** Every correct answer inside a lesson. */
+export function scoreAnswer(right) {
+  const t = todayTally(state)
+  const gain = right ? 10 : 0
+  commit({
+    ...state,
+    xp: state.xp + gain,
+    daily: { ...t, xp: t.xp + gain, right: t.right + (right ? 1 : 0) },
+  })
+  return gain
+}
+
 /**
- * Finish a day. Returns { code, streak, first } for the celebration screen,
+ * Finish a day. Returns { code, streak, xp, first } for the completion screen,
  * or null if it was already done.
  */
-export function finishDay(id, day) {
+export function finishDay(id, day, lessonXp = 0) {
   const cur = sub(state, id)
   if (cur.done[day]) return null
   const series = getSeries(id)
   const code = codeFor(series, day)
   const today = iso()
 
-  let { streak, best, lastDone, gems } = state
+  let { streak, best, lastDone, gems, xp } = state
   if (lastDone !== today) {
     const gap = lastDone ? dayDiff(lastDone, today) : null
     streak = gap === 1 || graceGap(series, lastDone, gap) ? streak + 1 : 1
     lastDone = today
     best = Math.max(best, streak)
   }
+  const bonus = 20 + (code?.rare ? 20 : 0)
   gems += 10 + (code?.rare ? 15 : 0)
+  xp += bonus
 
+  const t = todayTally(state)
   const next = {
     ...cur,
     done: { ...cur.done, [day]: today },
     cards: code && !cur.cards.includes(code.no) ? [...cur.cards, code.no] : cur.cards,
   }
-  commit({ ...state, streak, best, lastDone, gems, series: { ...state.series, [id]: next } })
+  commit({
+    ...state, streak, best, lastDone, gems, xp,
+    daily: { ...t, xp: t.xp + bonus, lessons: t.lessons + 1 },
+    series: { ...state.series, [id]: next },
+  })
   reportCheckin({ series: id, day, streak, gems })
-  return { code, streak, first: Object.keys(cur.done).length === 0 }
+  return { code, streak, xp: lessonXp + bonus, first: Object.keys(cur.done).length === 0 }
 }
 
 /** Selah grace: skipping a single Selah day does not break the streak. */

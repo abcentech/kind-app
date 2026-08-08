@@ -2,8 +2,9 @@ import { useState } from 'react'
 import { dayLabel, fmtDay, title as sentence } from '../lib.js'
 import { sub, unlockedCards, useStore } from '../store.js'
 import { Icon } from '../icons.jsx'
+import { Hud } from './Learn.jsx'
 
-/** What showing up leaves behind: the passes you hold and the words you wrote. */
+/** The collection: passes earned, and the answers you wrote along the way. */
 export default function Vault({ s, openDay }) {
   const st = useStore()
   const [tab, setTab] = useState('passes')
@@ -12,74 +13,76 @@ export default function Vault({ s, openDay }) {
   const notes = Object.entries(sub(st, s.id).notes).filter(([, v]) => v.trim()).sort((a, b) => a[0] - b[0])
 
   return (
-    <section className="screen">
-      <div className="hdr">
-        <div className="hdr-l">
-          <span className="kicker">{s.month} {s.year}</span>
-          <h1 className="title">Your vault</h1>
-          <p className="dek">{held.length} of {s.codes.length} passes · {notes.length} written {notes.length === 1 ? 'entry' : 'entries'}</p>
+    <>
+      <Hud s={s} />
+      <section className="screen">
+        <span className="kicker">{s.month} {s.year}</span>
+        <h1 className="title">Collection</h1>
+        <p className="dek">{held.length} of {s.codes.length} passes · {notes.length} written {notes.length === 1 ? 'entry' : 'entries'}</p>
+
+        <div className="seg" style={{ marginTop: 18 }}>
+          <button className={tab === 'passes' ? 'on' : ''} onClick={() => setTab('passes')}>Passes</button>
+          <button className={tab === 'ledger' ? 'on' : ''} onClick={() => setTab('ledger')}>Ledger</button>
         </div>
-      </div>
 
-      <div className="seg">
-        <button className={tab === 'passes' ? 'on' : ''} onClick={() => setTab('passes')}>Passes</button>
-        <button className={tab === 'ledger' ? 'on' : ''} onClick={() => setTab('ledger')}>Ledger</button>
-      </div>
+        {tab === 'passes' && (
+          <>
+            <div className="card sunk">
+              <span className="kicker">The monthly declaration</span>
+              {s.declaration.map((l, i) => (
+                <p key={i} style={{ fontFamily: 'var(--serif)', fontSize: 19, lineHeight: 1.4, margin: '6px 0 0', fontWeight: 500 }}>{l}</p>
+              ))}
+            </div>
+            <div className="grid">
+              {s.codes.map((c) => {
+                const has = held.includes(c.no)
+                return (
+                  <button key={c.no}
+                    className={'gpass' + (has ? '' : ' shut') + (has && c.rare ? ' gold' : '')}
+                    style={{ '--unit-e': `var(--u${c.week + 1}-e)` }}
+                    onClick={() => (has ? setOpen(c) : openDay(c.day))}>
+                    <span className="pn">Pass {String(c.no).padStart(2, '0')}</span>
+                    {has ? <q>{c.line}</q> : <Icon.lock />}
+                    <small>{has ? sentence(c.title) : fmtDay(s, c.day)}</small>
+                  </button>
+                )
+              })}
+            </div>
+          </>
+        )}
 
-      {tab === 'passes' && (
-        <>
-          <div className="creed-block">
-            <p className="group-t" style={{ padding: '0 0 8px' }}>The monthly declaration</p>
-            {s.declaration.map((l, i) => <p key={i}>{l}</p>)}
+        {tab === 'ledger' && (
+          <div className="entries">
+            {notes.length === 0 && (
+              <p className="dek">Every lesson asks you one question of your own. Your answers collect
+                here — a month of your own thinking, kept on this device.</p>
+            )}
+            {notes.map(([day, text]) => (
+              <button key={day} className="entry" onClick={() => openDay(+day)}>
+                <small>{fmtDay(s, +day)}</small>
+                <b>{dayLabel(s, +day)}</b>
+                <p>{text}</p>
+              </button>
+            ))}
           </div>
-          <div className="passgrid">
-            {s.codes.map((c) => {
-              const has = held.includes(c.no)
-              return (
-                <button key={c.no} className={'mini tone' + (c.week + 1) + (has ? '' : ' shut') + (c.rare && has ? ' is-gold' : '')}
-                  onClick={() => (has ? setOpen(c) : openDay(c.day))}>
-                  <span className="pass-no">PASS {String(c.no).padStart(2, '0')}</span>
-                  {has ? <q>{c.line}</q> : <Icon.lock />}
-                  <small>{has ? sentence(c.title) : fmtDay(s, c.day)}</small>
-                </button>
-              )
-            })}
-          </div>
-        </>
-      )}
-
-      {tab === 'ledger' && (
-        <div className="entries">
-          {notes.length === 0 && (
-            <p className="blank">Every day’s deck asks you one question. Your answers collect here —
-              a month of your own thinking, kept on this device.</p>
-          )}
-          {notes.map(([day, text]) => (
-            <button key={day} className="entry" onClick={() => openDay(+day)}>
-              <span className="lead-day">{fmtDay(s, +day).toUpperCase()}</span>
-              <b>{dayLabel(s, +day)}</b>
-              <p>{text}</p>
-            </button>
-          ))}
-        </div>
-      )}
+        )}
+      </section>
 
       {open && (
-        <div className={'reward tone' + (open.week + 1)} role="dialog" onClick={() => setOpen(null)}>
-          <div className={'pass' + (open.rare ? ' is-gold' : '')}>
-            <div className="pass-top">
-              <span className="pass-no">PASS {String(open.no).padStart(2, '0')}</span>
-              {open.rare && <span className="pass-gold">Gold</span>}
-            </div>
+        <div className="done-screen" role="dialog" onClick={() => setOpen(null)}
+          style={{ '--unit': `var(--u${open.week + 1})`, '--unit-e': `var(--u${open.week + 1}-e)` }}>
+          <div className={'pass-card' + (open.rare ? ' gold' : '')}>
+            <span className="pn">Pass {String(open.no).padStart(2, '0')}{open.rare ? ' · gold' : ''}</span>
             <q>{open.line}</q>
-            <p className="pass-ep">{sentence(open.title)} · {fmtDay(s, open.day)}</p>
+            <em>{sentence(open.title)} · {fmtDay(s, open.day)}</em>
           </div>
-          <div className="reward-foot">
-            <button className="btn" onClick={() => setOpen(null)}>Done</button>
-            <button className="link" onClick={(e) => { e.stopPropagation(); openDay(open.day) }}>Read day {open.day} again</button>
+          <div style={{ width: '100%', maxWidth: 320, marginTop: 20 }}>
+            <button className="btn wide grass" onClick={() => setOpen(null)}>Close</button>
+            <button className="btn-plain quiet" style={{ width: '100%' }}
+              onClick={(e) => { e.stopPropagation(); openDay(open.day) }}>Practise day {open.day} again</button>
           </div>
         </div>
       )}
-    </section>
+    </>
   )
 }

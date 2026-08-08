@@ -26,86 +26,86 @@ export default function Me({ s, seriesId, setSeriesId }) {
 
   return (
     <section className="screen">
-      <div className="hdr">
-        <div className="hdr-l" style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
-          <span className="avatar-lg">{(st.name || '?').trim().charAt(0).toUpperCase()}</span>
-          <div style={{ minWidth: 0 }}>
-            {editing ? (
-              <form className="inline-form" onSubmit={(e) => { e.preventDefault(); updateProfile({ name: name.trim() }); setEditing(false) }}>
-                <input className="field" value={name} onChange={(e) => setName(e.target.value)} autoFocus maxLength={20} />
-                <button className="link" type="submit">Save</button>
-              </form>
-            ) : (
-              <h1 className="title" style={{ fontSize: 26 }} onClick={() => setEditing(true)}>{st.name || 'You'}</h1>
-            )}
-            <p className="dek">{st.familyName ? `The ${st.familyName} family` : st.role === 'parent' ? 'Parent' : 'Steward'}</p>
-          </div>
+      <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginBottom: 22 }}>
+        <span className="face">{(st.name || '?').trim().charAt(0).toUpperCase()}</span>
+        <div style={{ minWidth: 0, flex: 1 }}>
+          {editing ? (
+            <form className="inline" onSubmit={(e) => { e.preventDefault(); updateProfile({ name: name.trim() }); setEditing(false) }}>
+              <input className="field" value={name} onChange={(e) => setName(e.target.value)} autoFocus maxLength={20} />
+              <button className="btn-plain" type="submit">Save</button>
+            </form>
+          ) : (
+            <button onClick={() => setEditing(true)} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <h1 className="title">{st.name || 'You'}</h1><Icon.pen size={18} />
+            </button>
+          )}
+          <p className="dek">{st.familyName ? `The ${st.familyName} family` : st.role === 'parent' ? 'Parent' : 'Steward'}</p>
         </div>
       </div>
 
-      <div className="figures" style={{ marginBottom: 26, gridTemplateColumns: 'repeat(4,1fr)' }}>
-        <div><b>{st.streak}</b><span>streak</span></div>
-        <div><b>{done.length}</b><span>days</span></div>
-        <div><b>{unlockedCards(st, s.id).length}</b><span>passes</span></div>
-        <div><b>{perfectWeeks(st, s.id)}</b><span>full weeks</span></div>
+      <div className="stats">
+        <div className="stat"><Icon.flame style={{ color: '#ff9600' }} /><div><b>{st.streak}</b><small>Day streak</small></div></div>
+        <div className="stat"><Icon.bolt style={{ color: 'var(--bee-e)' }} /><div><b>{st.xp}</b><small>Total XP</small></div></div>
+        <div className="stat"><Icon.vault style={{ color: 'var(--sky)' }} /><div><b>{unlockedCards(st, s.id).length}</b><small>Passes</small></div></div>
+        <div className="stat"><Icon.trophy style={{ color: 'var(--grass)' }} /><div><b>{perfectWeeks(st, s.id)}</b><small>Units cleared</small></div></div>
       </div>
 
-      <p className="group-t">Monthly journeys</p>
-      <div className="group">
+      <h2 style={{ fontSize: 19, marginBottom: 6 }}>Courses</h2>
+      <div className="card">
         {allSeries.map((x) => (
-          <button key={x.id} className="row inset" onClick={() => setSeriesId(x.id)}>
+          <button key={x.id} className="row" onClick={() => setSeriesId(x.id)}>
             <span className="dot" style={{ background: x.accent }} />
-            <span className="row-m"><b>{x.title}</b><small>{x.month} {x.year} · {x.audience}</small></span>
-            <span className="row-a">{x.id === seriesId ? 'Now' : <Icon.chevron />}</span>
+            <span className="row-m"><b>{x.title}</b><small>{x.month} {x.year} · {x.audience} · {
+              done.length && x.id === seriesId
+                ? `${done.length} of ${x.calendar.length} done`
+                : `${x.calendar.length} lessons`
+            }</small></span>
+            <span className="row-a">{x.id === seriesId ? 'Active' : <Icon.chevron />}</span>
           </button>
         ))}
       </div>
 
       {st.role === 'parent' && (
         <>
-          <p className="group-t">Your children</p>
-          <div className="group">
+          <h2 style={{ fontSize: 19, margin: '22px 0 6px' }}>Your children</h2>
+          <div className="card">
             {st.kids.length > 0 && (
-              <div className="chips">
+              <div className="chips" style={{ marginBottom: 12 }}>
                 {st.kids.map((k, i) => (
                   <button key={i} className="chip" onClick={() => removeKid(i)}>{k.name}<Icon.close /></button>
                 ))}
               </div>
             )}
-            <form className="row" onSubmit={(e) => {
+            <form className="inline" onSubmit={(e) => {
               e.preventDefault()
               if (!kid.trim()) return
               addKid({ name: kid.trim() }); setKid('')
             }}>
-              <span className="row-m">
-                <input className="field" style={{ background: 'none', height: 24, padding: 0 }}
-                  value={kid} onChange={(e) => setKid(e.target.value)} placeholder="Add a child’s name" maxLength={20} />
-              </span>
-              <button className="row-a" type="submit" aria-label="Add"><Icon.plus /></button>
+              <input className="field" value={kid} onChange={(e) => setKid(e.target.value)}
+                placeholder="Add a child’s name" maxLength={20} />
+              <button className="btn-plain" type="submit">Add</button>
             </form>
           </div>
         </>
       )}
 
-      <p className="group-t">goDs University</p>
-      <div className="group"><GodsUniversity /></div>
+      <h2 style={{ fontSize: 19, margin: '22px 0 6px' }}>goDs University</h2>
+      <div className="card"><GodsUniversity /></div>
 
       {install && (
-        <>
-          <p className="group-t">Install</p>
-          <div className="group">
-            <div className="pad">
-              <p className="dek">Add KIND to your home screen. It opens full-screen and works offline.</p>
-              <button className="btn quiet" onClick={() => { install.prompt(); setInstall(null) }}>Add to home screen</button>
-            </div>
-          </div>
-        </>
+        <div className="card sunk">
+          <b style={{ fontSize: 17 }}>Install KIND</b>
+          <p className="dek">Add it to your home screen — full screen, works offline.</p>
+          <button className="btn grass" style={{ marginTop: 12 }} onClick={() => { install.prompt(); setInstall(null) }}>
+            Add to home screen
+          </button>
+        </div>
       )}
 
-      <p className="group-t">Kids Inspiring Nation</p>
-      <div className="group">
+      <h2 style={{ fontSize: 19, margin: '22px 0 6px' }}>Kids Inspiring Nation</h2>
+      <div className="card">
         {links.map(([label, href]) => (
-          <a className="row inset" key={label} href={href} target="_blank" rel="noopener">
+          <a className="row" key={label} href={href} target="_blank" rel="noopener">
             <span className="row-m"><b>{label}</b></span>
             <span className="row-a"><Icon.external /></span>
           </a>
@@ -113,8 +113,8 @@ export default function Me({ s, seriesId, setSeriesId }) {
       </div>
 
       <div style={{ textAlign: 'center' }}>
-        <button className="link destructive" onClick={() => {
-          if (confirm('Erase your streak, passes and ledger on this device?')) { resetAll(); location.reload() }
+        <button className="btn-plain danger" onClick={() => {
+          if (confirm('Erase your streak, XP, passes and ledger on this device?')) { resetAll(); location.reload() }
         }}>Reset everything on this device</button>
       </div>
     </section>
