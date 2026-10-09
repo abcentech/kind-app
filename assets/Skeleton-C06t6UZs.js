@@ -1,0 +1,1 @@
+import{j as o}from"./react-CaJoIBOt.js";import{aU as u}from"./index-CwPA2VDH.js";const n=l=>typeof l=="number"?`${l}px`:l;function f({w:l,h:r,r:e,className:s,style:t,...a}){return o.jsx("span",{className:u("k-skel",s),"aria-hidden":"true",style:{...l!=null&&{"--w":n(l)},...r!=null&&{"--h":n(r)},...e!=null&&{"--r":e==="full"?"var(--r-full)":n(e)},...t},...a})}export{f as S};

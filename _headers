@@ -1,0 +1,15 @@
+# Written by vite.config.js (kindServiceWorker). Netlify / Cloudflare Pages read this file. GitHub Pages ignores it (it serves
+# max-age=600), which is fine: the worker registers with updateViaCache:'none', so sw.js is always revalidated. Elsewhere, apply the same rules.
+/sw.js
+  Cache-Control: no-cache
+/index.html
+  Cache-Control: no-cache
+/manifest.webmanifest
+  Cache-Control: no-cache
+  Content-Type: application/manifest+json
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()

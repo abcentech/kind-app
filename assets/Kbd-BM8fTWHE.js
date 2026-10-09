@@ -1,0 +1,1 @@
+import{j as r}from"./react-CaJoIBOt.js";import{aU as i}from"./index-CwPA2VDH.js";function e({lit:a=!1,className:s,children:t,...o}){return r.jsx("kbd",{className:i("k-kbd",s),"data-lit":a?"":void 0,...o,children:t})}export{e as K};

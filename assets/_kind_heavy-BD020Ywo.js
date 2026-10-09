@@ -1,0 +1,1 @@
+import{c7 as t}from"./index-CwPA2VDH.js";import"./react-CaJoIBOt.js";const e={"stewardship-code":()=>t(()=>import("./content-stewardship-code-D_QBvUl1.js"),[],import.meta.url),"secrets-of-longevity":()=>t(()=>import("./content-secrets-of-longevity-BFJW37M-.js"),[],import.meta.url)};export{e as default};
