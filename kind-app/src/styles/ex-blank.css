@@ -1,0 +1,225 @@
+/* owner: ex-blank-order (prefix .exb-) — Blank (fill the gap) + Order (put the words in order).
+   Material: chamfered tiles on a recessed carbon tray; the socket is a lit slot, its hairline the one ignition element
+   on the screen until a word is chosen (then it hands the heat to CHECK by turning telemetry blue). */
+@layer screen {
+  .exb {
+    --exb-chip-h: var(--tap);
+    --exb-gap: var(--s-2);
+    --exb-pad: var(--s-3);
+    --exb-padx: var(--s-4);
+    position: relative; isolation: isolate;
+    display: flex; flex-direction: column; gap: var(--s-6);
+    width: 100%; min-width: 0;
+    -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+  }
+  /* short phones: 44 px tiles (still above the touch minimum), tighter tray, so a 9-word line and its bank fit at 360x640 */
+  @media (max-height: 700px) {
+    .exb { --exb-chip-h: calc(var(--tap) - var(--s-1)); --exb-pad: var(--s-2); gap: var(--s-5); }
+  }
+  @media (max-width: 380px) { .exb { --exb-padx: var(--s-3); } }
+
+  /* ── head: what to do, where it comes from, how far along ── */
+  .exb-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-3); min-width: 0; }
+  .exb-head > :last-child { margin-left: auto; }
+    .exb-head__tools { display: flex; align-items: center; gap: var(--s-2); margin-block: calc(var(--s-2) * -1); }
+  .exb-cite {
+    display: block; margin: 0;
+    font-family: var(--font-mono); font-weight: 500; font-size: var(--fs-2xs); line-height: 1.3;
+    letter-spacing: var(--track-mono); text-transform: uppercase; color: var(--ink-3);
+  }
+  .exb-meter {
+    flex: none; font-family: var(--font-mono); font-weight: 500; font-size: var(--fs-xs); line-height: 1.2;
+    letter-spacing: var(--track-mono); text-transform: uppercase; color: var(--ink-3);
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+    transition: color var(--t-base) var(--ease-out);
+  }
+  .exb-order[data-full]:not([data-graded]) .exb-meter { color: var(--tele); }
+  .exb-meter[data-tone="go"] { color: var(--go); }
+  .exb-meter[data-tone="nogo"] { color: var(--nogo); }
+
+  .exb-undo {
+    position: relative; display: grid; place-items: center; flex: none;
+    width: calc(var(--tap) - var(--s-1)); height: calc(var(--tap) - var(--s-1)); margin: 0; padding: 0; border: 0;
+    background: var(--line-2); color: var(--ink-2); cursor: pointer;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+    transition: transform var(--t-base) var(--ease-out), opacity var(--t-fast) var(--ease-out);
+  }
+  .exb-undo::before { content: ''; position: absolute; inset: 1px; clip-path: var(--clip-cut-sm); background: var(--plate-hi); box-shadow: var(--bevel); }
+  .exb-undo > * { position: relative; }
+  .exb-undo:active:not(:disabled) { transform: scale(.94); transition-duration: var(--t-instant); }
+  .exb-undo:disabled { opacity: .38; cursor: default; }
+
+  /* ── the passage: the Word, set large, with the socket in the line ── */
+  .exb-passage {
+    margin: 0; padding-inline: var(--s-1);
+    font-family: var(--font-serif); font-weight: 380; font-optical-sizing: auto; color: var(--ink-word);
+    font-size: max(var(--fs-lg), calc(var(--exb-fs, var(--fs-xl)) * var(--read-scale, 1)));
+    line-height: 1.42; letter-spacing: calc(var(--track-tight) * .5);
+    font-variant-numeric: oldstyle-nums proportional-nums; font-variant-ligatures: common-ligatures contextual;
+    text-wrap: pretty; overflow-wrap: break-word; hyphens: manual;
+    text-shadow: 0 0 1.5em var(--ignite-wash);
+    -webkit-user-select: text; user-select: text;
+  }
+  .exb-passage[data-len="l"] { --exb-fs: clamp(var(--fs-xl), 7.2vw, calc(var(--fs-xl) * 7 / 6)); }
+  .exb-passage[data-len="m"] { --exb-fs: clamp(var(--fs-xl), 6.8vw, calc(var(--fs-xl) * 13 / 12)); }
+  .exb-passage[data-len="s"] { --exb-fs: var(--fs-xl); }
+  .exb-nb { white-space: nowrap; }                       /* a quote mark or full stop never strands itself from the socket */
+
+  .exb-passage + .exb-cite { margin-top: calc(var(--s-4) * -1); padding-inline: var(--s-1); }   /* the reference sits under the verse like an epigraph */
+
+  /* the slot: an inline-block, wide enough for the longest option so nothing reflows when a word lands */
+  .exb-slot {
+    --exb-line: var(--ignite); --exb-glow: var(--ignite-glow); --exb-wash: var(--ignite-wash);
+    position: relative; display: inline-block; vertical-align: baseline;
+    min-width: calc(var(--exb-n, 6) * .5em + .9em); margin-inline: .06em;
+  }
+  .exb-slot[data-state="picked"] { --exb-line: var(--tele); --exb-glow: var(--tele-glow); --exb-wash: var(--tele-wash); }
+  .exb-slot[data-state="right"] { --exb-line: var(--go); --exb-glow: var(--go-glow); --exb-wash: var(--go-wash); }
+  .exb-slot[data-state="wrong"] { --exb-line: var(--nogo); --exb-glow: var(--nogo-glow); --exb-wash: var(--nogo-wash); }
+  .exb-socket {
+    position: relative; display: block; width: 100%; margin: 0; padding: .02em .35em .06em; border: 0;
+    background: transparent; color: var(--ink); font: inherit; letter-spacing: inherit; line-height: 1.3; text-align: center; white-space: nowrap;
+    cursor: default; -webkit-tap-highlight-color: transparent; touch-action: manipulation; text-shadow: none;
+  }
+  button.exb-socket { cursor: pointer; }
+  .exb-socket::before {                                    /* the recess */
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--void) 74%, transparent), var(--exb-wash));
+    box-shadow: inset 0 var(--s-1) var(--s-2) color-mix(in srgb, var(--void) 85%, transparent);
+    transition: background var(--t-base) var(--ease-out);
+  }
+  .exb-socket > :not(.exb-socket__line) { position: relative; }
+  .exb-socket__line {                                      /* the hairline: crisp inside the slot, glowing outside it */
+    position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--exb-line); transform-origin: 50% 50%;
+  }
+  .exb-slot::after {
+    content: ''; position: absolute; left: .3em; right: .3em; bottom: 0; height: 2px; pointer-events: none;
+    background: var(--exb-line); filter: blur(var(--s-2)); opacity: .6;
+  }
+  .exb-slot[data-state="empty"] .exb-socket__line { animation: exb-breathe calc(var(--t-hero) * 2) var(--ease-io) infinite; }
+  .exb-slot[data-state="empty"]::after { animation: exb-glow calc(var(--t-hero) * 2) var(--ease-io) infinite; }
+  @keyframes exb-breathe { 0%, 100% { opacity: .55; transform: scaleX(.88); } 50% { opacity: 1; transform: scaleX(1); } }
+  @keyframes exb-glow { 0%, 100% { opacity: .22; } 50% { opacity: .7; } }
+
+  .exb-word { display: inline-block; font-weight: 480; color: var(--ink); transition: color var(--t-base) var(--ease-out); }
+  .exb-slot[data-state="right"] .exb-word { color: var(--go); }
+  .exb-slot[data-state="wrong"] .exb-word { color: var(--nogo); text-decoration: line-through; text-decoration-thickness: .06em; }
+
+  .exb-led {                                               /* verdict light: top-right of the slot, outside the chamfer clip */
+    position: absolute; top: -.32em; right: .08em; z-index: 2;
+    display: grid; place-items: center; width: calc(var(--s-4) + var(--s-1)); height: calc(var(--s-4) + var(--s-1));
+    border-radius: var(--r-full); background: var(--carbon-0); color: var(--go); font-size: var(--fs-md);
+    box-shadow: 0 0 0 2px currentColor, 0 0 var(--s-4) calc(var(--s-1) * -.5) var(--go-glow);
+    animation: exb-pop var(--t-slow) var(--ease-out) both; text-shadow: none;
+  }
+  .exb-led[data-tone="nogo"] { color: var(--nogo); box-shadow: 0 0 0 2px currentColor, 0 0 var(--s-4) calc(var(--s-1) * -.5) var(--nogo-glow); }
+  @keyframes exb-pop { from { opacity: 0; transform: scale(.4); } to { opacity: 1; transform: none; } }
+  @supports (animation-timing-function: linear(0, 1)) { .exb-led { animation-timing-function: var(--spring-bounce); animation-duration: var(--spring-bounce-ms); } }
+
+  /* ── banks and tiles ── */
+  .exb-bank { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--exb-gap); }
+  .exb-bank[data-kind="blank"] { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-3); }
+  .exb-bank[data-kind="blank"] > * { width: 100%; }
+
+  .exb-chip, .exb-bay {
+    position: relative; display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2);
+    min-height: var(--exb-chip-h); min-width: var(--exb-chip-h); margin: 0; padding: 0 var(--exb-padx); border: 0;
+    font-family: var(--font-serif); font-weight: 460; font-size: var(--fs-lg); line-height: 1.2; letter-spacing: calc(var(--track-tight) * .5);
+    text-align: center; overflow-wrap: anywhere; font-optical-sizing: auto;
+  }
+  .exb-chip {
+    --exb-edge: var(--line-3); --exb-fill: transparent;
+    background: var(--exb-edge); color: var(--ink); cursor: default;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+    transition: transform var(--t-base) var(--ease-out), opacity var(--t-base) var(--ease-out), background-color var(--t-fast) var(--ease-out);
+  }
+  .exb-chip::before {
+    content: ''; position: absolute; inset: 1px; clip-path: var(--clip-cut-sm); pointer-events: none;
+    background: linear-gradient(var(--exb-fill), var(--exb-fill)), var(--plate-hi); box-shadow: var(--bevel);
+  }
+  .exb-chip > * { position: relative; }
+  button.exb-chip { cursor: pointer; }
+  button.exb-chip:active { transform: scale(.97); transition-duration: var(--t-instant); }
+  @media (hover: hover) { button.exb-chip:hover { --exb-edge: var(--ti-3); } }
+  @supports (animation-timing-function: linear(0, 1)) { .exb-chip, .exb-undo { transition-timing-function: var(--spring-snap), var(--ease-out), var(--ease-out); } }
+  .exb-chip[data-state="dim"] { opacity: .4; }
+  .exb-chip[data-state="ok"] { --exb-edge: var(--go); --exb-fill: var(--go-wash); }
+  .exb-chip[data-state="miss"], .exb-chip[data-state="wrong"] { --exb-edge: var(--nogo); --exb-fill: var(--nogo-wash); }
+  .exb-chip[data-state="wrong"] .exb-chip__text { text-decoration: line-through; text-decoration-color: var(--nogo); text-decoration-thickness: .06em; }
+
+  .exb-chip__text { min-width: 0; }
+  .exb-chip__key {                                         /* keycap: top-left, in the notch of the chamfer */
+    position: absolute; left: var(--s-2); top: var(--s-1); min-width: var(--s-4); height: var(--s-4); padding: 0 var(--s-1);
+    font-size: var(--fs-2xs); color: var(--ink-3);
+  }
+  .exb-chip__led { position: absolute; left: var(--s-2); top: var(--s-1); width: var(--s-4); height: var(--s-4); flex: none; }
+  .exb-chip[data-state="ok"] .exb-chip__led { color: var(--go); }
+  .exb-chip[data-state="miss"] .exb-chip__led, .exb-chip[data-state="wrong"] .exb-chip__led { color: var(--nogo); }
+
+  .exb-bay { background: var(--line); color: transparent; }
+  .exb-bay::before {
+    content: ''; position: absolute; inset: 1px; clip-path: var(--clip-cut-sm);
+    background: color-mix(in srgb, var(--void) 70%, var(--carbon-0)); box-shadow: inset 0 var(--s-1) var(--s-2) color-mix(in srgb, var(--void) 90%, transparent);
+  }
+  .exb-bay > * { position: relative; visibility: hidden; }
+
+  /* Order: keycaps ride inside the tile (never over a short word), and only where a keyboard is likely */
+  .exb-bank[data-kind="order"] .exb-chip__key { display: none; }
+  .exb-bank[data-kind="order"] .exb-bay .exb-chip__key { display: none; }
+  @media (hover: hover) and (pointer: fine) {
+    .exb-bank[data-kind="order"] .exb-chip__key, .exb-bank[data-kind="order"] .exb-bay .exb-chip__key { display: inline-grid; position: static; flex: none; }
+  }
+  .exb-tray .exb-chip__led { position: relative; left: auto; top: auto; }
+  .exb-tray .exb-chip[data-state="ok"], .exb-tray .exb-chip[data-state="miss"] { padding-left: calc(var(--exb-padx) - var(--s-1)); }
+
+  /* ── the answer line ── */
+  .exb-tray {
+    position: relative; display: flex; flex-wrap: wrap; align-content: flex-start; align-items: flex-start; gap: var(--exb-gap);
+    padding: var(--exb-pad); min-height: calc(var(--exb-chip-h) * 2 + var(--exb-gap) + var(--exb-pad) * 2);
+    background: var(--line-2); clip-path: var(--clip-cut); transition: background var(--t-base) var(--ease-out);
+  }
+  .exb-tray::before {                                      /* recess, ruled like a ledger: one hairline under every row of tiles */
+    content: ''; position: absolute; inset: 1px; clip-path: var(--clip-cut); pointer-events: none;
+    background-color: color-mix(in srgb, var(--void) 62%, var(--carbon-0));
+    background-image: repeating-linear-gradient(to bottom,
+      transparent 0, transparent calc(var(--exb-chip-h) + var(--exb-gap) / 2 - .5px),
+      var(--line-2) calc(var(--exb-chip-h) + var(--exb-gap) / 2 - .5px), var(--line-2) calc(var(--exb-chip-h) + var(--exb-gap) / 2 + .5px),
+      transparent calc(var(--exb-chip-h) + var(--exb-gap) / 2 + .5px), transparent calc(var(--exb-chip-h) + var(--exb-gap)));
+    background-position: 0 calc(var(--exb-pad) - 1px); background-repeat: no-repeat;
+    background-size: 100% calc(100% - var(--exb-pad) * 2 + 2px);       /* rules fall between rows, never under the last (the tray's own edge is that rule) */
+    box-shadow: inset 0 var(--s-1) var(--s-3) color-mix(in srgb, var(--void) 85%, transparent);
+  }
+  .exb-order[data-graded="right"] .exb-tray { background: var(--go); }
+  .exb-order[data-graded="wrong"] .exb-tray { background: var(--nogo); }
+  .exb-tray__hint {
+    position: absolute; left: var(--exb-pad); right: var(--exb-pad); top: var(--exb-pad); height: var(--exb-chip-h);
+    display: flex; align-items: center; padding-inline: var(--s-1); pointer-events: none;
+    font-family: var(--font-serif); font-style: italic; font-size: var(--fs-md); color: var(--ink-3); letter-spacing: calc(var(--track-tight) * .5);
+  }
+
+  /* ── a tile in flight: the plate dissolves into the word on arrival (or the other way back) ── */
+  .exb-ghost {
+    position: absolute; z-index: 3; display: flex; align-items: center; justify-content: center; margin: 0; pointer-events: none;
+    font-family: var(--font-serif); font-weight: 460; line-height: 1.2; letter-spacing: calc(var(--track-tight) * .5);
+    color: var(--ink); white-space: nowrap; will-change: transform, opacity;
+  }
+  .exb-ghost__tile { position: absolute; inset: 0; clip-path: var(--clip-cut-sm); background: var(--line-3); }
+  .exb-ghost__tile::before { content: ''; position: absolute; inset: 1px; clip-path: var(--clip-cut-sm); background: var(--plate-hi); box-shadow: var(--bevel); }
+  .exb-ghost__text { position: relative; }
+
+  /* ── lite / reduced motion: the same information, no loops, no blur, no flight ── */
+  html[data-fx="lite"] .exb-slot::after { display: none; }
+  html[data-fx="lite"] .exb-slot .exb-socket__line, html[data-fx="lite"] .exb-led { animation: none; }
+  html[data-fx="lite"] .exb-chip, html[data-fx="lite"] .exb-undo { transition-duration: var(--t-fast); transition-timing-function: linear; }
+  html[data-fx="lite"] .exb-ghost { display: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .exb-slot::after { display: none; }
+    .exb-slot .exb-socket__line, .exb-led { animation: none; }
+    .exb-chip, .exb-undo { transition-duration: var(--t-fast); transition-timing-function: linear; }
+    .exb-ghost { display: none; }
+  }
+  @media (forced-colors: active) {
+    .exb-chip, .exb-undo, .exb-tray, .exb-socket { clip-path: none; border: 1px solid ButtonText; }
+    .exb-slot[data-state="right"] .exb-socket { border-color: Highlight; }
+  }
+}

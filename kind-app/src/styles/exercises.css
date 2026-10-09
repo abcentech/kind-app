@@ -1,0 +1,199 @@
+/* owner: wave-2: exercises (ex-step) · the Go / No-Go step shell and the verdict sheet.  Classes: .ex-  (the Views own .exc- .exb- .exm-) */
+@layer screen {
+
+  /* ═══ The step ═══════════════════════════════════════════════════════════ */
+  .ex-step {
+    --ex-sheet-h: 0px; --ex-foot-h: 0px;
+    --ex-clear: max(0px, calc(var(--ex-sheet-h) - var(--ex-foot-h)));     /* how far the sheet reaches up over the body */
+    position: relative; display: flex; flex-direction: column; flex: 1 1 auto;
+    width: 100%; height: 100%; min-height: 0;
+    overflow: hidden; isolation: isolate; color: var(--ink);
+  }
+
+  .ex-body {
+    flex: 1 1 auto; min-height: 0;
+    display: flex; flex-direction: column; gap: var(--s-6);
+    padding: var(--s-4) var(--gutter) calc(var(--s-6) + var(--ex-clear));
+    scroll-padding-block: var(--s-4) calc(var(--s-4) + var(--ex-clear));
+    overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(180deg, transparent 0, var(--void) var(--s-3), var(--void) calc(100% - var(--s-5)), transparent 100%);
+            mask-image: linear-gradient(180deg, transparent 0, var(--void) var(--s-3), var(--void) calc(100% - var(--s-5)), transparent 100%);
+  }
+  .ex-body::-webkit-scrollbar { display: none; }
+
+  .ex-eyebrow { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); min-height: var(--s-6); }
+  .ex-eyebrow .k-label { font-size: var(--fs-xs); }
+
+  /* The question. Inter for a question about today's teaching; Newsreader when the question is about the Word itself. */
+  .ex-prompt {
+    margin: 0; color: var(--ink);
+    font: 600 var(--fs-xl)/1.18 var(--font-ui);
+    font: 600 clamp(var(--fs-xl), 6.6vw, var(--fs-2xl))/1.18 var(--font-ui);
+    letter-spacing: var(--track-tight); text-wrap: balance;
+  }
+  .ex-prompt[data-word] {
+    font: 500 var(--fs-xl)/1.26 var(--font-serif);
+    font: 500 clamp(var(--fs-xl), 6.6vw, var(--fs-2xl))/1.26 var(--font-serif);
+    letter-spacing: -.012em;
+  }
+
+  /* the verse a "where is this written?" question points at (the Views draw only the answers) */
+  .ex-ctx { margin: calc(var(--s-2) * -1) 0 0; padding-left: var(--s-4); border-left: 2px solid var(--line-3); }
+  .ex-ctx blockquote { margin: 0; color: var(--ink); font: italic 400 var(--fs-lg)/1.45 var(--font-serif); text-wrap: balance; }
+
+  .ex-view { display: flex; flex-direction: column; flex: 1 0 auto; min-height: 0; }
+  .ex-view > * { min-width: 0; }
+  .ex-missing { margin: 0; color: var(--ink-2); font: 400 var(--fs-base)/1.5 var(--font-ui); }
+
+  /* ═══ The footer: CHECK ═════════════════════════════════════════════════ */
+  .ex-foot {
+    position: relative; flex: none; display: grid; gap: var(--s-2);
+    padding: var(--s-3) var(--gutter) calc(var(--s-4) + var(--sab));
+    background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--carbon-0) 80%, transparent) 44%);
+  }
+  .ex-foot::before { content: ""; position: absolute; inset: 0 var(--gutter) auto; height: 1px; background: var(--line); }
+  .ex-step[data-graded] .ex-foot { visibility: hidden; }          /* the sheet owns the bottom now; also drops it from focus */
+
+  .ex-keys { display: none; user-select: none; -webkit-user-select: none; }
+  @media (hover: hover) and (pointer: fine) {
+    .ex-keys {
+      display: flex; justify-content: center; gap: var(--s-4);
+      font: 500 var(--fs-2xs)/1 var(--font-mono); letter-spacing: var(--track-mono); text-transform: uppercase; color: var(--ink-3);
+    }
+    .ex-keys span { display: inline-flex; align-items: center; gap: var(--s-1); }
+  }
+
+  /* ═══ The verdict sheet ═════════════════════════════════════════════════ */
+  .ex-verdict {
+    --ex-tone: var(--go); --ex-glow: var(--go-glow); --ex-wash: var(--go-wash);
+    position: absolute; left: 0; right: 0; bottom: 0; z-index: 3;
+    display: flex; flex-direction: column; max-height: min(88%, calc(100% - var(--s-12)));
+    border-radius: var(--r-xl) var(--r-xl) 0 0;
+    background: var(--carbon-1);
+    box-shadow: var(--shadow-3), 0 calc(var(--s-8) * -1) var(--s-16) calc(var(--s-6) * -1) var(--ex-wash);
+    color: var(--ink); outline: none;
+    animation: ex-sheet-in var(--t-slow) var(--ease-sheet) both;
+  }
+  .ex-verdict[data-tone="nogo"] { --ex-tone: var(--nogo); --ex-glow: var(--nogo-glow); --ex-wash: var(--nogo-wash); }
+  .ex-verdict[data-leaving] { animation: ex-sheet-out var(--t-fast) var(--ease-in) both; }
+
+  /* glass is a material for sheets: translucent over the answers, solid when effects are lite */
+  html:not([data-fx="lite"]) .ex-verdict {
+    background: color-mix(in oklab, var(--carbon-1) 90%, transparent);
+    backdrop-filter: blur(28px) saturate(1.5); -webkit-backdrop-filter: blur(28px) saturate(1.5);
+  }
+  /* the catch-light, tinted by the verdict, falling away down the sides */
+  .ex-verdict::before {
+    content: ""; position: absolute; inset: 0; z-index: 3; padding: 1px; border-radius: inherit; pointer-events: none;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--ex-tone) 55%, var(--rim-hi)), var(--line-2) 24%, var(--line) 62%, transparent);
+    -webkit-mask: linear-gradient(var(--void) 0 0) content-box, linear-gradient(var(--void) 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+  }
+  .ex-verdict::after {
+    content: ""; position: absolute; inset: 0 0 auto 0; height: 7rem; z-index: 0; border-radius: inherit; pointer-events: none;
+    background: radial-gradient(120% 100% at 50% 0, var(--ex-wash), transparent 70%), var(--sheen);
+  }
+  /* the status strip: a lit filament along the top edge */
+  .ex-verdict__bar {
+    position: absolute; top: 0; left: var(--s-10); right: var(--s-10); z-index: 4; height: 2px; border-radius: 0 0 2px 2px;
+    background: linear-gradient(90deg, transparent, var(--ex-tone) 22%, var(--ex-tone) 78%, transparent);
+    box-shadow: 0 0 var(--s-4) 1px var(--ex-glow);
+    transform-origin: 50% 0; animation: ex-bar var(--t-slower) var(--ease-out) var(--t-fast) both;
+  }
+
+  .ex-verdict__scroll {
+    position: relative; z-index: 1; flex: 1 1 auto; min-height: 0;
+    display: grid; gap: var(--s-4); align-content: start;
+    padding: var(--s-6) var(--gutter) var(--s-4);
+    overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none;
+  }
+  .ex-verdict__scroll::-webkit-scrollbar { display: none; }
+  .ex-verdict__cta { position: relative; z-index: 1; flex: none; padding: var(--s-1) var(--gutter) calc(var(--s-4) + var(--sab)); }
+
+  .ex-verdict__head { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: var(--s-4); }
+  .ex-verdict__title { display: grid; gap: var(--s-1); min-width: 0; }
+  .ex-verdict__status { font-size: var(--fs-xs); }
+  .ex-verdict__head-text {
+    margin: 0; color: var(--ink); font: 600 var(--fs-xl)/1.1 var(--font-ui); letter-spacing: var(--track-tight);
+  }
+
+  /* the status LED: a titanium bezel round a lit lens, with the glyph that says it without colour */
+  .ex-led {
+    --ex-d: calc(var(--tap) + var(--s-1));
+    position: relative; display: block; flex: none; width: var(--ex-d); height: var(--ex-d); padding: var(--s-1);
+    border-radius: 50%; background: var(--titanium);
+    box-shadow: var(--bevel), var(--shadow-1), 0 0 var(--s-6) calc(var(--s-1) * -1) var(--ex-glow);
+    animation: ex-led-on var(--t-slower) var(--ease-out) var(--t-fast) both;
+  }
+  .ex-led__lens {
+    display: grid; place-items: center; width: 100%; height: 100%; border-radius: 50%; color: var(--void);
+    background: radial-gradient(circle at 34% 26%, color-mix(in srgb, var(--ex-tone) 38%, var(--ink)) 0, var(--ex-tone) 46%, color-mix(in srgb, var(--ex-tone) 56%, var(--void)) 100%);
+    box-shadow: inset 0 1px 1px color-mix(in srgb, var(--ink) 55%, transparent), inset 0 calc(var(--s-1) * -.5) var(--s-1) color-mix(in srgb, var(--void) 45%, transparent);
+  }
+
+  /* +10 XP: telemetry, popped on a spring after the sheet has landed */
+  .ex-xp {
+    display: inline-flex; align-items: center; gap: var(--s-1); align-self: start;
+    padding-top: var(--s-1); color: var(--tele); text-shadow: 0 0 var(--s-4) var(--tele-glow);
+    font: 600 var(--fs-lg)/1 var(--font-mono); letter-spacing: var(--track-mono); font-variant-numeric: tabular-nums;
+    transform-origin: 100% 50%; animation: ex-xp-pop var(--spring-bounce-ms) var(--spring-bounce) var(--t-base) both;
+  }
+
+  .ex-line { margin: 0; color: var(--ink-2); font: 400 var(--fs-base)/1.5 var(--font-ui); text-wrap: pretty; }
+  .ex-quote { display: grid; gap: var(--s-2); margin: 0; }
+  .ex-quote blockquote { margin: 0; }
+  .ex-quote p { margin: 0; color: var(--ink); font: italic 400 var(--fs-lg)/1.4 var(--font-serif); text-wrap: balance; }
+  .ex-quote figcaption { color: var(--ink-3); font: 500 var(--fs-2xs)/1 var(--font-mono); letter-spacing: var(--track-mono); text-transform: uppercase; }
+
+  /* the answer, set down on a chamfered plate in the Go colour: this is the line to keep */
+  .ex-answer {
+    padding: 1px; clip-path: var(--clip-cut-sm);
+    background: linear-gradient(160deg, color-mix(in srgb, var(--go) 72%, var(--ink)), color-mix(in srgb, var(--go) 38%, var(--carbon-3)) 58%, color-mix(in srgb, var(--go) 22%, var(--carbon-2)));
+  }
+  .ex-answer__in {
+    --ex-c: calc(var(--cut-sm) - .414px);
+    display: grid; gap: var(--s-2); padding: var(--s-3) var(--s-4) var(--s-4);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--go) 12%, var(--carbon-2)), color-mix(in srgb, var(--go) 6%, var(--carbon-1)));
+    clip-path: polygon(var(--ex-c) 0, 100% 0, 100% calc(100% - var(--ex-c)), calc(100% - var(--ex-c)) 100%, 0 100%, 0 var(--ex-c));
+  }
+  .ex-answer__label { font-size: var(--fs-xs); }
+  .ex-answer__text { margin: 0; color: var(--ink); font: 600 var(--fs-lg)/1.3 var(--font-ui); letter-spacing: var(--track-tight); text-wrap: pretty; }
+  .ex-answer__text[data-short] { font-size: var(--fs-xl); }
+  .ex-answer__text[data-word] { font: 500 var(--fs-lg)/1.4 var(--font-serif); letter-spacing: normal; }
+  .ex-answer__text[data-word][data-short] { font-size: var(--fs-xl); }
+  .ex-pairs { display: grid; margin: 0; padding: 0; list-style: none; }
+  .ex-pairs li {
+    display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); gap: var(--s-3); padding: var(--s-2) 0;
+    border-top: 1px solid var(--line); font: 500 var(--fs-sm)/1.35 var(--font-ui);
+  }
+  .ex-pairs li:first-child { border-top: 0; }
+  .ex-pairs li span:first-child { color: var(--ink); font-weight: 600; }
+  .ex-pairs li span:last-child { color: var(--ink-2); }
+
+  .ex-explain { margin: 0; padding-top: var(--s-4); border-top: 1px solid var(--line); color: var(--ink-2); font: 400 var(--fs-md)/1.5 var(--font-ui); text-wrap: pretty; }
+  .ex-note { display: flex; align-items: center; gap: var(--s-2); margin: 0; color: var(--ink-3); font: 400 var(--fs-sm)/1.4 var(--font-ui); }
+  .ex-note svg { flex: none; }
+
+  /* ═══ Motion ════════════════════════════════════════════════════════════ */
+  @keyframes ex-sheet-in  { from { transform: translate3d(0, 100%, 0); } to { transform: translate3d(0, 0, 0); } }
+  @keyframes ex-sheet-out { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(0, 100%, 0); } }
+  @keyframes ex-bar       { from { transform: scaleX(.2); opacity: 0; } to { transform: scaleX(1); opacity: 1; } }
+  /* the LED powers up the way an annunciator does: dark, a hard flash, a dip, then steady */
+  @keyframes ex-led-on {
+    0%   { filter: brightness(.35) saturate(.3); }
+    34%  { filter: brightness(1.45) saturate(1.2); }
+    52%  { filter: brightness(.72) saturate(.9); }
+    100% { filter: none; }
+  }
+  @keyframes ex-xp-pop    { from { transform: scale(.5) translateY(var(--s-2)); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+  @keyframes ex-fade      { from { opacity: 0; } to { opacity: 1; } }
+
+  html[data-fx="lite"] .ex-verdict { animation: ex-fade var(--t-fast) linear both; }
+  html[data-fx="lite"] .ex-verdict[data-leaving] { animation: none; opacity: 0; }
+  html[data-fx="lite"] :is(.ex-verdict__bar, .ex-led, .ex-xp) { animation: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .ex-verdict { animation: ex-fade var(--t-fast) linear both; }
+    .ex-verdict[data-leaving] { animation: none; opacity: 0; }
+    :is(.ex-verdict__bar, .ex-led, .ex-xp) { animation: none; }
+  }
+}

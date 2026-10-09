@@ -1,0 +1,212 @@
+/* owner: locker-cards (prefix .lcc-) */
+@layer screen {
+  .lcc, .lcc-viewer {
+    /* the chamfered card outline, the same cut as the engraved plate (CodeCardArt) */
+    --lcc-clip: polygon(8.667% 0, 100% 0, 100% 93.81%, 91.333% 100%, 0 100%, 0 6.19%);
+    --lcc-loop: 6400ms;   /* one glint cycle; ambient loops are longer than any motion token */
+  }
+
+  /* ═══ the collection ═══ */
+  .lcc {
+    display: flex; flex-direction: column; gap: var(--s-5);
+    padding: var(--s-2) var(--lcc-gutter, var(--s-4)) var(--s-10);
+  }
+
+  .lcc-head { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: var(--s-3) var(--s-4); }
+  .lcc-count { display: grid; gap: var(--s-1); }
+  .lcc-eyebrow {
+    font: 600 var(--fs-sm)/1 var(--font-display); text-transform: uppercase; letter-spacing: var(--track-label); color: var(--ink-3);
+  }
+  .lcc-big { margin: 0; display: flex; align-items: baseline; gap: var(--s-1); font-variant-numeric: tabular-nums; }
+  .lcc-big b { font: 700 var(--fs-4xl)/.9 var(--font-display); letter-spacing: -.01em; color: var(--ink); }
+  .lcc-big span { font: 500 var(--fs-md)/1 var(--font-mono); letter-spacing: var(--track-mono); color: var(--ink-3); }
+
+  /* a tick per card: lit when dealt, gold when gold */
+  .lcc-meter {
+    grid-column: 1 / -1;
+    display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: calc(var(--s-1) / 2);
+  }
+  .lcc-meter i {
+    height: var(--s-1); background: var(--carbon-4); transform-origin: 50% 100%;
+    animation: lcc-tick var(--t-base) var(--ease-out) backwards; animation-delay: calc(var(--i) * 14ms);
+  }
+  .lcc-meter i[data-on] { background: var(--ink-2); }
+  .lcc-meter i[data-rare] { background: color-mix(in srgb, var(--gold-2) 30%, var(--carbon-4)); }
+  .lcc-meter i[data-rare][data-on] { background: var(--gold-2); box-shadow: 0 0 10px -2px var(--gold-glow); }
+  @keyframes lcc-tick { from { opacity: 0; transform: scaleY(.2); } }
+
+  .lcc-series { display: flex; gap: var(--s-2); overflow-x: auto; margin-inline: calc(var(--lcc-gutter, var(--s-4)) * -1); padding-inline: var(--lcc-gutter, var(--s-4)); scrollbar-width: none; }
+  .lcc-series::-webkit-scrollbar { display: none; }
+  .lcc-series > * { flex: none; }
+
+  .lcc-empty { padding-block: var(--s-4) var(--s-2); }
+
+  /* the quilt: the right-hand column hangs half a card lower, like stitched leather panels */
+  .lcc-grid {
+    list-style: none; margin: 0; padding: 0 0 var(--s-10);
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-6) var(--s-4);
+  }
+  .lcc-cell { min-width: 0; }
+  .lcc-cell:nth-child(even) { transform: translateY(var(--s-8)); }
+
+  .lcc-card {
+    display: flex; flex-direction: column; gap: var(--s-3); width: 100%;
+    padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+    animation: lcc-in var(--t-slow) var(--ease-out) backwards;
+  }
+  @keyframes lcc-in { from { opacity: 0; transform: translateY(var(--s-4)) scale(.96); } }
+  .lcc-card:focus-visible { outline: 2px solid var(--tele); outline-offset: var(--s-1); border-radius: var(--r-xs); }
+
+  .lcc-face {
+    position: relative; display: block; width: 100%; aspect-ratio: 5 / 7;
+    clip-path: var(--lcc-clip); contain: layout paint; transform: translateZ(0);
+    transition: transform var(--spring-snap-ms) var(--spring-snap);
+  }
+  .lcc-face .art-codecard { content-visibility: visible; }   /* 26 static plates: pay the raster once, scroll for free */
+  .lcc-card:active .lcc-face { transform: translateZ(0) scale(.97); transition-duration: var(--t-instant); transition-timing-function: linear; }
+
+  /* locked: a hairline-rimmed carbon silhouette with a hex lattice embossed into it */
+  .lcc-face--locked { background: var(--line-2); }
+  .lcc-plate {
+    position: absolute; inset: var(--hair); clip-path: var(--lcc-clip);
+    display: grid; place-items: center;
+    background: linear-gradient(165deg, var(--carbon-3), var(--carbon-1) 62%, var(--carbon-0));
+  }
+  .lcc-hex {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, var(--line-3), var(--line) 55%, transparent);
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='17.32' height='30' viewBox='0 0 17.32 30'%3E%3Cpath d='M0 5L8.66 0L17.32 5M0 5V15M17.32 5V15M0 15L8.66 20L17.32 15M8.66 20V30' fill='none' stroke='%23000' stroke-width='.9'/%3E%3C/svg%3E") center top / var(--s-5) auto repeat;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='17.32' height='30' viewBox='0 0 17.32 30'%3E%3Cpath d='M0 5L8.66 0L17.32 5M0 5V15M17.32 5V15M0 15L8.66 20L17.32 15M8.66 20V30' fill='none' stroke='%23000' stroke-width='.9'/%3E%3C/svg%3E") center top / var(--s-5) auto repeat;
+  }
+  .lcc-num {
+    position: relative; font: 700 var(--fs-5xl)/1 var(--font-display); font-variant-numeric: tabular-nums; letter-spacing: -.01em;
+    color: var(--carbon-3);
+    text-shadow: 0 var(--hair) 0 var(--rim-lo), 0 calc(var(--hair) * -1) 0 var(--carbon-0), 0 var(--s-1) var(--s-3) var(--carbon-0);
+  }
+  .lcc-lock { position: absolute; bottom: var(--s-4); left: 50%; translate: -50% 0; color: var(--ink-4); }
+
+  .lcc-cap { display: flex; flex-direction: column; gap: var(--s-2); min-height: calc(var(--fs-sm) * 1.4 * 3 + var(--s-6)); }
+  .lcc-line {
+    font: 400 var(--fs-sm)/1.4 var(--font-serif); color: var(--ink-2); text-wrap: pretty;
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden;
+  }
+  .lcc-redact { display: grid; gap: var(--s-2); padding-top: var(--s-1); }
+  .lcc-redact i { height: var(--s-1); border-radius: var(--r-full); background: var(--carbon-3); width: 86%; }
+  .lcc-redact i + i { width: 54%; }
+  .lcc-day { font: 500 var(--fs-2xs)/1 var(--font-mono); letter-spacing: var(--track-mono); color: var(--ink-3); }
+  .lcc-day em { font-style: normal; color: var(--gold-2); }
+  .lcc-card[data-rare][data-owned] .lcc-line { color: var(--ink); }
+
+  /* gold: a slow diagonal glint, compositor-only, staggered so the page never flashes in unison */
+  .lcc-shine {
+    position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(105deg, transparent 36%, color-mix(in srgb, var(--gold-1) 50%, transparent) 50%, transparent 64%);
+    transform: translateX(-130%);
+    animation: lcc-sweep var(--lcc-loop) var(--ease-io) infinite;
+    animation-delay: calc(var(--i, 0) * var(--lcc-loop) / -6);
+  }
+  @keyframes lcc-sweep { 0%, 58% { transform: translateX(-130%); } 100% { transform: translateX(130%); } }
+
+  /* a locked card refuses */
+  .lcc-card.is-shake .lcc-face { animation: lcc-shake var(--t-slow) var(--ease-out); }
+  @keyframes lcc-shake {
+    15% { transform: translateX(calc(var(--s-1) * -1.5)); } 30% { transform: translateX(calc(var(--s-1) * 1.5)); }
+    48% { transform: translateX(calc(var(--s-1) * -1)); }  66% { transform: translateX(calc(var(--s-1) * .6)); }
+    82% { transform: translateX(calc(var(--s-1) * -.25)); }
+  }
+
+  /* ═══ the viewer ═══ */
+  .lcc-viewer {
+    position: fixed; inset: 0; z-index: var(--z-sheet);
+    display: grid; justify-items: center;
+    background: var(--void);
+    overscroll-behavior: contain; touch-action: none; user-select: none; -webkit-user-select: none;
+    animation: lcc-fade var(--t-base) var(--ease-out) backwards;
+    transition: opacity var(--t-base) var(--ease-in);
+  }
+  .lcc-viewer.is-closing { opacity: 0; pointer-events: none; }
+  .lcc-viewer::before, .lcc-viewer::after { content: ""; position: absolute; inset: 0; pointer-events: none; transition: opacity var(--t-slow) var(--ease-out); }
+  .lcc-viewer::before { background: radial-gradient(62% 42% at 50% 44%, var(--tele-wash), transparent 72%); }
+  .lcc-viewer::after { background: radial-gradient(62% 44% at 50% 44%, color-mix(in srgb, var(--gold-2) 17%, transparent), transparent 74%); opacity: 0; }
+  .lcc-viewer[data-rare]::before { opacity: 0; }
+  .lcc-viewer[data-rare]::after { opacity: 1; }
+  @keyframes lcc-fade { from { opacity: 0; } }
+  @keyframes lcc-rise { from { opacity: 0; transform: translateY(var(--s-3)); } }
+
+  .lcc-col {
+    position: relative; display: flex; flex-direction: column; width: 100%; max-width: var(--app-max); height: 100%; min-height: 0;
+    padding-top: var(--sat); padding-bottom: var(--sab);
+  }
+
+  .lcc-top { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: var(--s-2) var(--s-3); min-height: var(--hud-h); animation: lcc-rise var(--t-slow) var(--ease-out) backwards; }
+  .lcc-top > :first-child { justify-self: start; }
+  .lcc-topr { justify-self: end; padding-right: var(--s-1); }
+  .lcc-pager { display: flex; align-items: center; gap: var(--s-1); }
+  .lcc-vcount { min-width: 7ch; text-align: center; font: 500 var(--fs-sm)/1 var(--font-mono); letter-spacing: var(--track-mono); color: var(--ink-2); font-variant-numeric: tabular-nums; }
+
+  /* the stage is a size container so the card can be sized by what is left over, whatever the phone */
+  .lcc-stage { position: relative; flex: 1 1 0; min-height: 0; container-type: size; touch-action: none; cursor: grab; }
+  .lcc-stage:active { cursor: grabbing; }
+  .lcc-track { position: absolute; inset: 0; display: flex; will-change: transform; transition: transform var(--spring-soft-ms) var(--spring-soft); }
+  .lcc-track[data-drag] { transition: none; }
+  .lcc-slide { flex: 0 0 100%; min-width: 0; display: grid; place-items: center; --lcc-cw: min(78cqw, calc(94cqh * 5 / 7)); }
+  .lcc-fly { width: var(--lcc-cw); }
+
+  .lcc-tilt {
+    position: relative; width: 100%; aspect-ratio: 5 / 7;
+    transform: perspective(calc(var(--lcc-cw) * 3.4)) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+    transform-origin: 50% 50%;
+  }
+  .lcc-tilt[data-tilting] { will-change: transform; }
+  /* the card's cast light and shadow live outside the clip, one blurred plate behind it */
+  .lcc-halo {
+    position: absolute; inset: 6% -8% -5%; z-index: -1; pointer-events: none;
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--tele) 30%, transparent), transparent);
+    filter: blur(var(--s-5)); opacity: calc(.55 + var(--tilt-on, 0) * .4);
+  }
+  .lcc-tilt[data-rare] .lcc-halo { background: radial-gradient(closest-side, var(--gold-glow), transparent); opacity: calc(.7 + var(--tilt-on, 0) * .3); }
+
+  /* laminate over the print: a soft white sheen on plain stock, a prismatic edge on gold, both riding --gx */
+  .lcc-spec {
+    position: absolute; inset: 0; pointer-events: none; clip-path: var(--lcc-clip);
+    background: linear-gradient(112deg, transparent calc(var(--gx, 50%) - 26%), color-mix(in srgb, var(--ink) 18%, transparent) var(--gx, 50%), transparent calc(var(--gx, 50%) + 26%));
+    opacity: calc(var(--tilt-on, 0) * .9);
+  }
+  .lcc-tilt[data-rare] .lcc-spec {
+    background: linear-gradient(112deg,
+      transparent calc(var(--gx, 50%) - 36%),
+      color-mix(in srgb, var(--tele) 20%, transparent) calc(var(--gx, 50%) - 18%),
+      color-mix(in srgb, var(--gold-1) 46%, transparent) var(--gx, 50%),
+      color-mix(in srgb, var(--ignite-2) 26%, transparent) calc(var(--gx, 50%) + 18%),
+      transparent calc(var(--gx, 50%) + 36%));
+    opacity: calc(.3 + var(--tilt-on, 0) * .7);
+  }
+  .lcc-tilt .lcc-shine { clip-path: var(--lcc-clip); }
+  .lcc-shine--viewer { animation-delay: var(--t-slower); }
+
+  .lcc-info { padding: var(--s-3) var(--s-6) var(--s-2); text-align: center; animation: lcc-swap var(--t-base) var(--ease-out) backwards; }
+  @keyframes lcc-swap { from { opacity: 0; transform: translateY(var(--s-2)); } }
+  .lcc-meta { margin: 0 0 var(--s-1); font: 500 var(--fs-2xs)/1 var(--font-mono); letter-spacing: var(--track-mono); color: var(--ink-3); }
+  .lcc-vtitle { margin: 0 0 var(--s-2); font: 600 var(--fs-md)/1.1 var(--font-display); text-transform: uppercase; letter-spacing: var(--track-label); color: var(--ink-2); }
+  .lcc-viewer[data-rare] .lcc-vtitle { color: var(--gold-1); }
+  .lcc-quote { margin: 0; font: 400 var(--fs-lg)/1.36 var(--font-serif); color: var(--ink); text-wrap: balance; }
+
+  .lcc-actions {
+    display: grid; grid-template-columns: 1fr 1.35fr; gap: var(--s-3); padding: var(--s-3) var(--s-4) var(--s-4);
+    animation: lcc-rise var(--t-slow) var(--ease-out) var(--t-instant) backwards;
+  }
+
+  /* ═══ lite & reduced motion: same information, no movement ═══ */
+  html[data-fx="lite"] .lcc-card { animation: lcc-fade var(--t-fast) linear backwards; animation-delay: 0ms; }
+  html[data-fx="lite"] .lcc-meter i { animation: none; }
+  html[data-fx="lite"] .lcc-cell:nth-child(even) { transform: none; }
+  html[data-fx="lite"] .lcc-grid { padding-bottom: 0; }
+  html[data-fx="lite"] :is(.lcc-shine, .lcc-halo) { display: none; }
+  html[data-fx="lite"] .lcc-face { transition: none; }
+  html[data-fx="lite"] .lcc-card.is-shake .lcc-face { animation: none; }
+  html[data-fx="lite"] .lcc-track { transition: transform var(--t-fast) linear; }
+  html[data-fx="lite"] :is(.lcc-top, .lcc-actions, .lcc-info) { animation: lcc-fade var(--t-fast) linear backwards; }
+  html[data-fx="lite"] .lcc-tilt { transform: none; }
+  html[data-fx="lite"] .lcc-spec { display: none; }
+}

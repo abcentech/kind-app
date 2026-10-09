@@ -1,0 +1,1127 @@
+/* owner: ui-core agent
+ *
+ * The instrument set: Button, IconButton, Chip, Tag, Panel, Row, Switch, Segmented, Slider, Progress, SegmentBar,
+ * Skeleton, Stat, Kbd, Empty, Label.  Prefix .k-  ·  layer ui  ·  tokens only.
+ *
+ * Three conventions run through the file:
+ *   1. State is three numbers on the element — --k-hv (hover), --k-pr (pressed), --k-fc (focus) — and every effect is a
+ *      calc() of them. Hover/press/focus are therefore written once per component, not once per variant, and the
+ *      specimen sheet can force them with data-state="hover|active|focus".
+ *   2. Chamfered silhouettes are drawn as two stacked clip-pathed layers: an opaque rim (the 1px bezel, a gradient)
+ *      and the fill inset by 1px. The inset layer's cut is  cut − .586px  so the bezel is a true 1px on the diagonals.
+ *      The host element is never clipped, so drop-shadow glows, focus rings and badges survive.
+ *   3. The release of every pressable is a spring (--spring-snap); the press in is --t-instant.
+ */
+@layer ui {
+
+@keyframes k-tick   { to { transform: rotate(360deg); } }
+@keyframes k-breathe { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
+@keyframes k-halo   { 0%, 100% { opacity: .0; transform: scale(.96); } 50% { opacity: .7; transform: scale(1.04); } }
+@keyframes k-sweep  { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+@keyframes k-seek   { from { transform: translateX(-100%); } to { transform: translateX(290%); } }
+@keyframes k-in     { from { opacity: 0; } to { opacity: 1; } }
+@keyframes k-seg-pop   { 0% { filter: brightness(2.6) saturate(.6); } 100% { filter: brightness(1) saturate(1); } }
+@keyframes k-seg-flare { 0% { opacity: 1; transform: scale(1.1, 3.4); } 100% { opacity: .85; transform: none; } }
+@keyframes k-surge-a { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+@keyframes k-surge-b { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+/* the release of the launch control: a real spring is sampled, but its overshoot on a 2px sink is a rounding error,
+   so the overshoot is authored — pop past rest, kiss under it, settle (peak ≈ 38% of --spring-snap-ms) */
+@keyframes k-release {
+  0%   { transform: translateY(calc(var(--k-hv) * -1px + 2px)) scale(.98); animation-timing-function: var(--ease-out); }
+  38%  { transform: translateY(calc(var(--k-hv) * -1px - 1.5px)) scale(1.016); animation-timing-function: var(--ease-io); }
+  66%  { transform: translateY(calc(var(--k-hv) * -1px + .5px)) scale(.996); animation-timing-function: var(--ease-io); }
+  100% { transform: translateY(calc(var(--k-hv) * -1px)) scale(1); }
+}
+@keyframes k-flare { from { filter: brightness(1.2); } to { filter: brightness(calc(1 + var(--k-hv) * .1)); } }
+
+/* the tick-ring spinner, standalone. Stepped, not spun: it reads as an instrument. Inside a Button .k-btn__spin takes over. */
+.k-spin { display: inline-block; flex: none; vertical-align: middle; color: var(--tele); animation: k-tick var(--t-hero) steps(12) infinite; }
+
+/* ═════════════════════════════════════════════ BUTTON ══════════════════════════════════════════════════════════ */
+
+.k-btn {
+  /* the a11y layer's global :focus-visible outline (a rectangle) would sit on top of the chamfered ring below —
+     it is steered with its own hook; --ring-w still scales our ring (more-contrast mode) */
+  --ring: transparent;
+  /* geometry — lg is the default; md / sm below */
+  --k-h: calc(var(--tap) + var(--s-2));          /* 56 */
+  --k-cut: var(--cut);
+  --k-px: var(--s-8);
+  --k-fs: var(--fs-lg);
+  --k-gap: 10px;
+  --k-ico: 24px;
+  --k-gs: 1;                                     /* glow scale */
+  /* state amounts, 0 → 1 */
+  --k-hv: 0;  --k-pr: 0;  --k-fc: 0;
+  /* palette — primary by default; variants override */
+  --k-ink: var(--ink-on-ignite);
+  --k-rim: linear-gradient(180deg,
+    color-mix(in srgb, var(--ignite-3) 38%, var(--ink)) 0%,
+    var(--ignite-3) 15%,
+    var(--ignite-2) 46%,
+    color-mix(in srgb, var(--ignite-1) 58%, var(--void)) 100%);
+  --k-fill: var(--ignite);
+  --k-glow: var(--ignite-glow);
+  --k-halo: var(--ignite-flat);
+  --k-shade: color-mix(in srgb, var(--void) 62%, transparent);
+  --k-sheen-o: 1;
+  --k-grain: .42;
+  /* the two light colours the sheen and keylines are made of: shade (low) and catch-light (hi), tinted per variant so a
+     warm plate never gets a grey shadow or a white glare — grey over orange is what makes a gradient look like mud */
+  --k-low: color-mix(in srgb, var(--ignite-1) 55%, var(--void));
+  --k-hi: color-mix(in srgb, var(--ignite-3) 68%, var(--ink));
+  --k-filter:
+    drop-shadow(0 1px 0 var(--k-shade))
+    drop-shadow(0 calc((10px - 6px * var(--k-pr)) * var(--k-gs)) calc((22px + 6px * var(--k-hv) - 12px * var(--k-pr)) * var(--k-gs)) color-mix(in srgb, var(--k-glow) 62%, transparent))
+    drop-shadow(0 calc(2px * var(--k-gs)) calc(7px * var(--k-gs)) color-mix(in srgb, var(--k-glow) calc(48% - 22% * var(--k-pr)), transparent));
+
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  height: var(--k-h);
+  min-width: var(--k-h);
+  margin: 0;
+  padding: 0 var(--k-px);
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--k-ink);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--k-fs);
+  line-height: 1;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  vertical-align: middle;
+  -webkit-appearance: none;
+  appearance: none;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+  cursor: pointer;
+  outline: 0;
+  filter: var(--k-filter);
+  transform: translateY(calc(var(--k-hv) * -1px + var(--k-pr) * 2px)) scale(calc(1 - var(--k-pr) * .02));
+  transition: transform var(--spring-snap-ms) var(--spring-snap), filter var(--t-base) var(--ease-out);
+}
+.k-btn[data-size="md"] { --k-h: var(--tap); --k-cut: calc(var(--cut) * .86); --k-px: var(--s-6); --k-fs: var(--fs-base); --k-gap: var(--s-2); --k-ico: 20px; --k-gs: .86; }
+.k-btn[data-size="sm"] { --k-h: var(--s-10); --k-cut: var(--cut-sm); --k-px: var(--s-5); --k-fs: var(--fs-md); --k-gap: 6px; --k-ico: 16px; --k-gs: .7; }
+.k-btn[data-size="sm"]::after { content: ""; position: absolute; inset: calc(var(--s-1) * -1) 0; }  /* 48px hit area on a 40px plate */
+.k-btn[data-full] { display: flex; width: 100%; }
+.k-btn[data-only] { --k-px: 0; width: var(--k-h); }
+.k-btn[data-size="sm"][data-only]::after { inset: calc(var(--s-1) * -1); }
+
+/* silhouette layers — --c is the chamfer for whichever layer is being painted */
+.k-btn__face, .k-btn__fill, .k-btn__sheen, .k-btn__spot, .k-btn__glint, .k-btn__halo::before, .k-btn__ring {
+  clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c));
+}
+/* overflow: clip-path alone does not stop the sweeping glint from widening the page's scrollable area */
+.k-btn__face  { --c: var(--k-cut); position: absolute; inset: 0; z-index: 1; overflow: hidden; background: var(--k-rim); pointer-events: none; }
+.k-btn__fill  { --c: calc(var(--k-cut) - .586px); position: absolute; inset: 1px; background: var(--k-fill); filter: brightness(calc(1 + var(--k-hv) * .1 - var(--k-pr) * .09)); transition: filter var(--t-fast) var(--ease-out); }
+/* powder-coat grain: the app's own film grain, soft-lit into the plate so a flat gradient reads as a sprayed metal part */
+.k-btn__fill::after { content: ""; position: absolute; inset: 0; background: var(--grain); background-size: 160px 160px; mix-blend-mode: soft-light; opacity: var(--k-grain); pointer-events: none; }
+/* one continuous light model — no hard gloss split: a soft top-lit falloff, a low shade, and a broad curved reflection
+   on the right third. The 1px rim carries the specular; the keylines below carry the machining. */
+.k-btn__sheen { --c: calc(var(--k-cut) - .586px); position: absolute; inset: 1px; opacity: calc(var(--k-sheen-o) * (1 - var(--k-pr) * .6));
+  background:
+    linear-gradient(105deg, transparent 56%, color-mix(in srgb, var(--k-hi) 9%, transparent) 67%, transparent 80%),
+    linear-gradient(180deg, color-mix(in srgb, var(--k-hi) 25%, transparent) 0%, color-mix(in srgb, var(--k-hi) 7%, transparent) 36%, transparent 60%),
+    linear-gradient(180deg, transparent 58%, color-mix(in srgb, var(--k-low) 30%, transparent) 100%);
+  transition: opacity var(--t-fast) var(--ease-out); }
+/* engraved keyline: a 1px groove 2px inside the bezel (dark wall, then the lit wall under it), cut along the chamfer */
+.k-btn__sheen::before, .k-btn__sheen::after {
+  --rw: 1px;
+  content: ""; position: absolute; opacity: var(--k-key, 1);
+  clip-path: polygon(
+    var(--co) 0, 100% 0, 100% calc(100% - var(--co)), calc(100% - var(--co)) 100%, 0 100%, 0 var(--co), var(--co) 0,
+    calc(var(--rw) + var(--ci)) var(--rw),
+    var(--rw) calc(var(--rw) + var(--ci)), var(--rw) calc(100% - var(--rw)),
+    calc(100% - var(--rw) - var(--ci)) calc(100% - var(--rw)), calc(100% - var(--rw)) calc(100% - var(--rw) - var(--ci)),
+    calc(100% - var(--rw)) var(--rw), calc(var(--rw) + var(--ci)) var(--rw));
+}
+.k-btn__sheen::before { inset: 1px; --co: calc(var(--k-cut) - 1.172px); --ci: calc(var(--k-cut) - 1.758px); background: color-mix(in srgb, var(--k-low) var(--k-key-dark, 34%), transparent); }
+.k-btn__sheen::after  { inset: 2px; --co: calc(var(--k-cut) - 1.758px); --ci: calc(var(--k-cut) - 2.344px); background: color-mix(in srgb, var(--k-hi) var(--k-key-lit, 30%), transparent); }
+/* the light that follows you: a soft specular under the cursor on hover, a bloom from the fingertip on press */
+.k-btn__spot { --c: calc(var(--k-cut) - .586px); position: absolute; inset: 1px; pointer-events: none; mix-blend-mode: soft-light;
+  background: radial-gradient(circle 88px at var(--k-mx, 50%) var(--k-my, 0%), color-mix(in srgb, var(--ink) 78%, transparent), transparent 100%);
+  opacity: calc(var(--k-hv) * .55 + var(--k-pr) * .5);
+  transition: opacity var(--t-base) var(--ease-out); }
+.k-btn__glint { --c: calc(var(--k-cut) - .586px); position: absolute; inset: 1px; overflow: hidden; opacity: 0; transform: translateX(-110%);
+  background: linear-gradient(104deg, transparent 38%, color-mix(in srgb, var(--ink) 42%, transparent) 50%, transparent 62%);
+  transition: transform var(--t-slower) var(--ease-out), opacity var(--t-fast) linear; }
+
+.k-btn__in    { position: relative; z-index: 2; display: inline-flex; align-items: center; justify-content: center; gap: var(--k-gap); transition: opacity var(--t-fast) var(--ease-out); }
+.k-btn__label { margin-right: calc(var(--track-label) * -1); translate: 0 -.03em; text-shadow: 0 1px 0 color-mix(in srgb, var(--ignite-3) 55%, transparent); }
+.k-btn__icon  { flex: none; width: var(--k-ico); height: var(--k-ico); }
+
+/* focus ring: a 2px --tele bezel 2px off the plate, following the chamfer. One polygon with a zero-width slit (the
+   "keyhole") so the gap stays truly transparent instead of being painted in a guessed background colour. */
+.k-btn__ring, .k-iconbtn__ring {
+  --rg: calc(var(--s-1) / 2);                              /* the air between plate and ring */
+  --rw: var(--ring-w, calc(var(--s-1) / 2));               /* ring width */
+  --co: calc(var(--k-cut) + (var(--rg) + var(--rw)) * .586);
+  --ci: calc(var(--k-cut) + var(--rg) * .586);
+  position: absolute; inset: calc((var(--rg) + var(--rw)) * -1); z-index: 0; pointer-events: none;
+  background: var(--tele);
+  opacity: var(--k-fc);
+  transition: opacity var(--t-fast) var(--ease-out);
+  clip-path: polygon(
+    var(--co) 0, 100% 0, 100% calc(100% - var(--co)), calc(100% - var(--co)) 100%, 0 100%, 0 var(--co), var(--co) 0,
+    calc(var(--rw) + var(--ci)) var(--rw),
+    var(--rw) calc(var(--rw) + var(--ci)), var(--rw) calc(100% - var(--rw)),
+    calc(100% - var(--rw) - var(--ci)) calc(100% - var(--rw)), calc(100% - var(--rw)) calc(100% - var(--rw) - var(--ci)),
+    calc(100% - var(--rw)) var(--rw), calc(var(--rw) + var(--ci)) var(--rw));
+}
+
+/* the optional "ready" breath behind a primary action (Launch Bar) */
+.k-btn__halo { display: none; position: absolute; inset: 0; z-index: -1; pointer-events: none; filter: blur(14px); }
+.k-btn__halo::before { --c: var(--k-cut); content: ""; position: absolute; inset: 2px; background: var(--k-halo); }
+.k-btn[data-pulse] .k-btn__halo { display: block; animation: k-halo calc(var(--t-hero) * 2.5) var(--ease-io) infinite; }
+
+/* loading: label out, tick-ring in */
+.k-btn__spin { position: absolute; z-index: 3; inset: 0; margin: auto; width: var(--k-ico); height: var(--k-ico); color: var(--k-ink); animation: k-in var(--t-base) var(--ease-out) both, k-tick var(--t-hero) steps(12) infinite; }
+.k-btn[data-released]:not([data-pressed]) { animation: k-release var(--spring-snap-ms) linear; }
+.k-btn[data-released]:not([data-pressed]) .k-btn__fill { animation: k-flare var(--spring-snap-ms) var(--ease-out); }
+.k-btn[data-loading] { cursor: progress; }
+.k-btn[data-loading] .k-btn__in { opacity: 0; }
+
+/* variants */
+.k-btn[data-v="secondary"] {
+  --k-ink: var(--ink);
+  --k-rim: linear-gradient(165deg, color-mix(in srgb, var(--ti-1) 74%, var(--ti-4)) 0%, var(--ti-3) 32%, var(--ti-4) 64%, var(--ti-3) 100%);
+  --k-fill: var(--plate-hi);
+  --k-sheen-o: .75;
+  --k-grain: .3;
+  --k-low: var(--void);
+  --k-hi: var(--ink);
+  --k-key-dark: 55%;
+  --k-key-lit: 12%;
+  --k-filter:
+    drop-shadow(0 1px 0 var(--k-shade))
+    drop-shadow(0 calc(8px - 4px * var(--k-pr)) calc(14px - 6px * var(--k-pr)) color-mix(in srgb, var(--void) 70%, transparent));
+}
+.k-btn[data-v="secondary"] .k-btn__label { text-shadow: none; }
+.k-btn[data-v="ghost"] {
+  --k-ink: color-mix(in srgb, var(--ink) calc(var(--k-hv) * 100%), var(--ink-2));
+  --k-rim: transparent;
+  --k-fill: color-mix(in srgb, var(--ink) calc(var(--k-hv) * 6% + var(--k-pr) * 6%), transparent);
+  --k-sheen-o: 0;
+  --k-filter: none;
+}
+.k-btn[data-v="ghost"] .k-btn__label { text-shadow: none; }
+.k-btn[data-v="danger"] {
+  --k-ink: color-mix(in srgb, var(--nogo) 52%, var(--ink));
+  --k-rim: linear-gradient(180deg, color-mix(in srgb, var(--nogo) 78%, var(--ink)) 0%, var(--nogo) 30%, color-mix(in srgb, var(--nogo) 50%, var(--void)) 100%);
+  --k-fill: linear-gradient(180deg, color-mix(in srgb, var(--nogo) 30%, var(--carbon-2)), color-mix(in srgb, var(--nogo) 15%, var(--carbon-1)));
+  --k-glow: var(--nogo-glow);
+  --k-halo: var(--nogo);
+  --k-sheen-o: .6;
+  --k-grain: .3;
+  --k-low: color-mix(in srgb, var(--nogo) 40%, var(--void));
+  --k-hi: color-mix(in srgb, var(--nogo) 55%, var(--ink));
+  --k-filter:
+    drop-shadow(0 1px 0 var(--k-shade))
+    drop-shadow(0 calc((7px - 4px * var(--k-pr)) * var(--k-gs)) calc((16px + 4px * var(--k-hv) - 8px * var(--k-pr)) * var(--k-gs)) color-mix(in srgb, var(--k-glow) 70%, transparent));
+}
+.k-btn[data-v="danger"] .k-btn__label { text-shadow: 0 0 12px color-mix(in srgb, var(--nogo) 55%, transparent); }
+.k-btn[data-v="go"] {
+  --k-ink: var(--ink-on-ignite);
+  --k-rim: linear-gradient(180deg, color-mix(in srgb, var(--go) 40%, var(--ink)) 0%, var(--go) 30%, color-mix(in srgb, var(--go) 52%, var(--void)) 100%);
+  --k-fill: linear-gradient(135deg, color-mix(in srgb, var(--go) 78%, var(--void)) 0%, var(--go) 58%, color-mix(in srgb, var(--go) 72%, var(--ink)) 100%);
+  --k-glow: var(--go-glow);
+  --k-halo: var(--go);
+  --k-low: color-mix(in srgb, var(--go) 42%, var(--void));
+  --k-hi: color-mix(in srgb, var(--go) 38%, var(--ink));
+}
+.k-btn[data-v="go"] .k-btn__label { text-shadow: 0 1px 0 color-mix(in srgb, var(--ink) 38%, transparent); }
+
+/* states (written once; all variants inherit them through the vars) */
+.k-btn:is([data-pressed], [data-state="active"]):not(:disabled):not([aria-disabled="true"]) {
+  --k-pr: 1;
+  transition: transform var(--t-instant) var(--ease-out), filter var(--t-instant) var(--ease-out);
+}
+.k-btn:is(:focus-visible, [data-state="focus"]) { --k-fc: 1; }
+.k-btn[data-state="hover"]:not(:disabled) { --k-hv: 1; }
+.k-btn[data-state="hover"] .k-btn__glint { opacity: 1; transform: translateX(110%); }
+@media (hover: hover) {
+  .k-btn:hover:not(:disabled):not([aria-disabled="true"]):not([data-loading]) { --k-hv: 1; }
+  .k-btn:hover:not(:disabled):not([aria-disabled="true"]):not([data-loading]) .k-btn__glint { opacity: 1; transform: translateX(110%); }
+}
+.k-btn[data-v="ghost"] :is(.k-btn__glint, .k-btn__spot), .k-btn[data-v="danger"] .k-btn__glint { display: none; }
+.k-btn[data-v="ghost"] .k-btn__fill::after { display: none; }
+
+.k-btn:disabled, .k-btn[aria-disabled="true"] {
+  --k-ink: var(--ink-4);
+  --k-rim: linear-gradient(180deg, var(--carbon-4), var(--carbon-3));
+  --k-fill: linear-gradient(180deg, var(--carbon-3), var(--carbon-2));
+  --k-sheen-o: .25;
+  --k-grain: 0;
+  --k-low: var(--void);
+  --k-hi: var(--ink);
+  --k-key-dark: 40%;
+  --k-filter: none;
+  cursor: not-allowed;
+}
+.k-btn:disabled .k-btn__label, .k-btn[aria-disabled="true"] .k-btn__label { text-shadow: none; }
+.k-btn[data-v="ghost"]:disabled, .k-btn[data-v="ghost"][aria-disabled="true"] { --k-rim: transparent; --k-fill: transparent; }
+.k-btn[data-loading][aria-busy="true"] { --k-hv: 0; }
+
+/* ═══════════════════════════════════════════ ICON BUTTON ═══════════════════════════════════════════════════════ */
+
+.k-iconbtn {
+  /* as on Button: the a11y layer's rectangular outline is steered to transparent, the chamfered ring below replaces it */
+  --ring: transparent;
+  --k-h: var(--tap);
+  --k-cut: calc(var(--cut-sm) * .875);
+  --k-hv: 0;  --k-pr: 0;  --k-fc: 0;
+  --k-rim: transparent;
+  --k-fill: color-mix(in srgb, var(--ink) calc(var(--k-hv) * 8% + var(--k-pr) * 8%), transparent);
+  --k-ink: color-mix(in srgb, var(--ink) calc(var(--k-hv) * 55% + var(--k-pr) * 45%), var(--ink-2));
+  --k-filter: none;
+  position: relative; isolation: isolate;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: var(--k-h);
+  height: var(--k-h);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--k-ink);
+  line-height: 1;
+  vertical-align: middle;
+  -webkit-appearance: none;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  cursor: pointer;
+  outline: 0;
+  filter: var(--k-filter);
+  transform: translateY(calc(var(--k-pr) * 1px)) scale(calc(1 - var(--k-pr) * .06));
+  transition: transform var(--spring-bounce-ms) var(--spring-bounce), color var(--t-fast) var(--ease-out), filter var(--t-fast) var(--ease-out);
+}
+.k-iconbtn[data-size="sm"] { --k-h: var(--s-10); --k-cut: calc(var(--cut-sm) * .75); }
+.k-iconbtn[data-size="sm"]::after { content: ""; position: absolute; inset: calc(var(--s-1) * -1); }
+.k-iconbtn[data-size="lg"] { --k-h: calc(var(--tap) + var(--s-2)); --k-cut: var(--cut-sm); }
+.k-iconbtn__face, .k-iconbtn__fill, .k-iconbtn__spot {
+  clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c));
+}
+.k-iconbtn__face { --c: var(--k-cut); position: absolute; inset: 0; z-index: 1; overflow: hidden; background: var(--k-rim); pointer-events: none; }
+.k-iconbtn__fill { --c: calc(var(--k-cut) - .586px); position: absolute; inset: 1px; background: var(--k-fill); filter: brightness(calc(1 + var(--k-hv) * .12 - var(--k-pr) * .1)); transition: background-color var(--t-fast) var(--ease-out), filter var(--t-fast) var(--ease-out); }
+.k-iconbtn__spot { --c: calc(var(--k-cut) - .586px); position: absolute; inset: 1px; display: none; pointer-events: none; mix-blend-mode: soft-light;
+  background: radial-gradient(circle 40px at var(--k-mx, 50%) var(--k-my, 0%), color-mix(in srgb, var(--ink) 70%, transparent), transparent 100%);
+  opacity: calc(var(--k-hv) * .5 + var(--k-pr) * .45); transition: opacity var(--t-base) var(--ease-out); }
+.k-iconbtn__icon, .k-iconbtn > :is(svg, img) { position: relative; z-index: 2; flex: none; }
+.k-iconbtn[data-v="plate"] {
+  --k-rim: linear-gradient(165deg,
+    color-mix(in srgb, var(--ti-1) 62%, var(--ti-4)) 0%, color-mix(in srgb, var(--ti-3) 70%, var(--ti-4)) 34%, var(--ti-4) 66%, color-mix(in srgb, var(--ti-3) 60%, var(--ti-4)) 100%);
+  --k-fill: var(--sheen), var(--plate-hi);
+  --k-ink: color-mix(in srgb, var(--ink) calc(70% + var(--k-hv) * 30%), var(--ink-2));
+  --k-filter: drop-shadow(0 1px 0 color-mix(in srgb, var(--void) 62%, transparent)) drop-shadow(0 calc(6px - 3px * var(--k-pr)) 8px color-mix(in srgb, var(--void) 62%, transparent));
+}
+.k-iconbtn[data-v="plate"] .k-iconbtn__spot { display: block; }
+.k-iconbtn:is([data-pressed], [data-state="active"]):not(:disabled) { --k-pr: 1; transition: transform var(--t-instant) var(--ease-out), color var(--t-instant) linear, filter var(--t-instant) linear; }
+.k-iconbtn:is(:focus-visible, [data-state="focus"]) { --k-fc: 1; }
+.k-iconbtn[data-state="hover"]:not(:disabled) { --k-hv: 1; }
+.k-iconbtn:disabled, .k-iconbtn[aria-disabled="true"] { --k-ink: var(--ink-4); --k-filter: none; cursor: not-allowed; }
+.k-iconbtn:disabled .k-iconbtn__fill, .k-iconbtn[aria-disabled="true"] .k-iconbtn__fill { background: none; }
+.k-iconbtn[data-v="plate"]:disabled, .k-iconbtn[data-v="plate"][aria-disabled="true"] { --k-rim: var(--carbon-3); --k-fill: var(--carbon-2); }
+.k-iconbtn[data-v="plate"]:disabled .k-iconbtn__fill, .k-iconbtn[data-v="plate"][aria-disabled="true"] .k-iconbtn__fill { background: var(--k-fill); }
+@media (hover: hover) { .k-iconbtn:hover:not(:disabled):not([aria-disabled="true"]) { --k-hv: 1; } }
+
+.k-iconbtn__badge {
+  position: absolute; top: 5px; right: 5px; z-index: 3;
+  display: grid; place-items: center;
+  min-width: 16px; height: 16px; padding: 0 4px;
+  border-radius: var(--r-full);
+  background: var(--ignite-flat); color: var(--ink-on-ignite);
+  font: 600 var(--fs-2xs)/1 var(--font-mono); letter-spacing: 0; font-variant-numeric: tabular-nums;
+  box-shadow: 0 0 0 2px var(--carbon-0), 0 0 10px -1px var(--ignite-glow);
+  pointer-events: none;
+}
+.k-iconbtn__badge[data-dot] { min-width: 8px; width: 8px; height: 8px; padding: 0; top: 9px; right: 9px; }
+.k-iconbtn[data-v="plate"] .k-iconbtn__badge { top: -5px; right: -5px; }                    /* hangs off the square corner, clear of the glyph */
+.k-iconbtn[data-v="plate"] .k-iconbtn__badge[data-dot] { top: -3px; right: -3px; }
+
+/* ═════════════════════════════════════════════ LABEL ═══════════════════════════════════════════════════════════ */
+
+.k-label {
+  --k-c: var(--ink-3);
+  display: inline-flex; align-items: center; gap: var(--s-2);
+  margin: 0;
+  color: var(--k-c);
+  font-family: var(--font-display); font-weight: 600; font-size: var(--fs-xs); line-height: 1;
+  letter-spacing: var(--track-label); text-transform: uppercase;
+}
+.k-label[data-size="md"] { font-size: var(--fs-md); }
+.k-label[data-mono] { font-family: var(--font-mono); font-weight: 500; font-size: var(--fs-2xs); letter-spacing: var(--track-mono); font-variant-numeric: tabular-nums; }
+.k-label[data-mono][data-size="md"] { font-size: var(--fs-xs); }
+.k-label[data-tone="ink"]    { --k-c: var(--ink); }
+.k-label[data-tone="ink-2"]  { --k-c: var(--ink-2); }
+.k-label[data-tone="ignite"] { --k-c: var(--ignite-2); }
+.k-label[data-tone="tele"]   { --k-c: var(--tele); }
+.k-label[data-tone="go"]     { --k-c: var(--go); }
+.k-label[data-tone="nogo"]   { --k-c: var(--nogo); }
+.k-label[data-tone="gold"]   { --k-c: var(--gold-2); }
+.k-label[data-tone="stage"]  { --k-c: var(--stage); }
+.k-label__led { flex: none; width: 6px; height: 6px; border-radius: 50%; background: currentColor; box-shadow: 0 0 6px 1px color-mix(in srgb, currentColor 55%, transparent); }
+
+/* ═══════════════════════════════════════════ TAG  ·  CHIP ══════════════════════════════════════════════════════ */
+
+.k-tag, .k-chip {
+  --t: var(--ti-2);
+  --t-glow: transparent;
+}
+:is(.k-tag, .k-chip)[data-tone="ignite"] { --t: var(--ignite-2); --t-glow: var(--ignite-glow); }
+:is(.k-tag, .k-chip)[data-tone="tele"]   { --t: var(--tele);     --t-glow: var(--tele-glow); }
+:is(.k-tag, .k-chip)[data-tone="go"]     { --t: var(--go);       --t-glow: var(--go-glow); }
+:is(.k-tag, .k-chip)[data-tone="nogo"]   { --t: var(--nogo);     --t-glow: var(--nogo-glow); }
+:is(.k-tag, .k-chip)[data-tone="gold"]   { --t: var(--gold-2);   --t-glow: var(--gold-glow); }
+:is(.k-tag, .k-chip)[data-tone="stage"]  { --t: var(--stage);    --t-glow: var(--stage-glow); }
+
+.k-tag {
+  --k-cut: calc(var(--cut-sm) * .75);
+  --k-rim: color-mix(in srgb, var(--t) 46%, var(--carbon-2));
+  --k-fill: color-mix(in srgb, var(--t) 13%, var(--carbon-1));
+  position: relative; isolation: isolate;
+  display: inline-flex; align-items: center; gap: 6px;
+  height: var(--s-6); padding: 0 var(--s-3) 0 10px;
+  color: color-mix(in srgb, var(--t) 78%, var(--ink));
+  font-family: var(--font-display); font-weight: 600; font-size: var(--fs-xs); line-height: 1;
+  letter-spacing: var(--track-label); text-transform: uppercase; white-space: nowrap; vertical-align: middle;
+}
+.k-tag__face { --c: var(--k-cut); position: absolute; inset: 0; z-index: -1; background: var(--k-rim); clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c)); }
+.k-tag__face::before { --c: calc(var(--k-cut) - .586px); content: ""; position: absolute; inset: 1px; background: var(--k-fill); clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c)); }
+.k-tag__text { margin-right: calc(var(--track-label) * -1); translate: 0 -.03em; }
+.k-tag__led, .k-chip__led { flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--t); box-shadow: 0 0 0 1px color-mix(in srgb, var(--void) 55%, transparent), 0 0 7px 1px var(--t-glow); }
+.k-tag__icon, .k-chip__icon { flex: none; width: 16px; height: 16px; }
+.k-tag[data-tone="neutral"] .k-tag__led { background: var(--ink-3); box-shadow: 0 0 0 1px color-mix(in srgb, var(--void) 55%, transparent); }
+.k-tag[data-tone="gold"] {   /* foil: the one tag that is a filled metal */
+  --k-rim: linear-gradient(180deg, var(--gold-1), var(--gold-3));
+  --k-fill: linear-gradient(112deg, var(--gold-3) 0%, var(--gold-2) 20%, var(--gold-1) 38%, color-mix(in srgb, var(--gold-1) 55%, var(--ink)) 48%, var(--gold-2) 62%, var(--gold-3) 100%);
+  color: var(--ink-on-ignite);
+}
+.k-tag[data-tone="gold"] .k-tag__led { background: var(--ink-on-ignite); box-shadow: none; }
+
+.k-chip {
+  --k-hv: 0;  --k-pr: 0;
+  position: relative;
+  display: inline-flex; align-items: center; gap: var(--s-2);
+  height: calc(var(--s-8) + var(--s-1)); margin: 0; padding: 0 var(--s-4) 0 var(--s-3);
+  border: 0; border-radius: var(--r-full);
+  background: color-mix(in srgb, var(--ink) calc(var(--k-hv) * 5% + var(--k-pr) * 5%), var(--carbon-2));
+  box-shadow: inset 0 0 0 1px var(--line-2), inset 0 1px 0 var(--rim-lo);
+  color: color-mix(in srgb, var(--ink) calc(var(--k-hv) * 55%), var(--ink-2));
+  font-family: var(--font-display); font-weight: 600; font-size: var(--fs-md); line-height: 1;
+  letter-spacing: var(--track-label); text-transform: uppercase; white-space: nowrap; vertical-align: middle;
+  -webkit-appearance: none; appearance: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; outline: 0;
+  transform: translateY(calc(var(--k-pr) * 1px)) scale(calc(1 - var(--k-pr) * .04));
+  transition: transform var(--spring-bounce-ms) var(--spring-bounce), background-color var(--t-fast) var(--ease-out), box-shadow var(--t-base) var(--ease-out), color var(--t-fast) var(--ease-out);
+}
+.k-chip[data-i] { cursor: pointer; }
+.k-chip[data-i]::after { content: ""; position: absolute; inset: calc(var(--s-2) * -1 + 2px) 0; }   /* 36 → 48px target */
+.k-chip__text { margin-right: calc(var(--track-label) * -1); translate: 0 -.03em; }
+.k-chip__led { background: transparent; box-shadow: inset 0 0 0 1px var(--ink-4); transition: background-color var(--t-fast) var(--ease-out), box-shadow var(--t-base) var(--ease-out); }
+.k-chip[data-on] {
+  background: color-mix(in srgb, var(--t) calc(14% + var(--k-hv) * 4%), var(--carbon-2));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--t) 58%, transparent), inset 0 2px 5px color-mix(in srgb, var(--void) 55%, transparent), inset 0 -1px 0 color-mix(in srgb, var(--t) 22%, transparent);
+  color: var(--ink);
+}
+.k-chip[data-on][data-tone="neutral"] { --t: var(--ink); box-shadow: inset 0 0 0 1px var(--line-3), inset 0 2px 5px color-mix(in srgb, var(--void) 55%, transparent), inset 0 -1px 0 var(--rim-lo); }
+.k-chip[data-on] .k-chip__led { background: var(--t); box-shadow: 0 0 0 1px color-mix(in srgb, var(--void) 55%, transparent), 0 0 8px 1px var(--t-glow); }
+.k-chip[data-on][data-tone="neutral"] .k-chip__led { box-shadow: 0 0 0 1px color-mix(in srgb, var(--void) 55%, transparent), 0 0 8px 1px color-mix(in srgb, var(--ink) 55%, transparent); }
+.k-chip:is([data-pressed], [data-state="active"]):not(:disabled) { --k-pr: 1; transition: transform var(--t-instant) var(--ease-out), background-color var(--t-instant) linear, box-shadow var(--t-instant) linear; }
+.k-chip[data-state="hover"] { --k-hv: 1; }
+.k-chip[data-state="focus"] { outline: var(--ring-w, 2px) solid var(--tele); outline-offset: 2px; }
+.k-chip:disabled { color: var(--ink-4); background: var(--carbon-1); box-shadow: inset 0 0 0 1px var(--line); cursor: not-allowed; }
+.k-chip:disabled .k-chip__led { box-shadow: inset 0 0 0 1px var(--carbon-4); }
+@media (hover: hover) { .k-chip[data-i]:hover:not(:disabled) { --k-hv: 1; } }
+
+/* ═════════════════════════════════════════════ PANEL ═══════════════════════════════════════════════════════════ */
+
+.k-panel {
+  --k-r: var(--r-md);
+  --k-cut: var(--cut);
+  /* texture under the sheen, plate and raised only. Default is a fine twill — two crossed diagonal hairline sets, felt
+     more than seen behind body text. texture="carbon" swaps in the foundation's bold basket weave (--carbon-weave)
+     for hero surfaces; texture="none" drops it. */
+  --k-tex-fine:
+    repeating-linear-gradient(45deg, transparent 0, color-mix(in srgb, var(--ink) 1.8%, transparent) .75px, transparent 1.5px, transparent 4px),
+    repeating-linear-gradient(-45deg, transparent 0, color-mix(in srgb, var(--void) 20%, transparent) .75px, transparent 1.5px, transparent 4px);
+  --k-tex: var(--k-tex-fine);
+  --k-fill: var(--k-tex), var(--sheen), var(--plate);
+  --k-rim: linear-gradient(180deg,
+    color-mix(in srgb, var(--ink) 21%, var(--carbon-2)) 0%,
+    color-mix(in srgb, var(--ti-2) 15%, var(--carbon-1)) 24%,
+    color-mix(in srgb, var(--ti-2) 8%, var(--carbon-0)) 100%);
+  --k-shadow: var(--shadow-1);
+  --k-drop: drop-shadow(0 1px 1px color-mix(in srgb, var(--void) 60%, transparent)) drop-shadow(0 9px 12px color-mix(in srgb, var(--void) 45%, transparent));
+  --k-hv: 0;  --k-pr: 0;  --k-fc: 0;
+  position: relative; isolation: isolate;
+  display: block; margin: 0; padding: 0; border: 0;
+  border-radius: var(--k-r);
+  background: none;
+  color: var(--ink);
+  box-shadow: var(--k-shadow);
+}
+.k-panel::before, .k-panel::after { content: ""; position: absolute; z-index: -1; pointer-events: none; }
+.k-panel::before { inset: 0; border-radius: inherit; background: var(--k-rim); }
+.k-panel::after  { inset: 1px; border-radius: calc(var(--k-r) - 1px); background: var(--k-fill); background-size: var(--k-fill-size, auto); }
+
+.k-panel[data-tx="none"]   { --k-tex: linear-gradient(transparent, transparent); }
+.k-panel[data-tx="carbon"] { --k-tex: var(--carbon-weave); --k-fill-size: 16px 16px, auto, auto; }
+.k-panel[data-pad="sm"] { padding: var(--s-3); }
+.k-panel[data-pad="md"] { padding: var(--s-5); }
+.k-panel[data-pad="lg"] { padding: var(--s-8); }
+
+/* chamfered: two opposite corners cut, the other two stay crisp (r-xs). Shadow moves to a filter on the host. */
+.k-panel[data-cut] {
+  --k-r: 0;
+  box-shadow: none;
+  filter: var(--k-drop);
+}
+.k-panel[data-cut="sm"] { --k-cut: var(--cut-sm); }
+.k-panel[data-cut]::before { clip-path: polygon(var(--k-cut) 0, 100% 0, 100% calc(100% - var(--k-cut)), calc(100% - var(--k-cut)) 100%, 0 100%, 0 var(--k-cut)); }
+.k-panel[data-cut]::after  { clip-path: polygon(calc(var(--k-cut) - .586px) 0, 100% 0, 100% calc(100% - var(--k-cut) + .586px), calc(100% - var(--k-cut) + .586px) 100%, 0 100%, 0 calc(var(--k-cut) - .586px)); }
+
+/* pressable card */
+.k-panel[data-i] {
+  width: 100%; text-align: left; font: inherit; letter-spacing: inherit; cursor: pointer; outline: 0;
+  -webkit-appearance: none; appearance: none; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; touch-action: manipulation;
+  transform: translateY(calc(var(--k-hv) * -1px + var(--k-pr) * 1px)) scale(calc(1 - var(--k-pr) * .015));
+  transition: transform var(--spring-snap-ms) var(--spring-snap), filter var(--t-fast) var(--ease-out);
+}
+.k-panel[data-i]:not([data-cut]) { filter: brightness(calc(1 + var(--k-hv) * .06 - var(--k-pr) * .08)); }
+.k-panel[data-i][data-cut] { filter: var(--k-drop) brightness(calc(1 + var(--k-hv) * .06 - var(--k-pr) * .08)); }
+.k-panel[data-i]:is([data-pressed], [data-state="active"]):not(:disabled) { --k-pr: 1; transition: transform var(--t-instant) var(--ease-out), filter var(--t-instant) var(--ease-out); }
+.k-panel[data-i][data-state="hover"] { --k-hv: 1; }
+.k-panel[data-i] { --ring-off: var(--s-1); }
+.k-panel[data-i][data-cut] { --ring: transparent; }
+.k-panel[data-i]:not([data-cut])[data-state="focus"] { outline: var(--ring-w, 2px) solid var(--tele); outline-offset: var(--s-1); }
+.k-panel[data-i]:is(:focus-visible, [data-state="focus"]) { --k-fc: 1; }
+/* a disabled plate dims — except a plate that is carrying a verdict or a selection (go / no-go / chosen): once an answer is
+   locked in, the correct plate must stay lit at full strength, so the verdict tones are exempt */
+.k-panel[data-i]:is(:disabled, [aria-disabled="true"]) { cursor: not-allowed; }
+.k-panel[data-i]:is(:disabled, [aria-disabled="true"]):not([data-tone="go"], [data-tone="nogo"], [data-tone="tele"]) { opacity: .5; }
+.k-panel[data-i]:is(:disabled, [aria-disabled="true"]):is([data-tone="go"], [data-tone="nogo"], [data-tone="tele"]) { cursor: default; }
+@media (hover: hover) { .k-panel[data-i]:hover:not(:disabled):not([aria-disabled="true"]) { --k-hv: 1; } }
+.k-panel__ring {
+  --rg: calc(var(--s-1) / 2);
+  --rw: var(--ring-w, calc(var(--s-1) / 2));
+  --co: calc(var(--k-cut) + (var(--rg) + var(--rw)) * .586);
+  --ci: calc(var(--k-cut) + var(--rg) * .586);
+  position: absolute; inset: calc((var(--rg) + var(--rw)) * -1); z-index: -1; pointer-events: none;
+  background: var(--tele); opacity: var(--k-fc);
+  transition: opacity var(--t-fast) var(--ease-out);
+  clip-path: polygon(
+    var(--co) 0, 100% 0, 100% calc(100% - var(--co)), calc(100% - var(--co)) 100%, 0 100%, 0 var(--co), var(--co) 0,
+    calc(var(--rw) + var(--ci)) var(--rw),
+    var(--rw) calc(var(--rw) + var(--ci)), var(--rw) calc(100% - var(--rw)),
+    calc(100% - var(--rw) - var(--ci)) calc(100% - var(--rw)), calc(100% - var(--rw)) calc(100% - var(--rw) - var(--ci)),
+    calc(100% - var(--rw)) var(--rw), calc(var(--rw) + var(--ci)) var(--rw));
+}
+
+.k-panel[data-tone="raised"] {
+  --k-fill: var(--k-tex), var(--sheen), var(--plate-hi);
+  --k-rim: linear-gradient(180deg,
+    color-mix(in srgb, var(--ink) 27%, var(--carbon-3)) 0%,
+    color-mix(in srgb, var(--ti-2) 19%, var(--carbon-2)) 24%,
+    color-mix(in srgb, var(--ti-2) 10%, var(--carbon-1)) 100%);
+  --k-shadow: var(--shadow-2);
+  --k-drop: drop-shadow(0 2px 2px color-mix(in srgb, var(--void) 55%, transparent)) drop-shadow(0 18px 20px color-mix(in srgb, var(--void) 55%, transparent));
+}
+.k-panel[data-tone="sunk"] {
+  --k-fill-size: auto;
+  --k-fill: linear-gradient(180deg, color-mix(in srgb, var(--void) 78%, var(--carbon-0)), var(--carbon-0) 40%);
+  --k-rim: linear-gradient(180deg,
+    color-mix(in srgb, var(--void) 90%, var(--carbon-0)) 0%,
+    color-mix(in srgb, var(--ti-2) 7%, var(--carbon-0)) 70%,
+    color-mix(in srgb, var(--ink) 11%, var(--carbon-1)) 100%);
+  --k-shadow: none;
+  --k-drop: none;
+}
+.k-panel[data-tone="sunk"]::after { box-shadow: inset 0 2px 6px color-mix(in srgb, var(--void) 80%, transparent); }
+.k-panel[data-tone="ignite"] {
+  --k-fill-size: auto;
+  --k-fill: linear-gradient(180deg, color-mix(in srgb, var(--ignite-2) 15%, var(--carbon-2)), color-mix(in srgb, var(--ignite-1) 6%, var(--carbon-1)));
+  --k-rim: linear-gradient(180deg, color-mix(in srgb, var(--ignite-3) 55%, var(--ink)) 0%, color-mix(in srgb, var(--ignite-2) 62%, var(--carbon-2)) 30%, color-mix(in srgb, var(--ignite-1) 45%, var(--carbon-0)) 100%);
+  --k-shadow: var(--shadow-1), 0 0 36px -10px var(--ignite-glow);
+  --k-drop: drop-shadow(0 1px 1px color-mix(in srgb, var(--void) 60%, transparent)) drop-shadow(0 6px 18px color-mix(in srgb, var(--ignite-glow) 70%, transparent));
+}
+.k-panel[data-tone="stage"] {
+  --k-fill-size: auto;
+  --k-fill: linear-gradient(180deg, color-mix(in srgb, var(--stage) 13%, var(--carbon-2)), color-mix(in srgb, var(--stage) 5%, var(--carbon-1)));
+  --k-rim: linear-gradient(180deg, color-mix(in srgb, var(--stage) 45%, var(--ink)) 0%, color-mix(in srgb, var(--stage) 55%, var(--carbon-2)) 30%, color-mix(in srgb, var(--stage) 30%, var(--carbon-0)) 100%);
+  --k-shadow: var(--shadow-1), 0 0 36px -12px var(--stage-glow);
+  --k-drop: drop-shadow(0 1px 1px color-mix(in srgb, var(--void) 60%, transparent)) drop-shadow(0 6px 18px color-mix(in srgb, var(--stage-glow) 60%, transparent));
+}
+/* verdict / selection tones — answer plates (go, no-go) and "chosen" (tele). Not in the contract list; additive. */
+.k-panel[data-tone="go"]   { --tc: var(--go);   --tcg: var(--go-glow); }
+.k-panel[data-tone="nogo"] { --tc: var(--nogo); --tcg: var(--nogo-glow); }
+.k-panel[data-tone="tele"] { --tc: var(--tele); --tcg: var(--tele-glow); }
+.k-panel:is([data-tone="go"], [data-tone="nogo"], [data-tone="tele"]) {
+  --k-fill-size: auto;
+  --k-fill: linear-gradient(180deg, color-mix(in srgb, var(--tc) 15%, var(--carbon-2)), color-mix(in srgb, var(--tc) 5%, var(--carbon-1)));
+  --k-rim: linear-gradient(180deg, color-mix(in srgb, var(--tc) 45%, var(--ink)) 0%, color-mix(in srgb, var(--tc) 58%, var(--carbon-2)) 30%, color-mix(in srgb, var(--tc) 30%, var(--carbon-0)) 100%);
+  --k-shadow: var(--shadow-1), 0 0 34px -10px var(--tcg);
+  --k-drop: drop-shadow(0 1px 1px color-mix(in srgb, var(--void) 60%, transparent)) drop-shadow(0 6px 18px color-mix(in srgb, var(--tcg) 70%, transparent));
+}
+/* glass — chrome only (HUD, dock, sheets). The pane is a pseudo layer, never the host: a clip-path or filter on the host
+   would clip whatever glows inside the panel (a Launch button's underglow) and make the host a backdrop root, so the blur
+   would sample nothing. ::before = the blurred pane (+ its hairline), ::after = the chamfered rim when cut.
+   Lite falls back to solid carbon. */
+.k-panel[data-tone="glass"] {
+  --k-shadow: var(--shadow-2);
+  --k-drop: none;
+  background: none;
+}
+.k-panel[data-tone="glass"]::before {
+  inset: 0; border-radius: inherit;
+  background: color-mix(in srgb, var(--carbon-1) 62%, transparent);
+  -webkit-backdrop-filter: blur(22px) saturate(1.5);
+  backdrop-filter: blur(22px) saturate(1.5);
+  box-shadow: inset 0 1px 0 var(--rim-hi), inset 0 0 0 1px var(--line-2);
+}
+.k-panel[data-tone="glass"]::after { content: none; }
+.k-panel[data-tone="glass"][data-cut]::before { box-shadow: none; }
+.k-panel[data-tone="glass"][data-cut]::after {
+  --rw: 1px;  --co: var(--k-cut);  --ci: calc(var(--k-cut) - .586px);
+  content: ""; inset: 0; border-radius: 0; background: linear-gradient(180deg, var(--rim-hi), var(--line-2) 38%, var(--line-2));
+  clip-path: polygon(
+    var(--co) 0, 100% 0, 100% calc(100% - var(--co)), calc(100% - var(--co)) 100%, 0 100%, 0 var(--co), var(--co) 0,
+    calc(var(--rw) + var(--ci)) var(--rw),
+    var(--rw) calc(var(--rw) + var(--ci)), var(--rw) calc(100% - var(--rw)),
+    calc(100% - var(--rw) - var(--ci)) calc(100% - var(--rw)), calc(100% - var(--rw)) calc(100% - var(--rw) - var(--ci)),
+    calc(100% - var(--rw)) var(--rw), calc(var(--rw) + var(--ci)) var(--rw));
+}
+
+/* ═══════════════════════════════════════════ ROW  ·  ROWGROUP ══════════════════════════════════════════════════ */
+
+.k-rowgroup { display: block; margin: 0; }
+.k-rowgroup__title { margin: 0; padding: 0 var(--s-4) var(--s-2); color: var(--ink-3); font-family: var(--font-display); font-weight: 600; font-size: var(--fs-xs); line-height: 1; letter-spacing: var(--track-label); text-transform: uppercase; }
+.k-rowgroup__list {
+  position: relative; isolation: isolate; overflow: hidden;
+  border-radius: var(--r-md);
+  background: var(--sheen), var(--plate);
+  box-shadow: var(--bevel), 0 0 0 1px var(--line), var(--shadow-1);
+}
+.k-rowgroup__foot { margin: 0; padding: var(--s-2) var(--s-4) 0; color: var(--ink-3); font-family: var(--font-ui); font-size: var(--fs-sm); line-height: 1.4; }
+
+.k-row {
+  --k-ic: var(--ink-2);
+  --k-hv: 0;  --k-pr: 0;
+  position: relative;
+  display: flex; align-items: center; gap: var(--s-3);
+  width: 100%; min-height: calc(var(--tap) + var(--s-2)); margin: 0; padding: var(--s-2) var(--s-4);
+  border: 0; border-radius: 0;
+  background: color-mix(in srgb, var(--ink) calc(var(--k-hv) * 5% + var(--k-pr) * 5%), transparent);
+  color: var(--ink);
+  font-family: var(--font-ui); font-weight: 500; font-size: var(--fs-base); line-height: 1.25; letter-spacing: -.011em;
+  text-align: left; text-decoration: none;
+  -webkit-appearance: none; appearance: none; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; touch-action: manipulation;
+  outline: 0;
+  transition: background-color var(--t-fast) var(--ease-out);
+}
+.k-row[data-i] { cursor: pointer; }
+.k-row + .k-row::before { content: ""; position: absolute; top: 0; left: var(--s-4); right: 0; height: var(--hair); background: var(--line-2); pointer-events: none; }
+.k-row[data-ic] + .k-row::before, .k-row + .k-row[data-ic]::before { left: calc(var(--s-4) + var(--s-8) + var(--s-3)); }
+.k-row:is([data-pressed], [data-state="active"]) { --k-pr: 1; transition-duration: var(--t-instant); }
+.k-row[data-state="hover"] { --k-hv: 1; }
+.k-row { --ring-off: calc(var(--ring-w, 2px) * -1); }
+.k-row[data-state="focus"] { outline: var(--ring-w, 2px) solid var(--tele); outline-offset: calc(var(--ring-w, 2px) * -1); }
+.k-row[aria-disabled="true"], .k-row:disabled { opacity: .45; cursor: not-allowed; }
+@media (hover: hover) { .k-row[data-i]:hover:not(:disabled) { --k-hv: 1; } }
+
+.k-row__icon {
+  flex: none; display: grid; place-items: center; width: var(--s-8); height: var(--s-8);
+  border-radius: var(--r-xs);
+  background: var(--sheen), var(--plate-hi);
+  box-shadow: var(--bevel), 0 0 0 1px var(--line);
+  color: var(--k-ic);
+}
+.k-row__body  { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.k-row__title { color: var(--k-title, var(--ink)); overflow-wrap: anywhere; }
+.k-row__sub   { color: var(--ink-3); font-weight: 400; font-size: var(--fs-sm); line-height: 1.35; letter-spacing: 0; }
+.k-row__value { flex: none; max-width: 50%; color: var(--ink-3); font-weight: 500; font-size: var(--fs-md); font-variant-numeric: tabular-nums; text-align: right; }
+.k-row__trail { flex: none; display: flex; align-items: center; margin-right: calc(var(--s-1) * -1); }
+.k-row__chev  { flex: none; margin-right: calc(var(--s-1) * -1); color: var(--ink-4); }
+.k-row[data-tone="ignite"] { --k-ic: var(--ignite-2); }
+.k-row[data-tone="tele"]   { --k-ic: var(--tele); }
+.k-row[data-tone="go"]     { --k-ic: var(--go); }
+.k-row[data-tone="gold"]   { --k-ic: var(--gold-2); }
+.k-row[data-tone="stage"]  { --k-ic: var(--stage); }
+.k-row[data-tone="nogo"]   { --k-ic: var(--nogo); --k-title: var(--nogo); }
+
+/* ═════════════════════════════════════════════ SWITCH ══════════════════════════════════════════════════════════ */
+
+.k-switch {
+  --k-w: 52px; --k-hh: 32px; --k-t: 26px; --k-in: 3px;
+  --k-tone: var(--go);  --k-tone-glow: var(--go-glow);
+  --k-pr: 0;  --k-hv: 0;
+  position: relative; display: inline-block; flex: none; vertical-align: middle;
+  width: var(--k-w); height: var(--k-hh);
+  -webkit-tap-highlight-color: transparent;
+}
+.k-switch[data-tone="ignite"] { --k-tone: var(--ignite-2); --k-tone-glow: var(--ignite-glow); }
+.k-switch[data-tone="tele"]   { --k-tone: var(--tele);     --k-tone-glow: var(--tele-glow); }
+.k-switch__input {
+  --ring: transparent;
+  position: absolute; z-index: 2; top: calc(var(--s-2) * -1); left: calc(var(--s-1) * -1);
+  width: calc(100% + var(--s-2)); height: calc(100% + var(--s-4));
+  margin: 0; opacity: 0; cursor: pointer; -webkit-appearance: none; appearance: none; touch-action: manipulation;
+}
+.k-switch__track {
+  position: absolute; inset: 0; border-radius: var(--r-sm);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--void) 82%, var(--carbon-1)), var(--carbon-1));
+  box-shadow: inset 0 2px 5px color-mix(in srgb, var(--void) 85%, transparent), inset 0 0 0 1px var(--line-2), 0 1px 0 var(--rim-lo);
+  transition: background-color var(--t-base) var(--ease-out), box-shadow var(--t-base) var(--ease-out);
+}
+.k-switch[data-on] .k-switch__track {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--k-tone) 30%, var(--carbon-1)), color-mix(in srgb, var(--k-tone) 12%, var(--carbon-1)) 70%);
+  box-shadow: inset 0 2px 5px color-mix(in srgb, var(--void) 80%, transparent), inset 0 0 0 1px color-mix(in srgb, var(--k-tone) 42%, transparent), 0 1px 0 var(--rim-lo);
+}
+.k-switch__thumb {
+  position: absolute; top: var(--k-in); left: var(--k-in); display: grid; place-items: center;
+  width: var(--k-t); height: var(--k-t); border-radius: calc(var(--r-sm) - var(--k-in));
+  background: linear-gradient(180deg, var(--ti-1) 0%, var(--ti-2) 44%, var(--ti-3) 100%);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--ink) 80%, transparent), inset 0 -1px 0 color-mix(in srgb, var(--void) 30%, transparent),
+              0 1px 2px color-mix(in srgb, var(--void) 70%, transparent), 0 4px 8px -1px color-mix(in srgb, var(--void) 55%, transparent);
+  transform: translateX(0) scaleX(calc(1 + var(--k-pr) * .12));
+  transition: transform var(--spring-snap-ms) var(--spring-snap), filter var(--t-fast) var(--ease-out);
+  filter: brightness(calc(1 + var(--k-hv) * .08));
+}
+.k-switch[data-on] .k-switch__thumb { transform: translateX(calc(var(--k-w) - var(--k-t) - var(--k-in) * 2)) scaleX(calc(1 + var(--k-pr) * .12)); }
+.k-switch__thumb > i {   /* a grip groove, lit by the tone when on */
+  display: block; width: 2px; height: 12px; border-radius: 1px;
+  background: color-mix(in srgb, var(--ti-4) 80%, transparent);
+  box-shadow: 4px 0 0 color-mix(in srgb, var(--ti-4) 55%, transparent), -4px 0 0 color-mix(in srgb, var(--ti-4) 55%, transparent);
+  transition: background-color var(--t-base) var(--ease-out), box-shadow var(--t-base) var(--ease-out);
+}
+.k-switch[data-on] .k-switch__thumb > i { background: var(--k-tone); box-shadow: 4px 0 0 color-mix(in srgb, var(--ti-4) 55%, transparent), -4px 0 0 color-mix(in srgb, var(--ti-4) 55%, transparent), 0 0 8px 1px var(--k-tone-glow); }
+.k-switch__led {
+  position: absolute; top: 50%; width: 6px; height: 6px; margin-top: -3px; border-radius: 50%;
+  transition: opacity var(--t-base) var(--ease-out), background-color var(--t-base) var(--ease-out), box-shadow var(--t-base) var(--ease-out);
+}
+.k-switch__led:nth-of-type(1) { left: 11px; background: var(--k-tone); box-shadow: 0 0 8px 2px var(--k-tone-glow); opacity: 0; }     /* lit: thumb is on the right */
+.k-switch__led:nth-of-type(2) { right: 11px; background: var(--ink-4); box-shadow: inset 0 1px 1px color-mix(in srgb, var(--void) 70%, transparent); opacity: 1; }  /* standby */
+.k-switch[data-on] .k-switch__led:nth-of-type(1) { opacity: 1; transition-delay: var(--t-fast); }
+.k-switch[data-on] .k-switch__led:nth-of-type(2) { opacity: 0; }
+.k-switch:is([data-pressed], [data-state="active"]) { --k-pr: 1; }
+.k-switch[data-state="hover"] { --k-hv: 1; }
+.k-switch:is([data-pressed], [data-state="active"]) .k-switch__thumb { transition-duration: var(--t-instant); }
+.k-switch__input:focus-visible ~ .k-switch__track,
+.k-switch[data-state="focus"] .k-switch__track { outline: var(--ring-w, 2px) solid var(--tele); outline-offset: 2px; }
+.k-switch[data-disabled] { opacity: .42; }
+.k-switch[data-disabled] .k-switch__input { cursor: not-allowed; }
+@media (hover: hover) { .k-switch:hover:not([data-disabled]) { --k-hv: 1; } }
+
+/* ═══════════════════════════════════════════ SEGMENTED ═════════════════════════════════════════════════════════ */
+
+.k-seg {
+  --k-h: var(--tap);  --k-r: var(--r-md);  --k-in: 3px;
+  position: relative; isolation: isolate;
+  display: inline-grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+  height: var(--k-h); margin: 0; padding: 0;
+  border-radius: var(--k-r);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--void) 70%, var(--carbon-1)), var(--carbon-1));
+  box-shadow: inset 0 2px 5px color-mix(in srgb, var(--void) 78%, transparent), inset 0 0 0 1px var(--line), 0 1px 0 var(--rim-lo);
+  vertical-align: middle;
+}
+.k-seg[data-full] { display: grid; width: 100%; }
+.k-seg[data-size="sm"] { --k-h: var(--s-10); --k-r: var(--r-sm); }
+.k-seg__thumb {
+  position: absolute; z-index: 0; top: var(--k-in); bottom: var(--k-in); left: var(--k-in);
+  width: calc(100% / var(--n) - var(--k-in) * 2);
+  border-radius: calc(var(--k-r) - var(--k-in));
+  background: var(--sheen), linear-gradient(180deg, color-mix(in srgb, var(--ti-4) 55%, var(--carbon-3)), var(--carbon-3));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ti-3) 55%, transparent), inset 0 1px 0 var(--rim-hi),
+              0 1px 2px color-mix(in srgb, var(--void) 70%, transparent), 0 5px 10px -3px color-mix(in srgb, var(--void) 70%, transparent);
+  transform: translateX(calc(var(--i) * (100% + var(--k-in) * 2)));
+  transition: transform var(--spring-snap-ms) var(--spring-snap);
+}
+.k-seg__thumb::after {   /* the lamp under the active label */
+  content: ""; position: absolute; left: 26%; right: 26%; bottom: 0; height: 2px; border-radius: 2px 2px 0 0;
+  background: var(--tele); box-shadow: 0 0 8px 1px var(--tele-glow);
+}
+.k-seg__opt {
+  --k-hv: 0;  --k-pr: 0;
+  position: relative; z-index: 1;
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2);
+  min-width: 0; height: 100%; margin: 0; padding: 0 var(--s-3);
+  border: 0; border-radius: calc(var(--k-r) - var(--k-in)); background: none;
+  color: color-mix(in srgb, var(--ink) calc(var(--k-hv) * 55%), var(--ink-3));
+  font-family: var(--font-display); font-weight: 600; font-size: var(--fs-md); line-height: 1; letter-spacing: var(--track-label); text-transform: uppercase; white-space: nowrap;
+  -webkit-appearance: none; appearance: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; cursor: pointer; outline: 0;
+  transition: color var(--t-fast) var(--ease-out);
+}
+.k-seg[data-size="sm"] .k-seg__opt { font-size: var(--fs-sm); padding: 0 var(--s-2); }
+.k-seg[data-size="sm"] .k-seg__opt::after { content: ""; position: absolute; inset: calc(var(--s-1) * -1) 0; }
+.k-seg__opt[aria-checked="true"] { color: var(--ink); }
+.k-seg__label { margin-right: calc(var(--track-label) * -1); translate: 0 -.03em; transform: translateY(calc(var(--k-pr) * 1px)) scale(calc(1 - var(--k-pr) * .04)); transition: transform var(--spring-snap-ms) var(--spring-snap); }
+.k-seg__opt[data-pressed] { --k-pr: 1; }
+.k-seg__opt[data-pressed] .k-seg__label { transition-duration: var(--t-instant); }
+.k-seg__opt { --ring-off: -1px; }
+.k-seg[data-state="focus"] .k-seg__opt[aria-checked="true"] { outline: var(--ring-w, 2px) solid var(--tele); outline-offset: -1px; }
+.k-seg__opt:disabled { color: var(--ink-4); cursor: not-allowed; }
+@media (hover: hover) { .k-seg__opt:hover:not(:disabled):not([aria-checked="true"]) { --k-hv: 1; } }
+
+/* ═════════════════════════════════════════════ SLIDER ══════════════════════════════════════════════════════════ */
+
+.k-slider {
+  --k-tw: 20px;  --k-th: 32px;
+  --k-tone: var(--tele);  --k-tone-glow: var(--tele-glow);
+  --k-f: var(--f);
+  display: block; width: 100%; margin: 0;
+}
+.k-slider[data-tone="ignite"] { --k-tone: var(--ignite-2); --k-tone-glow: var(--ignite-glow); }
+.k-slider[data-tone="go"]     { --k-tone: var(--go);       --k-tone-glow: var(--go-glow); }
+.k-slider[data-tone="gold"]   { --k-tone: var(--gold-2);   --k-tone-glow: var(--gold-glow); }
+.k-slider__head  { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-3); margin-bottom: var(--s-1); }
+.k-slider__label { color: var(--ink-2); font-family: var(--font-display); font-weight: 600; font-size: var(--fs-sm); line-height: 1; letter-spacing: var(--track-label); text-transform: uppercase; }
+.k-slider__out   { color: var(--k-tone); font-family: var(--font-mono); font-weight: 500; font-size: var(--fs-md); line-height: 1; letter-spacing: var(--track-mono); font-variant-numeric: tabular-nums; }
+.k-slider__ctl   { position: relative; height: var(--tap); padding: 0 calc(var(--k-tw) / 2); touch-action: pan-y; cursor: pointer; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; }
+.k-slider__rail  { position: relative; height: 100%; }
+.k-slider__groove {
+  position: absolute; left: 0; right: 0; top: 13px; height: 6px; overflow: hidden; border-radius: 3px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--void) 80%, var(--carbon-1)), var(--carbon-2));
+  box-shadow: inset 0 1px 2px color-mix(in srgb, var(--void) 85%, transparent), 0 1px 0 var(--rim-lo);
+}
+.k-slider__fill {
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--k-tone) 55%, var(--carbon-2)), var(--k-tone));
+  box-shadow: 0 0 10px 1px var(--k-tone-glow);
+  transform: translateX(calc((var(--k-f) - 1) * 100%));
+  transition: transform var(--t-fast) var(--ease-out);
+}
+.k-slider__ticks { position: absolute; left: 0; right: 0; bottom: 2px; height: 9px; display: flex; align-items: flex-end; justify-content: space-between; pointer-events: none; }
+.k-slider__ticks > i { display: block; width: 1px; height: 5px; background: var(--ink-4); transition: background-color var(--t-fast) var(--ease-out); }
+.k-slider__ticks > i[data-major] { height: 9px; background: var(--ink-3); }
+.k-slider__ticks > i[data-on] { background: color-mix(in srgb, var(--k-tone) 80%, var(--ink-3)); }
+.k-slider__pos { position: absolute; inset: 0; pointer-events: none; transform: translateX(calc((var(--k-f) - 1) * 100%)); transition: transform var(--t-fast) var(--ease-out); }
+.k-slider[data-drag] :is(.k-slider__pos, .k-slider__fill) { transition: none; }
+.k-slider__cap {
+  --k-hv: 0;  --k-pr: 0;
+  position: absolute; top: 0; right: calc(var(--k-tw) / -2); width: var(--k-tw); height: var(--k-th);
+  display: grid; place-items: center; border-radius: calc(var(--r-xs) / 2); pointer-events: auto; outline: 0;
+  background: linear-gradient(90deg, var(--ti-3) 0%, var(--ti-1) 26%, var(--ti-2) 52%, var(--ti-4) 100%);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--ink) 75%, transparent), inset 0 -1px 0 color-mix(in srgb, var(--void) 35%, transparent),
+              0 1px 2px color-mix(in srgb, var(--void) 75%, transparent), 0 6px 10px -2px color-mix(in srgb, var(--void) 70%, transparent);
+  transform: scale(calc(1 + var(--k-pr) * .08));
+  filter: brightness(calc(1 + var(--k-hv) * .08));
+  transition: transform var(--spring-snap-ms) var(--spring-snap), filter var(--t-fast) var(--ease-out);
+}
+.k-slider__cap > i {   /* centre index line — the lit element */
+  display: block; width: 2px; height: 16px; border-radius: 1px; background: var(--k-tone);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--void) 35%, transparent), 0 0 8px 1px var(--k-tone-glow);
+}
+.k-slider__cap::before, .k-slider__cap::after {   /* grip lines either side of the index */
+  content: ""; position: absolute; top: 8px; bottom: 8px; width: 1px; background: color-mix(in srgb, var(--ti-4) 70%, transparent);
+}
+.k-slider__cap::before { left: 4px; }
+.k-slider__cap::after { right: 4px; }
+.k-slider[data-drag] .k-slider__cap { --k-pr: 1; transition-duration: var(--t-instant); }
+.k-slider__cap { --ring-off: 3px; }
+.k-slider[data-state="focus"] .k-slider__cap { outline: var(--ring-w, 2px) solid var(--tele); outline-offset: 3px; }
+.k-slider[data-disabled] { opacity: .42; }
+.k-slider[data-disabled] .k-slider__ctl { cursor: not-allowed; }
+@media (hover: hover) { .k-slider:hover:not([data-disabled]) .k-slider__cap { --k-hv: 1; } }
+
+/* ═════════════════════════════════════════════ PROGRESS ════════════════════════════════════════════════════════ */
+
+.k-prog {
+  --k-h: 8px;
+  --p1: var(--ignite-1);  --p2: var(--ignite-3);  --pg: var(--ignite-glow);
+  position: relative; display: block; width: 100%; height: var(--k-h); margin: 0;
+}
+.k-prog[data-tone="tele"]  { --p1: var(--tele-2); --p2: var(--tele); --pg: var(--tele-glow); }
+.k-prog[data-tone="go"]    { --p1: color-mix(in srgb, var(--go) 55%, var(--carbon-2)); --p2: var(--go); --pg: var(--go-glow); }
+.k-prog[data-tone="stage"] { --p1: color-mix(in srgb, var(--stage) 55%, var(--carbon-2)); --p2: var(--stage); --pg: var(--stage-glow); }
+.k-prog[data-tone="gold"]  { --p1: var(--gold-3); --p2: var(--gold-1); --pg: var(--gold-glow); }
+.k-prog__track {
+  position: absolute; inset: 0; overflow: hidden; border-radius: var(--r-full);
+  background: var(--carbon-4);
+  box-shadow: inset 0 1px 2px color-mix(in srgb, var(--void) 80%, transparent), 0 1px 0 var(--rim-lo);
+}
+.k-prog__track::after {   /* graduations every 10% — it is an instrument, not a bar */
+  content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: repeating-linear-gradient(90deg, transparent 0, transparent calc(10% - 1px), color-mix(in srgb, var(--void) 38%, transparent) calc(10% - 1px), color-mix(in srgb, var(--void) 38%, transparent) 10%);
+}
+.k-prog__fill {
+  position: absolute; inset: 0; transform-origin: 0 50%; transform: scaleX(var(--v));
+  background: linear-gradient(90deg, var(--p1), var(--p2));
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--ink) 38%, transparent);
+  transition: transform var(--t-slower) var(--ease-out);
+}
+/* a highlight runs the length of the fill whenever the value rises (two alternating animation names restart it) */
+.k-prog__fill::after {
+  content: ""; position: absolute; inset: 0; transform: translateX(-100%); pointer-events: none;
+  background: linear-gradient(100deg, transparent 30%, color-mix(in srgb, var(--p2) 35%, var(--ink)) 52%, transparent 74%);
+  opacity: .8;
+}
+.k-prog[data-surge="a"] .k-prog__fill::after { animation: k-surge-a var(--t-slower) var(--ease-out) both; }
+.k-prog[data-surge="b"] .k-prog__fill::after { animation: k-surge-b var(--t-slower) var(--ease-out) both; }
+.k-prog__lead { position: absolute; inset: 0; pointer-events: none; transform: translateX(calc((var(--v) - 1) * 100%)); transition: transform var(--t-slower) var(--ease-out); }
+.k-prog__lead > i {
+  position: absolute; top: -1px; bottom: -1px; right: 0; width: 3px; border-radius: 2px;
+  background: color-mix(in srgb, var(--p2) 55%, var(--ink));
+  box-shadow: 0 0 6px 1px var(--p2), 0 0 18px 4px var(--pg);
+  opacity: clamp(0, min(calc(var(--v) * 60), calc((1 - var(--v)) * 60)), 1);   /* gone at 0 and at 100: a full bar has no leading edge */
+  transition: opacity var(--t-base) var(--ease-out);
+}
+/* a full bar lights its whole length instead — the glow is on the bar, not the tip */
+.k-prog { transition: filter var(--t-slower) var(--ease-out); }
+.k-prog[data-full][data-glow] { filter: drop-shadow(0 0 5px var(--pg)); }
+.k-prog[data-ind] .k-prog__fill { right: auto; width: 34%; transform: none; animation: k-seek calc(var(--t-hero) * 1.4) var(--ease-io) infinite; }
+
+/* ═══════════════════════════════════════════ SEGMENT BAR ═══════════════════════════════════════════════════════ */
+
+.k-ticker {
+  --p1: var(--tele-2);  --p2: var(--tele);  --pg: var(--tele-glow);
+  --k-sk: var(--s-1);                               /* the skew of each segment = its own height: a true 45° */
+  display: flex; gap: var(--s-1); width: 100%; height: var(--s-1); margin: 0;
+}
+.k-ticker[data-tone="ignite"] { --p1: var(--ignite-1); --p2: var(--ignite-3); --pg: var(--ignite-glow); }
+.k-ticker[data-tone="go"]     { --p1: color-mix(in srgb, var(--go) 55%, var(--carbon-2)); --p2: var(--go); --pg: var(--go-glow); }
+.k-ticker[data-tone="stage"]  { --p1: color-mix(in srgb, var(--stage) 55%, var(--carbon-2)); --p2: var(--stage); --pg: var(--stage-glow); }
+.k-ticker[data-tone="gold"]   { --p1: var(--gold-3); --p2: var(--gold-1); --pg: var(--gold-glow); }
+.k-ticker__seg { position: relative; isolation: isolate; flex: 1 1 0; min-width: 0; }
+/* the glow belongs to the lit segments only — a spent bar must not haze the unlit ones. A plain box-shadow on a pseudo
+   (the segment is 4px tall, so the rectangle and the skew are indistinguishable) fades in; clip-path can't clip it. */
+.k-ticker__seg::before {
+  content: ""; position: absolute; z-index: -1; inset: 0 var(--k-sk); opacity: 0;
+  box-shadow: 0 0 7px 1px var(--pg);
+  transition: opacity var(--t-slow) var(--ease-out);
+}
+.k-ticker__seg[data-s="done"]::before { opacity: .85; }
+.k-ticker__seg > b {
+  position: absolute; inset: 0; overflow: hidden; background: var(--carbon-4);
+  clip-path: polygon(var(--k-sk) 0, 100% 0, calc(100% - var(--k-sk)) 100%, 0 100%);
+}
+.k-ticker__seg > b > i {
+  position: absolute; inset: 0; background: linear-gradient(90deg, var(--p1), var(--p2));
+  transform-origin: 0 50%; transform: scaleX(0);
+  transition: transform var(--t-slow) var(--ease-out);
+}
+.k-ticker__seg[data-s="done"] > b > i { transform: scaleX(1); }
+.k-ticker[data-boot] .k-ticker__seg > b > i, .k-ticker[data-boot] .k-ticker__seg::before { transition-delay: calc(var(--i) * var(--t-instant) / 2); }
+.k-ticker__seg[data-s="current"] > b > i { transform: scaleX(1); opacity: .5; animation: k-breathe calc(var(--t-hero) * 1.5) var(--ease-io) infinite; }
+/* completion: the segment overshoots white-hot, then settles; its halo flares tall and wide and relaxes */
+.k-ticker__seg[data-pop] > b { animation: k-seg-pop var(--t-slower) var(--ease-out) both; }
+.k-ticker__seg[data-pop]::before { animation: k-seg-flare var(--t-slower) var(--ease-out) both; }
+
+/* ═════════════════════════════════════════════ SKELETON ════════════════════════════════════════════════════════ */
+
+.k-skel {
+  position: relative; display: block; overflow: hidden; width: var(--w, 100%); height: var(--h, 1em);
+  border-radius: var(--r, var(--r-xs)); background: color-mix(in srgb, var(--ink) 5%, var(--carbon-2));
+  box-shadow: inset 0 1px 0 var(--rim-lo), inset 0 0 0 1px color-mix(in srgb, var(--ink) 3%, transparent);
+}
+.k-skel::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(100deg, transparent 20%, color-mix(in srgb, var(--ink) 9%, transparent) 50%, transparent 80%);
+  animation: k-sweep calc(var(--t-hero) * 2) var(--ease-io) infinite;
+}
+
+/* ══════════════════════════════════════════════ STAT ═══════════════════════════════════════════════════════════ */
+
+.k-stat { --k-c: var(--ink); display: flex; flex-direction: column; gap: var(--s-1); min-width: 0; margin: 0; }
+.k-stat[data-tone="ignite"] { --k-c: var(--ignite-2); }
+.k-stat[data-tone="tele"]   { --k-c: var(--tele); }
+.k-stat[data-tone="go"]     { --k-c: var(--go); }
+.k-stat[data-tone="nogo"]   { --k-c: var(--nogo); }
+.k-stat[data-tone="gold"]   { --k-c: var(--gold-2); }
+.k-stat[data-tone="stage"]  { --k-c: var(--stage); }
+.k-stat__label { display: flex; align-items: center; gap: 6px; color: var(--ink-3); font-family: var(--font-mono); font-weight: 500; font-size: var(--fs-2xs); line-height: 1; letter-spacing: var(--track-mono); text-transform: uppercase; }
+.k-stat__icon  { flex: none; color: var(--k-c); }
+.k-stat__val   { display: flex; align-items: baseline; gap: var(--s-1); min-width: 0; color: var(--k-c); font-family: var(--font-display); font-weight: 600; font-size: var(--fs-2xl); line-height: 1; letter-spacing: 0; font-variant-numeric: tabular-nums; }
+.k-stat__unit  { color: var(--ink-3); font-family: var(--font-mono); font-weight: 500; font-size: var(--fs-xs); letter-spacing: var(--track-mono); text-transform: uppercase; }
+.k-stat__sub   { color: var(--ink-3); font-family: var(--font-mono); font-size: var(--fs-2xs); line-height: 1.3; letter-spacing: var(--track-mono); font-variant-numeric: tabular-nums; }
+.k-stat[data-size="sm"] .k-stat__val { font-size: var(--fs-xl); }
+.k-stat[data-size="lg"] .k-stat__val { font-size: var(--fs-4xl); font-weight: 600; }
+.k-stat[data-size="lg"] .k-stat__unit { font-size: var(--fs-sm); }
+
+/* ══════════════════════════════════════════════ KBD ════════════════════════════════════════════════════════════ */
+
+.k-kbd {
+  display: inline-grid; place-items: center; min-width: var(--s-6); height: var(--s-6); margin: 0; padding: 0 var(--s-2);
+  border-radius: calc(var(--r-xs) / 2);
+  background: linear-gradient(180deg, var(--carbon-3), var(--carbon-2));
+  box-shadow: inset 0 1px 0 var(--rim-hi), inset 0 0 0 1px var(--line-2), 0 2px 0 color-mix(in srgb, var(--void) 85%, transparent), 0 3px 3px color-mix(in srgb, var(--void) 45%, transparent);
+  color: var(--ink-2);
+  font-family: var(--font-mono); font-weight: 500; font-size: var(--fs-xs); line-height: 1; letter-spacing: var(--track-mono); font-variant-numeric: tabular-nums;
+  vertical-align: middle;
+}
+.k-kbd[data-lit] { color: var(--tele); box-shadow: inset 0 1px 0 var(--rim-hi), inset 0 0 0 1px color-mix(in srgb, var(--tele) 55%, transparent), 0 2px 0 color-mix(in srgb, var(--void) 85%, transparent), 0 0 12px -2px var(--tele-glow); }
+
+/* ═════════════════════════════════════════════ EMPTY ═══════════════════════════════════════════════════════════ */
+
+.k-empty { display: flex; flex-direction: column; align-items: center; gap: var(--s-2); margin: 0 auto; padding: var(--s-8) var(--s-5); max-width: 34ch; text-align: center; }
+.k-empty__art { position: relative; display: grid; place-items: center; width: 112px; height: 112px; margin-bottom: var(--s-3); }
+.k-empty__ret {   /* a 60-tick instrument ring, the Ignition motif at rest */
+  position: absolute; inset: 0;
+  background: repeating-conic-gradient(from -.4deg, var(--ink-4) 0 .8deg, transparent .8deg 6deg);
+  -webkit-mask: radial-gradient(circle closest-side, transparent 88%, var(--void) 89%, var(--void) 99%, transparent 100%);
+  mask: radial-gradient(circle closest-side, transparent 88%, var(--void) 89%, var(--void) 99%, transparent 100%);
+  opacity: .8;
+}
+.k-empty__glyph {
+  position: relative; display: grid; place-items: center; width: 64px; aspect-ratio: .866; color: var(--ink-3);
+  isolation: isolate;
+}
+.k-empty__glyph::before, .k-empty__glyph::after { content: ""; position: absolute; z-index: -1; clip-path: var(--clip-hex); }
+.k-empty__glyph::before { inset: 0; background: linear-gradient(180deg, color-mix(in srgb, var(--ink) 20%, var(--carbon-2)), color-mix(in srgb, var(--ti-2) 8%, var(--carbon-0))); }
+.k-empty__glyph::after  { inset: 1px; background: var(--sheen), var(--plate); }
+.k-empty__title { margin: 0; color: var(--ink); font-family: var(--font-ui); font-weight: 600; font-size: var(--fs-lg); line-height: 1.2; letter-spacing: var(--track-tight); text-wrap: balance; }
+.k-empty__body  { margin: 0; color: var(--ink-2); font-family: var(--font-ui); font-size: var(--fs-md); line-height: 1.5; text-wrap: pretty; }
+.k-empty__action { margin-top: var(--s-4); }
+
+/* ═══════════════════════════════════════════ TEXT FIELD ════════════════════════════════════════════════════════ */
+
+.k-field {
+  --k-tone: var(--tele);  --k-tone-glow: var(--tele-glow);
+  display: flex; flex-direction: column; gap: var(--s-2); width: 100%; min-width: 0; margin: 0;
+}
+.k-field__label { padding: 0 2px; color: var(--ink-3); font-family: var(--font-display); font-weight: 600; font-size: var(--fs-xs); line-height: 1; letter-spacing: var(--track-label); text-transform: uppercase; }
+/* the well: recessed carbon, an inner shadow from above, a hairline — the same machining as Switch and Segmented */
+.k-field__box {
+  position: relative; display: flex; align-items: center; gap: var(--s-3);
+  min-height: calc(var(--tap) + var(--s-2)); padding: 0 var(--s-4);
+  border-radius: var(--r-md);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--void) 70%, var(--carbon-1)), var(--carbon-1));
+  box-shadow: inset 0 2px 5px color-mix(in srgb, var(--void) 78%, transparent), inset 0 0 0 1px var(--line-2), 0 1px 0 var(--rim-lo);
+  transition: box-shadow var(--t-base) var(--ease-out), background-color var(--t-base) var(--ease-out);
+}
+.k-field[data-multi] .k-field__box { align-items: flex-start; padding-top: var(--s-4); padding-bottom: var(--s-4); }
+.k-field__led {
+  flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--ink-4);
+  box-shadow: inset 0 1px 1px color-mix(in srgb, var(--void) 70%, transparent);
+  transition: background-color var(--t-base) var(--ease-out), box-shadow var(--t-base) var(--ease-out);
+}
+.k-field[data-multi] .k-field__led { margin-top: .6em; }
+.k-field__icon { flex: none; display: grid; place-items: center; color: var(--ink-3); transition: color var(--t-base) var(--ease-out); }
+.k-field__input {
+  --ring: transparent;                                   /* the well carries the focus ring; the native outline stays out of the way */
+  flex: 1; min-width: 0; align-self: stretch; margin: 0; padding: var(--s-3) 0;
+  border: 0; border-radius: 0; background: none; outline: 0;
+  color: var(--ink); caret-color: var(--tele);
+  font-family: var(--font-ui); font-weight: 500; font-size: var(--fs-base); line-height: 1.4; letter-spacing: -.011em;
+  -webkit-appearance: none; appearance: none;
+}
+.k-field[data-multi] .k-field__input { padding: 0; min-height: calc(var(--fs-base) * 1.4 * 2); resize: none; overflow-y: auto; }
+.k-field__input::placeholder { color: var(--ink-3); opacity: 1; font-weight: 400; }
+.k-field__count { flex: none; align-self: center; color: var(--ink-3); font-family: var(--font-mono); font-weight: 500; font-size: var(--fs-2xs); line-height: 1; letter-spacing: var(--track-mono); font-variant-numeric: tabular-nums; }
+.k-field[data-multi] .k-field__count { align-self: flex-end; margin-bottom: calc(var(--s-1) * -1); }
+.k-field__count > i { margin: 0 1px; font-style: normal; color: var(--ink-4); }
+.k-field[data-full] .k-field__count { color: var(--warn); }
+
+.k-field__box:focus-within, .k-field[data-state="focus"] .k-field__box {
+  outline: var(--ring-w, 2px) solid var(--tele); outline-offset: 2px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--void) 62%, var(--carbon-1)), color-mix(in srgb, var(--tele) 4%, var(--carbon-1)));
+  box-shadow: inset 0 2px 5px color-mix(in srgb, var(--void) 78%, transparent), inset 0 0 0 1px color-mix(in srgb, var(--tele) 50%, transparent), 0 1px 0 var(--rim-lo);
+}
+.k-field__box:focus-within .k-field__led, .k-field[data-state="focus"] .k-field__led { background: var(--k-tone); box-shadow: 0 0 8px 2px var(--k-tone-glow); }
+.k-field__box:focus-within .k-field__icon, .k-field[data-state="focus"] .k-field__icon { color: var(--tele); }
+
+.k-field__note { display: flex; align-items: flex-start; gap: 6px; margin: 0; padding: 0 2px; color: var(--ink-3); font-family: var(--font-ui); font-size: var(--fs-sm); line-height: 1.4; }
+.k-field__note > svg { flex: none; margin-top: 1px; }
+.k-field[data-invalid] { --k-tone: var(--nogo); --k-tone-glow: var(--nogo-glow); }
+.k-field[data-invalid] .k-field__box { box-shadow: inset 0 2px 5px color-mix(in srgb, var(--void) 78%, transparent), inset 0 0 0 1px color-mix(in srgb, var(--nogo) 62%, transparent), 0 1px 0 var(--rim-lo); }
+.k-field[data-invalid] .k-field__box:focus-within, .k-field[data-invalid][data-state="focus"] .k-field__box { outline-color: var(--nogo); box-shadow: inset 0 2px 5px color-mix(in srgb, var(--void) 78%, transparent), inset 0 0 0 1px color-mix(in srgb, var(--nogo) 80%, transparent), 0 1px 0 var(--rim-lo); }
+.k-field[data-invalid] .k-field__led { background: var(--nogo); box-shadow: 0 0 8px 2px var(--nogo-glow); }
+.k-field[data-invalid] .k-field__note { color: var(--nogo); }
+.k-field[data-disabled] { opacity: .5; }
+.k-field[data-disabled] .k-field__input { cursor: not-allowed; }
+@media (forced-colors: active) { .k-field__box { border: 1px solid ButtonText; box-shadow: none; } .k-field__box:focus-within { outline-color: Highlight; } }
+
+/* ═════════════════════════════════════ LITE · REDUCED MOTION ═══════════════════════════════════════════════════
+   Information survives, motion doesn't: no springs, no sweeps, no breathing, no blur. State changes are 140 ms fades.
+   The tick spinner and the seeking bar stay (stepped) — they are the *information* that something is in flight.      */
+
+html[data-fx="lite"] .k-btn { transform: none; animation: none; transition: filter var(--t-fast) linear; }
+html[data-fx="lite"] .k-btn[data-released] .k-btn__fill { animation: none; }
+html[data-fx="lite"] :is(.k-btn__glint, .k-btn__halo, .k-btn__spot) { display: none; }
+html[data-fx="lite"] .k-btn__fill::after { display: none; }
+/* lite: one contact line and one tight glow — the wide underglow is the expensive part of the filter chain */
+html[data-fx="lite"] .k-btn[data-v] { --k-filter: drop-shadow(0 1px 0 var(--k-shade)) drop-shadow(0 3px 7px color-mix(in srgb, var(--k-glow) 55%, transparent)); }
+html[data-fx="lite"] .k-btn[data-v="secondary"], html[data-fx="lite"] .k-btn[data-v="ghost"] { --k-filter: drop-shadow(0 1px 0 var(--k-shade)); }
+html[data-fx="lite"] .k-btn[data-v="ghost"] { --k-filter: none; }
+html[data-fx="lite"] .k-btn:disabled, html[data-fx="lite"] .k-btn[aria-disabled="true"] { --k-filter: none; }
+html[data-fx="lite"] .k-btn__spin { animation: k-tick calc(var(--t-hero) * 1.1) steps(12) infinite; }
+html[data-fx="lite"] :is(.k-field__box, .k-field__led, .k-field__icon) { transition-duration: var(--t-fast); transition-timing-function: linear; }
+html[data-fx="lite"] .k-iconbtn { --k-filter: none; }
+html[data-fx="lite"] .k-iconbtn__spot { display: none; }
+html[data-fx="lite"] :is(.k-iconbtn, .k-chip, .k-seg__label) { transform: none; transition-duration: var(--t-fast); transition-timing-function: linear; }
+html[data-fx="lite"] .k-switch__thumb, html[data-fx="lite"] .k-seg__thumb { transition: transform var(--t-fast) linear; }
+html[data-fx="lite"] .k-switch__thumb { transform: translateX(0); }
+html[data-fx="lite"] .k-switch[data-on] .k-switch__thumb { transform: translateX(calc(var(--k-w) - var(--k-t) - var(--k-in) * 2)); }
+html[data-fx="lite"] :is(.k-slider__cap) { transform: none; }
+html[data-fx="lite"] :is(.k-slider__pos, .k-slider__fill, .k-prog__fill, .k-prog__lead, .k-ticker__seg > b > i) { transition-duration: var(--t-fast); transition-timing-function: linear; }
+html[data-fx="lite"] .k-ticker__seg::before { transition-duration: var(--t-fast); transition-timing-function: linear; }
+html[data-fx="lite"] .k-ticker__seg[data-s="current"] > b > i { animation: none; opacity: .5; }
+html[data-fx="lite"] .k-ticker__seg[data-pop] > b, html[data-fx="lite"] .k-ticker__seg[data-pop]::before, html[data-fx="lite"] .k-prog__fill::after { animation: none; }
+html[data-fx="lite"] .k-skel::after { animation: none; display: none; }
+html[data-fx="lite"] .k-prog[data-ind] .k-prog__fill { animation: k-seek calc(var(--t-hero) * 1.4) steps(10) infinite; }
+html[data-fx="lite"] .k-panel[data-tone="glass"]::before { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--carbon-1); }
+html[data-fx="lite"] .k-panel[data-cut] { filter: none; }
+html[data-fx="lite"] .k-panel[data-i] { transform: none; transition: filter var(--t-fast) linear; }
+html[data-fx="lite"] .k-panel[data-i][data-cut] { filter: brightness(calc(1 + var(--k-hv) * .06 - var(--k-pr) * .08)); }
+
+@media (forced-colors: active) {
+  .k-btn__face { background: ButtonText; forced-color-adjust: none; }
+  .k-btn__fill { background: ButtonFace; forced-color-adjust: none; }
+  .k-btn[data-v="primary"] .k-btn__fill, .k-btn[data-v="go"] .k-btn__fill { background: Highlight; }
+  .k-btn__sheen, .k-btn__glint, .k-btn__halo, .k-btn__spot, .k-btn__fill::after { display: none; }
+  .k-btn { color: ButtonText; filter: none; }
+  .k-btn[data-v="primary"], .k-btn[data-v="go"] { color: HighlightText; }
+  .k-btn:disabled { color: GrayText; }
+  .k-btn__ring, .k-iconbtn__ring { background: Highlight; forced-color-adjust: none; }
+  .k-iconbtn { filter: none; color: ButtonText; }
+  .k-iconbtn__spot { display: none; }
+  .k-iconbtn[data-v="plate"] .k-iconbtn__face { background: ButtonText; forced-color-adjust: none; }
+  .k-iconbtn[data-v="plate"] .k-iconbtn__fill { background: ButtonFace; forced-color-adjust: none; }
+  .k-tag__face, .k-tag__face::before { forced-color-adjust: none; }
+  .k-tag__face { background: ButtonText; } .k-tag__face::before { background: ButtonFace; }
+  .k-tag { color: ButtonText; }
+  .k-panel { box-shadow: none; filter: none; border: 1px solid ButtonText; }
+  .k-panel::before, .k-panel::after { display: none; }
+  .k-switch__track { border: 1px solid ButtonText; }
+  .k-switch__thumb { background: ButtonText; forced-color-adjust: none; }
+  .k-seg__thumb { background: Highlight; forced-color-adjust: none; }
+  .k-seg__opt[aria-checked="true"] { color: HighlightText; }
+  .k-prog__track, .k-ticker__seg > b { border: 1px solid ButtonText; }
+  .k-prog__fill, .k-ticker__seg > b > i, .k-slider__fill { background: Highlight; forced-color-adjust: none; }
+  .k-ticker__seg::before { display: none; }
+  .k-slider__cap { background: ButtonText; forced-color-adjust: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .k-btn { transform: none; animation: none; transition: filter var(--t-fast) linear; }
+  .k-btn[data-released] .k-btn__fill { animation: none; }
+  .k-btn__glint, .k-btn__halo, .k-btn__spot { display: none; }
+  .k-btn__spin { animation: k-tick calc(var(--t-hero) * 1.1) steps(12) infinite; }
+  .k-iconbtn__spot { display: none; }
+  :is(.k-iconbtn, .k-chip, .k-seg__label) { transform: none; transition-duration: var(--t-fast); transition-timing-function: linear; }
+  .k-switch__thumb, .k-seg__thumb { transition: transform var(--t-fast) linear; }
+  .k-switch__thumb { transform: translateX(0); }
+  .k-switch[data-on] .k-switch__thumb { transform: translateX(calc(var(--k-w) - var(--k-t) - var(--k-in) * 2)); }
+  .k-slider__cap { transform: none; }
+  :is(.k-slider__pos, .k-slider__fill, .k-prog__fill, .k-prog__lead, .k-ticker__seg > b > i) { transition-duration: var(--t-fast); transition-timing-function: linear; }
+  .k-ticker__seg::before { transition-duration: var(--t-fast); transition-timing-function: linear; }
+  .k-ticker__seg[data-s="current"] > b > i { animation: none; opacity: .5; }
+  .k-ticker__seg[data-pop] > b, .k-ticker__seg[data-pop]::before, .k-prog__fill::after { animation: none; }
+  .k-skel::after { animation: none; display: none; }
+  .k-prog[data-ind] .k-prog__fill { animation: k-seek calc(var(--t-hero) * 1.4) steps(10) infinite; }
+  .k-panel[data-tone="glass"]::before { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--carbon-1); }
+  .k-panel[data-i] { transform: none; transition: filter var(--t-fast) linear; }
+}
+
+}

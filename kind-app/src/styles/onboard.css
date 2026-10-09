@@ -1,0 +1,227 @@
+/* owner: wave-2 onboard-main — Onboard, Beat, Hero, Who, Name, Family, Launch. Prefix .onb-
+   Layout is driven by the container (.onb is a size container), not the viewport, so the same beat compacts for a short
+   phone, for the on-screen keyboard (the container shrinks to the visual viewport) and for the desktop frame alike.
+   Motion is opt-in: the base state is a short fade; slides and staggers live behind `no-preference` + not-lite. */
+@layer screen {
+
+  /* ── stage ───────────────────────────────────────────────────────────── */
+  .onb {
+    position: absolute; left: 0; right: 0;
+    top: var(--onb-vt, 0px); bottom: var(--onb-kb, 0px);
+    container: onb / size;
+    overflow: hidden; isolation: isolate;
+    background: var(--carbon-0); color: var(--ink);
+  }
+
+  /* the sky climbs with the beats: --onb-t 0 → 1 is written by Onboard.jsx; --scroll is what AscentSky reads */
+  .onb-sky { position: absolute; inset: 0; z-index: -1; --onb-t: 0; --scroll: calc(.12 + var(--onb-t) * .88); }
+  .onb-sky__limb {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 58%; pointer-events: none;
+    transform: translate3d(0, calc((1 - var(--onb-t)) * 100%), 0);
+    opacity: clamp(0, calc((var(--onb-t) - .5) * 2.4), 1);
+    -webkit-mask-image: linear-gradient(to bottom, transparent, var(--void) 42%);
+            mask-image: linear-gradient(to bottom, transparent, var(--void) 42%);
+  }
+  .onb-sky__limb .art-hz { position: absolute; inset: 0; }
+
+  .onb-layer { position: absolute; inset: 0; }
+  .onb-layer[data-role="out"] { pointer-events: none; animation: onb-fade-out var(--t-fast) linear both; }
+  .onb-layer[data-role="in"]  { animation: onb-fade var(--t-fast) linear both; }
+
+  /* ── one beat ────────────────────────────────────────────────────────── */
+  .onb-beat { position: absolute; inset: 0; display: flex; flex-direction: column; isolation: isolate; }
+  .onb-beat__art { position: absolute; inset: 0; z-index: -2; }
+  .onb-beat__scrim {
+    position: absolute; inset: 0; z-index: -1; pointer-events: none;
+    background:
+      linear-gradient(to bottom, color-mix(in srgb, var(--carbon-0) 78%, transparent) 0, transparent 40%),
+      linear-gradient(to top, color-mix(in srgb, var(--carbon-0) 94%, transparent) 0, color-mix(in srgb, var(--carbon-0) 58%, transparent) 15%, transparent 30%);
+  }
+
+  .onb-top {
+    flex: none; display: flex; align-items: center; gap: var(--s-3);
+    padding: calc(var(--sat) + var(--s-3)) var(--gutter) var(--s-2);
+  }
+  .onb-top__side { flex: none; width: var(--tap); margin-left: calc(var(--s-3) * -1); }
+  .onb-top__bar { flex: 1 1 0; min-width: 0; }
+  .onb-top__count { flex: none; min-width: var(--s-12); text-align: right; color: var(--ink-3); letter-spacing: var(--track-mono); }
+  .onb-top__count i { font-style: normal; color: var(--ink-4); padding-inline: 1px; }
+
+  .onb-body {
+    flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column;
+    padding: var(--s-8) var(--gutter) var(--s-4);
+    overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none;
+  }
+  .onb-body::-webkit-scrollbar { display: none; }
+  .onb-head { flex: none; }
+  .onb-stage { margin-top: auto; padding-top: var(--s-6); }
+
+  .onb-foot {
+    flex: none; display: flex; flex-direction: column; gap: var(--s-3);
+    padding: var(--s-3) var(--gutter) calc(var(--sab) + var(--s-6));
+  }
+  .onb-note { margin: 0; text-align: center; color: var(--ink-2); font-size: var(--fs-sm); line-height: 1.4; text-wrap: balance; }
+
+  /* ── type ────────────────────────────────────────────────────────────── */
+  .onb-eyebrow { margin-bottom: var(--s-3); }
+  .onb-title {
+    margin: 0; outline: 0; text-wrap: balance; color: var(--ink);
+    font: 700 clamp(var(--fs-2xl), 12.4cqw, var(--fs-4xl)) / .96 var(--font-display);
+    text-transform: uppercase; letter-spacing: .012em;
+  }
+  .onb-dek { margin: var(--s-4) 0 0; max-width: 32ch; color: var(--ink-2); font-size: var(--fs-base); line-height: 1.45; text-wrap: pretty; }
+
+  /* hero: the line is the brand's, set like a book cover (and goDs keeps its capital D) */
+  .onb-beat[data-variant="hero"] .onb-title {
+    font: 500 clamp(var(--fs-2xl), 12cqw, var(--fs-4xl)) / 1.02 var(--font-serif);
+    text-transform: none; letter-spacing: var(--track-tight);
+  }
+  .onb-title__line { display: block; }
+  .onb-title__line + .onb-title__line { font-style: italic; color: var(--ink-2); }
+  .onb-beat[data-variant="hero"] .onb-body { padding-top: var(--s-6); }
+  .onb-beat[data-variant="hero"] .onb-dek { color: var(--ink); text-shadow: 0 1px 12px var(--void); }
+  .onb-word { margin: 0; display: grid; gap: var(--s-2); justify-items: center; text-align: center; }
+  .onb-word__text { margin: 0; font: italic 400 var(--fs-lg) / 1.35 var(--font-serif); color: var(--ink); text-wrap: balance; text-shadow: 0 1px 14px var(--void); }
+  .onb-word__ref { color: var(--ink-2); text-shadow: 0 1px 10px var(--void); }
+  /* hero: the verse rides the dusk sky under the line, clear of the rocket and its pad (it used to sit across the gantry) */
+  .onb-beat[data-variant="hero"] .onb-stage { margin-top: 0; padding-top: var(--s-5); }
+  .onb-beat[data-variant="hero"] .onb-word { justify-items: start; text-align: left; }
+  .onb-beat[data-variant="hero"] .onb-word__text { font-size: var(--fs-md); color: var(--ink-2); }
+  .onb-beat[data-variant="hero"] .onb-note { color: var(--ink-2); }
+
+  /* ── who: two plates ─────────────────────────────────────────────────── */
+  .onb-plates { display: flex; flex-direction: column; gap: var(--s-3); }
+  .onb-plate.k-panel {
+    display: flex; align-items: center; gap: var(--s-4);
+    min-height: calc(var(--s-12) * 2.5); padding: var(--s-5);
+    transition: opacity var(--t-base) var(--ease-out), transform var(--spring-snap-ms) var(--spring-snap), filter var(--t-fast) var(--ease-out);
+  }
+  .onb-plate[data-dim] { opacity: .66; }
+  .onb-plate__hex { flex: none; }
+  .onb-plate__txt { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: var(--s-1); }
+  .onb-plate__name { font: 700 var(--fs-2xl) / 1 var(--font-display); text-transform: uppercase; letter-spacing: .02em; }
+  .onb-plate__sub { color: var(--ink-2); font-size: var(--fs-md); line-height: 1.35; }
+  .onb-plate__key { flex: none; align-self: flex-start; }
+
+  /* ── name: a hex, a line of large type, an instrument rule ───────────── */
+  .onb-name { display: flex; flex-direction: column; align-items: center; gap: var(--s-4); }
+  .onb-name__ini { font: 700 var(--fs-3xl) / 1 var(--font-display); color: var(--ink); text-transform: uppercase; }
+  .onb-field { position: relative; width: 100%; }
+  .onb-field__input {
+    display: block; width: 100%; min-height: var(--tap); margin: 0; padding: var(--s-2) 0 var(--s-3);
+    border: 0; border-radius: 0; background: transparent; outline: 0; -webkit-appearance: none; appearance: none;
+    color: var(--ink); caret-color: var(--tele); text-align: center; text-overflow: ellipsis;
+    font: 600 var(--fs-3xl) / 1.15 var(--font-ui); letter-spacing: var(--track-tight);
+  }
+  .onb-field[data-len="m"] .onb-field__input { font-size: var(--fs-2xl); }
+  .onb-field[data-len="l"] .onb-field__input { font-size: var(--fs-xl); }
+  .onb-field__input { --ring-w: 0px; }          /* the lit rule below is the focus indicator, not a box (a11y layer reads --ring-w) */
+  .onb-field__input::placeholder { color: var(--ink-3); opacity: 1; font-weight: 500; }
+  .onb-field__rule { position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--line-3); }
+  .onb-field__rule::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: var(--s-1);
+    background: var(--tele); box-shadow: 0 0 14px 1px var(--tele-glow);
+    transform: scaleX(0); transform-origin: 50% 50%;
+    transition: transform var(--t-slow) var(--ease-out), background-color var(--t-fast) linear;
+  }
+  .onb-name[data-focus] .onb-field__rule::after { transform: scaleX(1); }
+  .onb-name[data-err] .onb-field__rule::after { transform: scaleX(1); background: var(--nogo); box-shadow: 0 0 14px 1px var(--nogo-glow); }
+  .onb-field__meta { display: flex; justify-content: space-between; gap: var(--s-3); width: 100%; margin: 0; color: var(--ink-3); font-size: var(--fs-sm); line-height: 1.4; }
+  .onb-name[data-err] .onb-field__note { color: var(--nogo); }
+  .onb-field__count { flex: none; color: var(--ink-3); }
+
+  /* ── family ──────────────────────────────────────────────────────────── */
+  .onb-fam { display: flex; flex-direction: column; gap: var(--s-5); }
+  .onb-kids__add { display: flex; align-items: center; gap: var(--s-2); }
+  .onb-kids__add > :first-child { flex: 1 1 0; min-width: 0; }
+  .onb-kids__list { display: flex; flex-wrap: wrap; gap: var(--s-2); margin: var(--s-4) 0 0; padding: 0; list-style: none; }
+
+  /* ── launch: Day N is ready ──────────────────────────────────────────── */
+  .onb-ready.k-panel { padding: var(--s-5); }
+  .onb-ready__num {
+    position: absolute; top: var(--s-2); right: var(--s-4); pointer-events: none; user-select: none;
+    font: 700 var(--fs-5xl) / 1 var(--font-display); letter-spacing: .01em;
+    color: transparent; -webkit-text-stroke: 1px var(--line-3);
+  }
+  .onb-ready__meta { position: relative; display: flex; flex-wrap: wrap; gap: var(--s-1) var(--s-3); margin: 0; max-width: 62%; color: var(--ink-3); text-transform: uppercase; letter-spacing: var(--track-mono); }
+  .onb-ready__title { position: relative; margin: var(--s-3) 0 var(--s-2); max-width: 78%; font: 500 var(--fs-xl) / 1.15 var(--font-serif); letter-spacing: var(--track-tight); text-wrap: balance; }
+  .onb-ready__teaser { position: relative; margin: 0; color: var(--ink-2); font-size: var(--fs-md); line-height: 1.4; text-wrap: pretty; }
+  .onb-check { display: flex; flex-direction: column; margin: var(--s-4) 0 0; padding: var(--s-2) 0 0; list-style: none; border-top: 1px solid var(--line-2); }
+  .onb-check__row { display: grid; grid-template-columns: calc(var(--s-20) + var(--s-3)) 1fr auto; align-items: center; gap: var(--s-2); min-height: var(--s-10); }
+  .onb-check__k { color: var(--ink-3); text-transform: uppercase; letter-spacing: var(--track-mono); }
+  .onb-check__v { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); font-size: var(--fs-md); }
+  .onb-check__led {
+    display: grid; place-items: center; width: var(--s-5); height: var(--s-5); border-radius: var(--r-full);
+    background: var(--carbon-4); box-shadow: inset 0 1px 2px var(--void); color: var(--carbon-0);
+    transition: background-color var(--t-base) var(--ease-out), box-shadow var(--t-base) var(--ease-out);
+  }
+  .onb-check__row[data-lit] .onb-check__led { background: var(--go); box-shadow: 0 0 12px -2px var(--go-glow); }
+  .onb-check__row:not([data-lit]) .onb-check__v { color: var(--ink-3); }
+  /* a setting left off is still ready, but it does not light green: a quiet dash, not a tick */
+  .onb-check__row[data-lit][data-off] .onb-check__led { background: var(--carbon-4); box-shadow: inset 0 1px 2px var(--void); color: var(--ink-3); }
+  .onb-check__dash { display: block; width: 8px; height: 2px; border-radius: 1px; background: currentColor; }
+  .onb-check__row[data-off] .onb-check__v { color: var(--ink-2); }
+
+  /* ── compact: short phones, and any phone with the keyboard up ───────── */
+  @container onb (max-height: 44rem) {
+    .onb-body { padding-top: var(--s-5); }
+    .onb-title { font-size: clamp(var(--fs-xl), 10.4cqw, var(--fs-3xl)); }
+    .onb-beat[data-variant="hero"] .onb-title { font-size: clamp(var(--fs-xl), 10.8cqw, var(--fs-3xl)); }
+    .onb-dek { margin-top: var(--s-3); font-size: var(--fs-md); }
+    .onb-plate.k-panel { min-height: calc(var(--s-12) * 2); padding: var(--s-4); }
+    .onb-name { gap: var(--s-3); }
+    .onb-ready.k-panel { padding: var(--s-4); }
+    .onb-ready__num { font-size: var(--fs-4xl); }
+    .onb-check { margin-top: var(--s-3); }
+    .onb-check__row { min-height: var(--s-8); }
+    .onb-foot { padding-bottom: calc(var(--sab) + var(--s-4)); }
+  }
+  @container onb (max-height: 46rem) {
+    .onb-beat[data-variant="hero"] .onb-stage { display: none; }
+  }
+  @container onb (max-height: 36rem) {
+    .onb-eyebrow, .onb-dek, .onb-name__hex, .onb-top__count { display: none; }
+    .onb-body { padding-top: var(--s-3); }
+    .onb-stage { padding-top: var(--s-4); }
+    .onb-title { font-size: clamp(var(--fs-xl), 8cqw, var(--fs-2xl)); }
+    .onb-top { padding-top: calc(var(--sat) + var(--s-2)); }
+    .onb-foot { padding-top: var(--s-2); gap: var(--s-2); }
+    .onb-note { display: none; }
+  }
+
+  /* ── motion ──────────────────────────────────────────────────────────── */
+  @keyframes onb-fade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes onb-fade-out { from { opacity: 1; } to { opacity: 0; } }
+  @keyframes onb-rise { from { opacity: 0; transform: translate3d(0, var(--s-4), 0); } to { opacity: 1; transform: none; } }
+  @keyframes onb-in-fwd   { from { opacity: 0; transform: translate3d(26%, 0, 0); }  to { opacity: 1; transform: none; } }
+  @keyframes onb-in-back  { from { opacity: 0; transform: translate3d(-16%, 0, 0); } to { opacity: 1; transform: none; } }
+  @keyframes onb-out-fwd  { from { opacity: 1; transform: none; } to { opacity: 0; transform: translate3d(-16%, 0, 0); } }
+  @keyframes onb-out-back { from { opacity: 1; transform: none; } to { opacity: 0; transform: translate3d(26%, 0, 0); } }
+  @keyframes onb-pop { 0% { transform: scale(.5); } 100% { transform: none; } }
+
+  /* base (lite, reduced motion): the head and the decision fade in together */
+  .onb-eyebrow, .onb-title, .onb-dek, .onb-stage, .onb-foot { animation: onb-fade var(--t-fast) linear both; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html:not([data-fx="lite"]) .onb-eyebrow,
+    html:not([data-fx="lite"]) .onb-title,
+    html:not([data-fx="lite"]) .onb-dek,
+    html:not([data-fx="lite"]) .onb-stage,
+    html:not([data-fx="lite"]) .onb-foot {
+      animation: onb-rise var(--t-slow) var(--ease-out) both;
+      animation-delay: calc(var(--i, 0) * var(--t-instant) * .6 + var(--t-fast));
+    }
+    html:not([data-fx="lite"]) .onb-layer[data-role="in"][data-dir="1"]   { animation: onb-in-fwd var(--t-slow) var(--ease-sheet) both; }
+    html:not([data-fx="lite"]) .onb-layer[data-role="in"][data-dir="-1"]  { animation: onb-in-back var(--t-slow) var(--ease-sheet) both; }
+    html:not([data-fx="lite"]) .onb-layer[data-role="out"][data-dir="1"]  { animation: onb-out-fwd var(--t-slow) var(--ease-sheet) both; }
+    html:not([data-fx="lite"]) .onb-layer[data-role="out"][data-dir="-1"] { animation: onb-out-back var(--t-slow) var(--ease-sheet) both; }
+    html:not([data-fx="lite"]) .onb-check__row[data-lit] .onb-check__led > * { animation: onb-pop var(--spring-bounce-ms) var(--spring-bounce) both; }
+  }
+
+  html[data-fx="lite"] .onb-sky__limb,
+  html[data-fx="lite"] .onb-plate.k-panel,
+  html[data-fx="lite"] .onb-field__rule::after { transition: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .onb-sky__limb, .onb-plate.k-panel, .onb-field__rule::after, .onb-check__led { transition: none; }
+  }
+}

@@ -1,0 +1,12 @@
+// Contact sheet: node playground/ui-core.sheet.cjs out.png cols in1.png in2.png …   (all from tools/out/ui-core)
+const sharp = require('sharp'), path = require('path')
+const dir = path.join(__dirname, '..', 'tools', 'out', 'ui-core')
+const [out, cols, ...ins] = process.argv.slice(2)
+;(async () => {
+  const metas = await Promise.all(ins.map((f) => sharp(path.join(dir, f)).metadata()))
+  const c = +cols, cw = Math.max(...metas.map((m) => m.width)), ch = Math.max(...metas.map((m) => m.height))
+  const rows = Math.ceil(ins.length / c)
+  const comp = ins.map((f, i) => ({ input: path.join(dir, f), left: (i % c) * cw, top: Math.floor(i / c) * ch }))
+  await sharp({ create: { width: cw * c, height: ch * rows, channels: 4, background: '#05060b' } }).composite(comp).png().toFile(path.join(dir, out))
+  console.log(out, cw * c, ch * rows)
+})()

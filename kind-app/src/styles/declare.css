@@ -1,0 +1,213 @@
+/* owner: slides-declare (prefix .sld-) — the declaration slide and its hold-to-declare ring */
+@layer screen {
+  .sld {
+    --sld-min: calc(var(--fs-lg) * 1.1);                       /* 22px: the floor for the Word, whatever the reading scale */
+    --sld-fs: var(--fs-2xl);
+    --sld-d: calc(var(--s-4) * 7);                             /* dial diameter */
+    --sld-p: 0;                                                /* hold progress 0..1, written by JS while it moves */
+    flex: 1 0 auto;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    text-align: center;
+  }
+  .sld[data-n="1"], .sld[data-n="2"] { --sld-fs: calc(var(--fs-2xl) * 1.125); }
+  .sld[data-n="4"] { --sld-fs: calc(var(--fs-xl) * 1.1667); }
+  .sld[data-n="5"] { --sld-fs: calc(var(--fs-xl) * 1.0833); }
+  .sld[data-n="6"] { --sld-fs: var(--fs-xl); }
+  .sld[data-n="7"] { --sld-fs: var(--sld-min); }
+  @media (min-height: 700px) { .sld { --sld-d: calc(var(--s-4) * 8); } }
+  @media (min-height: 800px) { .sld { --sld-d: calc(var(--s-4) * 9); } }
+
+  /* ── the Word ───────────────────────────────────────────────────────── */
+  .sld-body {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--s-6);
+    padding-block: var(--s-4);
+  }
+  .sld-top { display: flex; justify-content: center; }
+  .sld-lines { display: flex; flex-direction: column; align-items: center; gap: calc(var(--sld-fs) * .32); }
+  .sld-line, .sld-tag {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-weight: 440;
+    font-size: max(var(--sld-min), calc(var(--sld-fs) * var(--read-scale, 1)));
+    line-height: 1.28;
+    letter-spacing: -.012em;
+    text-wrap: balance;
+    hanging-punctuation: first last;
+    overflow-wrap: anywhere;
+    /* dim but readable (AA); the held ring warms them a little before they catch */
+    color: color-mix(in oklab, var(--ink-2) calc(var(--sld-p) * 85%), var(--ink-3));
+    transition: color var(--t-fast) var(--ease-out), text-shadow var(--t-fast) var(--ease-out);
+  }
+  .sld-tag {
+    position: relative;
+    margin-top: calc(var(--sld-fs) * .22);
+    padding-top: var(--s-5);
+    font-style: italic;
+    font-size: max(var(--sld-min), calc(var(--sld-fs) * .82 * var(--read-scale, 1)));
+  }
+  .sld-tag::before {                                           /* the hairline that signs the block off */
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: var(--s-8);
+    height: 1px;
+    translate: -50% 0;
+    background: var(--line-3);
+    transition: background var(--t-base) var(--ease-out), box-shadow var(--t-base) var(--ease-out);
+  }
+  .sld-line[data-state="still"], .sld-tag[data-state="still"],
+  .sld-line[data-state="lit"], .sld-tag[data-state="lit"] { color: var(--ink); text-shadow: 0 0 1.4em var(--ignite-wash); }
+  .sld-tag[data-state="still"]::before, .sld-tag[data-state="lit"]::before { background: var(--ignite-2); box-shadow: 0 0 10px var(--ignite-glow); }
+  .sld-line[data-state="lit"], .sld-tag[data-state="lit"] { animation: sld-ignite var(--t-slower) var(--ease-out) both; }
+  @keyframes sld-ignite {
+    0%   { color: var(--ink-3); text-shadow: 0 0 0 transparent; transform: translateY(var(--s-1)); }
+    38%  { color: var(--ignite-3); text-shadow: 0 0 .55em var(--ignite-glow), 0 0 1.6em var(--ignite-wash); transform: translateY(0); }
+    100% { color: var(--ink); text-shadow: 0 0 1.4em var(--ignite-wash); transform: translateY(0); }
+  }
+
+  /* ── the control ─────────────────────────────────────────────────────── */
+  .sld-dock {
+    position: sticky;
+    bottom: 0;
+    z-index: var(--z-content);
+    display: flex;
+    justify-content: center;
+    padding: var(--s-8) 0 var(--s-3);
+    margin-inline: calc(-1 * var(--gutter));          /* bleed to the glass edges: no box, just a pool of dark under the dial */
+    isolation: isolate;
+  }
+  .sld-dock::before {
+    content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+    background: radial-gradient(72% 60% at 50% 55%, color-mix(in srgb, var(--carbon-0) 90%, transparent) 0 42%, transparent 100%);
+  }
+  .sld-ctl { position: relative; display: grid; justify-items: center; gap: var(--s-1); max-width: 100%; }
+  .sld-hold {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: var(--s-2);
+    margin: 0;
+    padding: var(--s-1) var(--s-6) 0;
+    border: 0;
+    border-radius: var(--r-lg);
+    background: none;
+    color: var(--ink);
+    font: inherit;
+    cursor: pointer;
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .sld-hold[aria-disabled="true"], .sld-ctl:not([data-holdable]) .sld-hold { cursor: default; }
+  .sld-dial { position: relative; display: block; width: var(--sld-d); height: var(--sld-d); }
+  .sld-dial[data-pop] { animation: sld-pop var(--spring-bounce-ms) var(--spring-bounce) both; }
+  @keyframes sld-pop { from { transform: scale(.94); } to { transform: scale(1); } }
+  .sld-bloom {
+    position: absolute;
+    inset: calc(var(--s-6) * -1);
+    border-radius: 50%;
+    background: radial-gradient(closest-side, var(--ignite-glow), transparent);
+    opacity: calc(var(--sld-p) * .8);
+    transform: scale(calc(.8 + var(--sld-p) * .3));
+    pointer-events: none;
+  }
+  .sld-svg { position: relative; display: block; width: 100%; height: 100%; overflow: visible; }
+
+  .sld-bezel { opacity: .85; }
+  .sld-tick { stroke: var(--ink-4); stroke-width: 1.2; stroke-linecap: round; }
+  .sld-tick[data-major] { stroke: var(--ink-3); stroke-width: 1.8; }
+  .sld-tick-lit { stroke-width: 1.8; stroke-linecap: round; }
+  .sld-ticks-lit { filter: drop-shadow(0 0 2px var(--ignite-glow)); }
+  .sld-groove { stroke: var(--carbon-3); }
+  .sld-groove-rim { stroke: var(--line-2); }
+  .sld-arc-start { fill: var(--ignite-1); }
+  .sld-glow { opacity: .75; }
+  .sld-head-bloom { fill: var(--ignite-3); opacity: .8; }
+  .sld-sheen { fill: var(--ink); opacity: .06; }
+  .sld-warm { opacity: var(--sld-p); }
+  .sld-face {
+    transform-origin: 80px 80px;
+    transition: transform var(--spring-snap-ms) var(--spring-snap);
+  }
+  .sld-ctl[data-hold] .sld-face {                              /* the button sinks under the thumb */
+    transform: scale(.94);
+    transition: transform var(--t-fast) var(--ease-out);
+  }
+  .sld-icon {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+    color: color-mix(in oklab, var(--ignite-2) calc(var(--sld-p) * 100%), var(--ink-3));
+    filter: drop-shadow(0 0 calc(var(--sld-p) * 8px) var(--ignite-glow));
+  }
+  .sld-cap {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--fs-lg);
+    line-height: 1.1;
+    text-transform: uppercase;
+    letter-spacing: var(--track-label);
+    margin-right: calc(var(--track-label) * -1);               /* optically centre: the last letter's tracking is not ink */
+    color: var(--ink);
+    transition: color var(--t-base) var(--ease-out);
+  }
+  .sld-ctl[data-hold] .sld-cap { color: var(--ignite-3); }
+  .sld-ctl[data-done] .sld-cap { color: var(--ignite-2); }
+
+  .sld-hint-wrap { display: grid; justify-items: center; max-width: 30ch; min-height: calc(var(--fs-sm) * 1.45); }
+  .sld-hint, .sld-read { grid-area: 1 / 1; margin: 0; transition: opacity var(--t-fast) linear; }
+  .sld-hint { font-size: var(--fs-sm); line-height: 1.45; color: var(--ink-3); text-wrap: balance; }
+  .sld-read {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--track-mono);
+    font-variant-numeric: tabular-nums;
+    text-transform: uppercase;
+    color: var(--ignite-3);
+    opacity: 0;
+  }
+  .sld-ctl[data-hold] .sld-read { opacity: 1; }
+  .sld-ctl[data-hold] .sld-hint { opacity: 0; }
+  .sld-plain { margin-top: var(--s-3); }
+
+  .sld-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* ── lite / reduced motion: the same information, as 120 ms cross-fades ── */
+  html[data-fx="lite"] .sld-bloom, html[data-fx="lite"] .sld-glow, html[data-fx="lite"] .sld-head-bloom,
+  html[data-fx="lite"] .sld-icon, html[data-fx="lite"] .sld-ticks-lit { filter: none; }
+  html[data-fx="lite"] .sld-bloom, html[data-fx="lite"] .sld-glow, html[data-fx="lite"] .sld-head-bloom { display: none; }
+  html[data-fx="lite"] .sld-dial[data-pop] { animation: none; }
+  html[data-fx="lite"] .sld-ctl[data-hold] .sld-face, html[data-fx="lite"] .sld-face { transition-duration: var(--t-instant); transition-timing-function: linear; }
+  html[data-fx="lite"] .sld-line[data-state="lit"], html[data-fx="lite"] .sld-tag[data-state="lit"] { animation: none; text-shadow: none; }
+  html[data-fx="lite"] .sld-line[data-state="still"], html[data-fx="lite"] .sld-tag[data-state="still"] { text-shadow: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .sld-bloom, .sld-glow, .sld-head-bloom { display: none; }
+    .sld-icon, .sld-ticks-lit { filter: none; }
+    .sld-dial[data-pop] { animation: none; }
+    .sld-face, .sld-ctl[data-hold] .sld-face { transition-duration: var(--t-instant); transition-timing-function: linear; }
+    .sld-line[data-state="lit"], .sld-tag[data-state="lit"] { animation: none; text-shadow: none; }
+    .sld-line[data-state="still"], .sld-tag[data-state="still"] { text-shadow: none; }
+  }
+}

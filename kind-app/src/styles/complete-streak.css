@@ -1,0 +1,281 @@
+/* owner: complete-streak (prefix .cms-) — the Rings and Streak beats of orbit insertion.
+   The rings sit in a titanium bezel with a radar hand; the streak is one flame, one giant numeral, one week of hexes.
+   Animate transform / opacity only. Lite and reduced motion keep every fact and swap the motion for 140 ms cross-fades. */
+@layer screen {
+
+  /* ── frame shared by every beat ─────────────────────────────────────── */
+  .cms-beat {
+    --cms-gap: var(--s-5); --cms-hot: var(--ignite-2);
+    position: relative; isolation: isolate; box-sizing: border-box;
+    flex: 1 1 auto; align-self: stretch; display: flex; flex-direction: column; align-items: center;
+    width: 100%; height: 100%; min-height: 0;
+    padding: calc(var(--sat) + var(--s-16)) 0 calc(var(--sab) + var(--s-5));   /* the stage's .cmp-beat already holds the side gutter */
+    color: var(--ink); text-align: center;
+  }
+  .cms-beat[data-beat="rings"], .cms-beat[data-beat="shield"] { --cms-hot: var(--tele); }
+  .cms-beat[data-beat="milestone"] { --cms-hot: var(--gold-2); }
+  .cms-beat[data-compact] { --cms-gap: var(--s-3); padding-top: calc(var(--sat) + var(--s-12)); padding-bottom: calc(var(--sab) + var(--s-4)); }
+  .cms-beat::before {   /* a wash of the beat's colour behind the hero: light, not a card */
+    content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+    background: radial-gradient(ellipse 80% 46% at 50% 38%, color-mix(in oklab, var(--cms-hot) 13%, transparent), transparent 70%);
+  }
+  .cms-main {
+    flex: 1 1 auto; min-height: 0; width: 100%; display: flex; flex-direction: column; align-items: center; gap: var(--cms-gap);
+    overflow-x: clip; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none;
+  }
+  .cms-main::-webkit-scrollbar { display: none; }
+  .cms-main::before, .cms-main::after { content: ''; flex: 1 0 0; }   /* centres the stack, and collapses to nothing when it overflows */
+  .cms-foot { flex: none; width: 100%; max-width: calc(var(--app-max) * .75); display: grid; gap: var(--s-2); padding-top: var(--s-4); }
+  .cms-foot[data-row] { grid-template-columns: auto 1fr; align-items: center; gap: var(--s-3); }
+  .cms-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .cms-eyebrow { letter-spacing: var(--track-mono); }
+
+  /* things that arrive after the hero: one rule, driven by data-on */
+  :is(.cms-line, .cms-text, .cms-title, .cms-word, .cms-chips, .cms-note, .cms-recap, .cms-bay, .cms-goal) {
+    opacity: 0; transform: translateY(var(--s-2));
+    transition: opacity var(--t-slow) var(--ease-out), transform var(--t-slow) var(--ease-out);
+  }
+  :is(.cms-line, .cms-text, .cms-title, .cms-word, .cms-chips, .cms-note, .cms-recap, .cms-bay, .cms-goal)[data-on] { opacity: 1; transform: none; }
+  .cms-chips:empty { display: none; }
+
+  /* ── RINGS: the bezel ───────────────────────────────────────────────── */
+  .cms-dial {
+    --cms-size: 280px; --cms-inset: calc(var(--cms-size) * .035); --cms-bezel: calc(var(--cms-size) * .07);
+    position: relative; flex: none; box-sizing: border-box; aspect-ratio: 1; border-radius: var(--r-full);
+    width: calc(var(--cms-size) + 2 * (var(--cms-inset) + var(--cms-bezel)));
+    animation: cms-in var(--spring-soft-ms) var(--spring-soft) both;
+  }
+  .cms-bezel {
+    position: absolute; inset: 0; border-radius: inherit; overflow: hidden;
+    background: conic-gradient(from 200deg, var(--ti-3), var(--ti-1) 10%, var(--ti-3) 24%, var(--ti-4) 42%, var(--ti-2) 56%, var(--ti-4) 72%, var(--ti-1) 86%, var(--ti-3));
+    box-shadow: var(--shadow-3), inset 0 1px 0 var(--rim-hi), inset 0 -1px 0 var(--ti-4);
+  }
+  .cms-bezel::before {   /* brushed grain, turned on a lathe: it runs round the ring */
+    content: ''; position: absolute; inset: 0; border-radius: inherit; mix-blend-mode: overlay;
+    background: repeating-conic-gradient(from 0deg, color-mix(in oklab, var(--ti-1) 10%, transparent) 0 .4deg, transparent .4deg 1.3deg);
+  }
+  .cms-bezel::after {    /* the machined step the face drops into */
+    content: ''; position: absolute; inset: calc(var(--cms-bezel) * .82); border-radius: var(--r-full);
+    box-shadow: 0 0 0 1px color-mix(in oklab, var(--ti-1) 34%, transparent), inset 0 0 0 1px var(--ti-4);
+  }
+  .cms-pip {            /* the index mark at 12 o'clock, lit while the hand is out */
+    position: absolute; left: 50%; top: calc(var(--cms-bezel) * .2); width: calc(var(--cms-bezel) * .46); aspect-ratio: 1.1;
+    transform: translateX(-50%); background: var(--ti-4); clip-path: polygon(0 0, 100% 0, 50% 100%); z-index: 1;
+    transition: background-color var(--t-base) linear;
+  }
+  .cms-beat:is([data-phase="sweep"], [data-phase="done"]) .cms-pip { background: var(--ignite-flat); }
+  .cms-beat[data-all][data-phase="done"] .cms-pip { background: var(--ignite-3); }
+  .cms-glint {          /* a lap of light round the bezel when all three are closed */
+    position: absolute; inset: 0; border-radius: inherit; opacity: 0; mix-blend-mode: overlay;
+    background: conic-gradient(from 0deg, transparent 0 296deg, color-mix(in oklab, var(--ti-1) 90%, transparent) 346deg, transparent 360deg);
+    -webkit-mask: radial-gradient(circle closest-side, transparent calc(100% - var(--cms-bezel)), var(--void) calc(100% - var(--cms-bezel) + 1px));
+            mask: radial-gradient(circle closest-side, transparent calc(100% - var(--cms-bezel)), var(--void) calc(100% - var(--cms-bezel) + 1px));
+  }
+  .cms-beat[data-all][data-phase="done"] .cms-glint { animation: cms-glint var(--t-hero) var(--ease-io) both; }
+
+  .cms-face {
+    position: absolute; inset: var(--cms-bezel); border-radius: var(--r-full); display: grid; place-items: center;
+    background: radial-gradient(circle at 50% 28%, var(--carbon-3), var(--carbon-1) 56%, var(--carbon-0));
+    box-shadow: inset 0 var(--s-1) var(--s-3) var(--void), inset 0 0 0 1px var(--ti-4);
+  }
+  .cms-ticks { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .cms-tick { --o: .3; stroke: var(--ink-2); stroke-width: .5; stroke-linecap: round; opacity: var(--o); }
+  .cms-tick[data-major] { --o: .6; stroke-width: .9; }
+  .cms-beat:is([data-phase="sweep"], [data-phase="done"]) .cms-tick {   /* each tick flares as the hand passes and keeps a trace */
+    animation: cms-tick var(--t-slower) linear both; animation-delay: calc(var(--i) * var(--cms-sweep) / 60);
+  }
+  .cms-hand { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; }
+  .cms-hand::before {
+    content: ''; position: absolute; left: 50%; top: 2.5%; bottom: 50%; width: 2px; margin-left: -1px; border-radius: var(--r-full);
+    background: linear-gradient(to top, transparent, var(--ink));
+  }
+  .cms-hand::after {
+    content: ''; position: absolute; inset: 0; border-radius: inherit; mix-blend-mode: screen;
+    background: conic-gradient(from -78deg, transparent 0deg, color-mix(in oklab, var(--tele) 24%, transparent) 78deg, transparent 78.8deg);
+  }
+  .cms-beat:is([data-phase="sweep"], [data-phase="done"]) .cms-hand { animation: cms-hand var(--cms-sweep) linear both; }
+
+  .cms-count { display: inline-flex; align-items: baseline; gap: .06em; font: 600 calc(var(--cms-size) * .27)/1 var(--font-display); color: var(--ink); font-variant-numeric: tabular-nums lining-nums; }
+  .cms-count-n { line-height: 1; }
+  .cms-count-of { font-size: .4em; color: var(--ink-3); }
+
+  /* the legend: one hairline row per ring */
+  .cms-legend {   /* a soft scrim, not a card: the legend must stay legible over a sunlit limb */
+    list-style: none; margin: 0; padding: var(--s-1) 0; width: 100%; max-width: calc(var(--app-max) * .7);
+    background: linear-gradient(180deg, transparent, color-mix(in oklab, var(--void) 58%, transparent) 22%, color-mix(in oklab, var(--void) 58%, transparent) 78%, transparent);
+  }
+  .cms-lg {
+    --cms-tone: var(--ignite-2); --cms-glow: var(--ignite-glow);
+    display: grid; grid-template-columns: auto 1fr auto var(--s-4); align-items: center; gap: var(--s-3); padding: var(--s-2) var(--s-1);
+    border-top: 1px solid var(--line); text-align: left; opacity: 0; transform: translateY(var(--s-2));
+  }
+  .cms-lg:first-child { border-top: 0; }
+  .cms-lg[data-tone="tele"] { --cms-tone: var(--tele); --cms-glow: var(--tele-glow); }
+  .cms-lg[data-tone="go"] { --cms-tone: var(--go); --cms-glow: var(--go-glow); }
+  .cms-beat[data-phase="done"] .cms-lg {
+    opacity: 1; transform: none;
+    transition: opacity var(--t-slow) var(--ease-out), transform var(--t-slow) var(--ease-out); transition-delay: calc(var(--i) * var(--t-instant) * .75);
+  }
+  .cms-led { width: var(--s-2); height: var(--s-2); border-radius: var(--r-full); background: var(--cms-tone); opacity: .32; }
+  .cms-lg[data-done] .cms-led { opacity: 1; box-shadow: 0 0 var(--s-2) var(--cms-glow); }
+  .cms-lg-label { font: 600 var(--fs-md)/1 var(--font-display); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--ink); }
+  .cms-lg-sub { font: 500 var(--fs-xs)/1 var(--font-mono); letter-spacing: var(--track-mono); color: var(--ink-2); text-align: right; font-variant-numeric: tabular-nums; }
+  .cms-lg-tick { display: grid; place-items: center; color: var(--cms-tone); }
+  .cms-beat[data-phase="done"] .cms-lg[data-now] .cms-lg-tick { animation: cms-pop var(--spring-snap-ms) var(--spring-snap) both; animation-delay: calc(var(--i) * var(--t-instant) * .75 + var(--t-base)); }
+  .cms-goal { letter-spacing: var(--track-mono); text-shadow: 0 0 var(--s-2) var(--void), 0 0 var(--s-3) var(--void); }
+
+  /* ── STREAK: the flame on its pad ───────────────────────────────────── */
+  .cms-pad { --cms-pad: calc(var(--cms-flame) * 1.34); position: relative; flex: none; display: grid; place-items: center; width: var(--cms-pad); aspect-ratio: 1; }
+  .cms-glow {
+    position: absolute; inset: -20%; border-radius: var(--r-full); pointer-events: none; opacity: 0; transform: scale(.6);
+    background: radial-gradient(circle, var(--ignite-glow) 0%, transparent 62%);
+    transition: opacity var(--t-slower) var(--ease-out), transform var(--t-hero) var(--ease-out);
+  }
+  .cms-pad[data-lit] .cms-glow { opacity: .8; transform: none; }
+  .cms-orbit, .cms-mticks { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+  .cms-orbit circle {
+    fill: none; stroke: var(--line-3); stroke-width: .5; stroke-dasharray: .6 2.6; stroke-linecap: round;
+    transform-box: fill-box; transform-origin: center; animation: cms-spin 48s linear infinite;
+  }
+  .cms-pad[data-ticks] .cms-orbit { display: none; }
+  .cms-mt, .cms-mt-lit { stroke-width: .9; stroke-linecap: round; }
+  .cms-mt { stroke: var(--ink-4); opacity: .8; }
+  .cms-mt-lit { stroke: var(--gold-2); opacity: 0; }
+  .cms-pad[data-bloom] .cms-mt-lit { animation: cms-lit var(--t-slow) var(--ease-out) both; animation-delay: calc(var(--t-base) + var(--i) * var(--t-instant) * .3); }
+  .cms-wave {
+    position: absolute; inset: 0; border-radius: var(--r-full); pointer-events: none; opacity: 0;
+    border: 1px solid color-mix(in oklab, var(--gold-2) 72%, transparent);
+    animation: cms-wave var(--t-hero) var(--ease-out) both; animation-delay: calc(var(--i) * var(--t-base));
+  }
+  .cms-flame { position: relative; display: block; line-height: 0; transform-origin: 50% 90%; animation: cms-in var(--spring-soft-ms) var(--spring-soft) both; }
+  .cms-flame[data-ignited] { animation: cms-ignite var(--spring-bounce-ms) var(--spring-bounce) both; }
+  .cms-beat[data-beat="milestone"] .cms-flame[data-ignited] { animation: cms-bloom var(--spring-slam-ms) var(--spring-slam) both; }
+  .cms-beat[data-beat="milestone"] .cms-glow { background: radial-gradient(circle, color-mix(in oklab, var(--gold-2) 55%, transparent) 0%, transparent 62%); }
+
+  /* the number: giant Barlow in the ignition gradient — the one gradient on the screen */
+  .cms-numrow {
+    --cms-numfs: calc(var(--fs-5xl) * 1.12);
+    display: inline-flex; font: 600 var(--cms-numfs)/1 var(--font-display); letter-spacing: 0; font-variant-numeric: tabular-nums lining-nums;
+    opacity: .45; filter: drop-shadow(0 0 var(--s-5) var(--ignite-glow)); transition: opacity var(--t-slow) var(--ease-out);
+  }
+  .cms-numrow[data-lit] { opacity: 1; }
+  .cms-beat[data-compact] .cms-numrow { --cms-numfs: var(--fs-4xl); }
+  .cms-numrow[data-hero] { --cms-numfs: calc(var(--fs-5xl) * 1.25); opacity: 0; filter: drop-shadow(0 0 var(--s-6) color-mix(in oklab, var(--gold-2) 55%, transparent)); }
+  .cms-beat[data-compact] .cms-numrow[data-hero] { --cms-numfs: calc(var(--fs-4xl) * 1.2); }
+  .cms-numrow[data-hero][data-on] { animation: cms-slam var(--spring-slam-ms) var(--spring-slam) both; }
+  .cms-odo { display: inline-flex; line-height: 1; }
+  .cms-odo-col { position: relative; display: inline-grid; height: 1em; overflow: hidden; }
+  .cms-odo-col > i {
+    grid-area: 1 / 1; display: block; font-style: normal; line-height: 1; text-align: center;
+    background: linear-gradient(180deg, var(--ignite-3) 6%, var(--ignite-2) 46%, var(--ignite-1) 96%);
+    -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent;
+  }
+  .cms-odo-col[data-changed] {
+    -webkit-mask-image: linear-gradient(180deg, transparent, var(--void) 12%, var(--void) 88%, transparent);
+            mask-image: linear-gradient(180deg, transparent, var(--void) 12%, var(--void) 88%, transparent);
+  }
+  .cms-odo-col[data-changed] > i { transition: transform var(--t-hero) var(--ease-out), opacity var(--t-base) linear; transition-delay: calc(var(--c) * var(--t-instant) * .6); }
+  .cms-odo-col[data-changed] .cms-odo-new { transform: translateY(105%); opacity: 0; }
+  .cms-odo-col[data-go] .cms-odo-old { transform: translateY(-105%); opacity: 0; }
+  .cms-odo-col[data-go] .cms-odo-new { transform: none; opacity: 1; }
+
+  .cms-unit { margin-top: calc(var(--s-3) * -1); font: 600 var(--fs-md)/1 var(--font-display); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--ink-2); }
+  .cms-line { margin: 0; max-width: 21em; font: 500 var(--fs-lg)/1.3 var(--font-ui); letter-spacing: var(--track-tight); text-wrap: balance; color: var(--ink); }
+  .cms-line[data-tone="soft"] { color: var(--ink-2); }
+  .cms-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--s-2); }
+  .cms-note { display: flex; align-items: center; justify-content: center; gap: var(--s-2); margin: 0; max-width: 24em; font: 400 var(--fs-sm)/1.35 var(--font-ui); color: var(--ink-2); text-wrap: balance; }
+  .cms-note > svg { flex: none; color: var(--tele); }
+
+  /* the week */
+  .cms-week { list-style: none; margin: 0; padding: 0; display: flex; justify-content: center; gap: var(--s-2); }
+  .cms-cell { display: grid; justify-items: center; gap: var(--s-2); }
+  .cms-hexbox { position: relative; display: block; }
+  .cms-fill { position: absolute; left: 0; top: 0; opacity: 0; }
+  .cms-week[data-go] .cms-cell[data-on] .cms-fill { animation: cms-pop var(--spring-snap-ms) var(--spring-snap) both; animation-delay: calc(var(--i) * var(--t-instant) * .7); }
+  .cms-week[data-go] .cms-cell[data-today][data-on] .cms-fill {   /* today lands last, and lands hardest */
+    animation: cms-slam var(--spring-slam-ms) var(--spring-slam) both; animation-delay: calc(7 * var(--t-instant) * .7 + var(--t-fast));
+  }
+  .cms-dow { font: 500 var(--fs-2xs)/1 var(--font-mono); letter-spacing: var(--track-mono); color: var(--ink-3); }
+  .cms-cell[data-today] .cms-dow { color: var(--ink); }
+  .cms-cell[data-kind="rest"] .k-hex { opacity: .7; }
+
+  /* ── MILESTONE ──────────────────────────────────────────────────────── */
+  .cms-title { margin: 0; font: 600 var(--fs-2xl)/1.1 var(--font-ui); letter-spacing: var(--track-tight); text-wrap: balance; }
+  .cms-text { margin: 0; max-width: 22em; font: 400 var(--fs-base)/1.4 var(--font-ui); color: var(--ink-2); text-wrap: balance; }
+  .cms-beat[data-compact] .cms-title { font-size: var(--fs-xl); }
+  .cms-beat[data-compact] .cms-text { font-size: var(--fs-md); }
+  .cms-word { margin: 0; max-width: 24em; }
+  .cms-word > p { margin: 0; font: italic 400 var(--fs-lg)/1.4 var(--font-serif); color: var(--ink); text-wrap: balance; }
+  .cms-beat[data-compact] .cms-word > p { font-size: var(--fs-base); }
+  .cms-word > cite { display: block; margin-top: var(--s-2); font: normal 500 var(--fs-2xs)/1 var(--font-mono); letter-spacing: var(--track-mono); text-transform: uppercase; color: var(--ink-3); }
+
+  /* ── SHIELD ─────────────────────────────────────────────────────────── */
+  .cms-shieldpad { position: relative; flex: none; display: grid; place-items: center; width: calc(var(--cms-shield) * 1.5); aspect-ratio: 1; }
+  .cms-shieldpad .cms-glow { background: radial-gradient(circle, var(--tele-glow) 0%, transparent 62%); }
+  .cms-shieldpad[data-on] .cms-glow { opacity: .85; transform: none; }
+  .cms-shield { position: relative; display: block; line-height: 0; opacity: 0; transition: opacity var(--t-slow) var(--ease-out), transform var(--t-slow) var(--ease-out); }
+  .cms-shieldpad[data-used] .cms-shield { opacity: 1; }
+  .cms-shieldpad[data-on] .cms-shield { opacity: 1; animation: cms-ignite var(--spring-bounce-ms) var(--spring-bounce) both; }
+  .cms-shieldpad[data-used][data-on] .cms-shield { animation: none; }   /* the used shield is already there: it lights, it does not land */
+  .cms-bolt { position: absolute; display: grid; place-items: center; color: var(--tele); opacity: 0; transform: scale(.6); transition: opacity var(--t-slow) var(--ease-out), transform var(--spring-snap-ms) var(--spring-snap); }
+  .cms-bolt > svg { width: calc(var(--cms-shield) * .5); height: calc(var(--cms-shield) * .5); }
+  .cms-shieldpad[data-xp] .cms-shield { opacity: 0; transform: scale(.7); animation: none; }
+  .cms-shieldpad[data-xp] .cms-bolt { opacity: 1; transform: none; }
+  .cms-recap { display: inline-flex; align-items: center; gap: var(--s-2); }
+  .cms-recap > b { font: 600 var(--fs-2xl)/1 var(--font-display); font-variant-numeric: tabular-nums; }
+  .cms-recap > span { font: 500 var(--fs-2xs)/1 var(--font-mono); letter-spacing: var(--track-mono); text-transform: uppercase; color: var(--ink-3); }
+  .cms-bay { list-style: none; margin: 0; padding: 0; display: flex; gap: var(--s-4); }
+  .cms-bay > li { display: grid; place-items: center; width: var(--s-12); height: var(--s-12); }
+  .cms-slot { display: block; width: calc(var(--s-12) * .78); height: calc(var(--s-12) * .88); background: var(--carbon-3); clip-path: var(--clip-hex); opacity: .6; }
+  .cms-bay[data-on] > li[data-new] { animation: cms-slam var(--spring-slam-ms) var(--spring-slam) both; }
+
+  /* ── motion ─────────────────────────────────────────────────────────── */
+  @keyframes cms-in { from { opacity: 0; transform: scale(.88); } }
+  @keyframes cms-ignite { from { transform: scale(.55); } }
+  @keyframes cms-bloom { from { transform: scale(.4); } }
+  @keyframes cms-pop { from { opacity: 0; transform: scale(.55); } to { opacity: 1; transform: none; } }
+  @keyframes cms-slam { from { opacity: 0; transform: scale(1.55); } to { opacity: 1; transform: none; } }
+  @keyframes cms-spin { to { transform: rotate(360deg); } }
+  @keyframes cms-wave { 0% { opacity: .7; transform: scale(.5); } 100% { opacity: 0; transform: scale(1.7); } }
+  @keyframes cms-lit { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes cms-hand { 0% { opacity: 1; transform: rotate(0deg); } 92% { opacity: 1; } 100% { opacity: 0; transform: rotate(360deg); } }
+  @keyframes cms-tick { 0% { opacity: var(--o); } 10% { opacity: 1; } 100% { opacity: calc(var(--o) + .3); } }
+  @keyframes cms-glint { 0% { opacity: 1; transform: rotate(0deg); } 100% { opacity: 0; transform: rotate(360deg); } }
+
+  /* lite:start — no loops, no canvas-weight effects, no travel: the same facts, cross-faded */
+  html[data-fx="lite"] :is(.cms-dial, .cms-flame, .cms-flame[data-ignited], .cms-orbit circle, .cms-tick, .cms-shield, .cms-bay > li[data-new]) { animation: none; }
+  html[data-fx="lite"] .cms-beat[data-beat="milestone"] .cms-flame[data-ignited] { animation: none; }
+  html[data-fx="lite"] :is(.cms-hand, .cms-glint, .cms-wave) { display: none; }
+  html[data-fx="lite"] .cms-pad[data-bloom] .cms-mt-lit { animation: none; opacity: 1; }
+  html[data-fx="lite"] :is(.cms-line, .cms-text, .cms-title, .cms-word, .cms-chips, .cms-note, .cms-recap, .cms-bay, .cms-goal, .cms-lg) { transform: none; transition: opacity var(--t-fast) linear; transition-delay: 0ms; }
+  html[data-fx="lite"] .cms-beat[data-phase="done"] .cms-lg { transition-delay: 0ms; }
+  html[data-fx="lite"] .cms-week[data-go] .cms-cell[data-on] .cms-fill { animation: none; opacity: 1; transition: opacity var(--t-fast) linear; }
+  html[data-fx="lite"] .cms-week[data-go] .cms-cell[data-today][data-on] .cms-fill { animation: none; }
+  html[data-fx="lite"] .cms-numrow[data-hero][data-on] { animation: none; opacity: 1; transition: opacity var(--t-fast) linear; }
+  html[data-fx="lite"] .cms-beat[data-phase="done"] .cms-lg[data-now] .cms-lg-tick { animation: none; }
+  html[data-fx="lite"] .cms-odo-col[data-changed] { -webkit-mask-image: none; mask-image: none; }
+  html[data-fx="lite"] .cms-odo-col[data-changed] > i { transform: none; transition: opacity var(--t-fast) linear; transition-delay: 0ms; }
+  html[data-fx="lite"] .cms-numrow, html[data-fx="lite"] .cms-glow { filter: none; }
+  html[data-fx="lite"] .cms-glow { transition-duration: var(--t-fast); transform: none; }
+  html[data-fx="lite"] .cms-bolt { transform: none; transition-duration: var(--t-fast); }
+  /* lite:end */
+  /* reduced motion: the same rules for a phone that asks for it before the app has set data-fx */
+  @media (prefers-reduced-motion: reduce) {
+    html:not([data-fx="full"]) :is(.cms-dial, .cms-flame, .cms-flame[data-ignited], .cms-orbit circle, .cms-tick, .cms-shield, .cms-bay > li[data-new]) { animation: none; }
+    html:not([data-fx="full"]) .cms-beat[data-beat="milestone"] .cms-flame[data-ignited] { animation: none; }
+    html:not([data-fx="full"]) :is(.cms-hand, .cms-glint, .cms-wave) { display: none; }
+    html:not([data-fx="full"]) .cms-pad[data-bloom] .cms-mt-lit { animation: none; opacity: 1; }
+    html:not([data-fx="full"]) :is(.cms-line, .cms-text, .cms-title, .cms-word, .cms-chips, .cms-note, .cms-recap, .cms-bay, .cms-goal, .cms-lg) { transform: none; transition: opacity var(--t-fast) linear; transition-delay: 0ms; }
+    html:not([data-fx="full"]) .cms-beat[data-phase="done"] .cms-lg { transition-delay: 0ms; }
+    html:not([data-fx="full"]) .cms-week[data-go] .cms-cell[data-on] .cms-fill { animation: none; opacity: 1; transition: opacity var(--t-fast) linear; }
+    html:not([data-fx="full"]) .cms-week[data-go] .cms-cell[data-today][data-on] .cms-fill { animation: none; }
+    html:not([data-fx="full"]) .cms-numrow[data-hero][data-on] { animation: none; opacity: 1; transition: opacity var(--t-fast) linear; }
+    html:not([data-fx="full"]) .cms-beat[data-phase="done"] .cms-lg[data-now] .cms-lg-tick { animation: none; }
+    html:not([data-fx="full"]) .cms-odo-col[data-changed] { -webkit-mask-image: none; mask-image: none; }
+    html:not([data-fx="full"]) .cms-odo-col[data-changed] > i { transform: none; transition: opacity var(--t-fast) linear; transition-delay: 0ms; }
+    html:not([data-fx="full"]) .cms-numrow, html:not([data-fx="full"]) .cms-glow { filter: none; }
+    html:not([data-fx="full"]) .cms-glow { transition-duration: var(--t-fast); transform: none; }
+    html:not([data-fx="full"]) .cms-bolt { transform: none; transition-duration: var(--t-fast); }
+  }
+  /* rm:end */
+}

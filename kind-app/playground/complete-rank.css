@@ -1,0 +1,8 @@
+/* playground chrome only — not shipped */
+.pgr-stage { position: absolute; inset: 0; background: var(--void); overflow: hidden; }
+.pgr-top { position: absolute; top: calc(var(--sat) + var(--s-2)); right: var(--s-3); z-index: 3; height: var(--tap); display: flex; align-items: center; }
+.pgr-skip { font: 600 var(--fs-sm)/1 var(--font-display); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--ink-3); padding: var(--s-3) var(--s-4); border: var(--hair) solid var(--line-2); }
+.pgr-pick { position: fixed; left: var(--s-2); top: var(--s-2); z-index: 200; display: none; flex-direction: column; gap: var(--s-1); max-width: 200px; }
+.pgr-pick button, .pgr-pick span { font: 500 11px/1.2 var(--font-mono); color: var(--ink-2); background: var(--carbon-2); border: 1px solid var(--line-2); padding: 6px 8px; text-align: left; cursor: pointer; }
+.pgr-pick button.is-on { color: var(--ink); border-color: var(--tele); }
+@media (min-width: 720px) { .pgr-pick { display: flex; } }

@@ -1,0 +1,49 @@
+/* owner: me-settings (prefix .mes-) */
+@layer screen {
+  .mes { display: grid; gap: var(--s-8); min-width: 0; }
+
+  /* a control that lives inside a Row body: full width under the label/help, never wider than the row */
+  .mes-tall { align-items: flex-start; }   /* rows that carry a control: the icon sits on the title line, not floating mid-row */
+  .mes-ctl { display: grid; gap: var(--s-2); margin-top: var(--s-3); min-width: 0; }
+  .mes-ctl > * { min-width: 0; }
+
+  /* Row title carrying its live value on the right (sliders: the Slider's own head only exists to name the control) */
+  .mes-title { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-3); }
+  .mes-val { color: var(--tele); font-family: var(--font-mono); font-weight: 500; font-size: var(--fs-sm); font-variant-numeric: tabular-nums; letter-spacing: var(--track-mono); }
+  .mes-slider .k-slider__head {
+    position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0;
+  }
+
+  .mes-note { margin: 0; min-height: calc(var(--fs-sm) * 1.4 * 2); color: var(--ink-3); font-family: var(--font-ui); font-weight: 400; font-size: var(--fs-sm); line-height: 1.4; letter-spacing: 0; }
+  .mes-now { color: var(--tele); font-family: var(--font-mono); font-size: var(--fs-xs); letter-spacing: var(--track-mono); white-space: nowrap; }
+  .mes-strong { color: var(--ink-2); font-weight: 600; }
+
+  /* reading-size sample: Scripture's own face, scaled by the slider. Room for two lines at the largest size so dragging does not hop the page. */
+  .mes-sample {
+    --mes-scale: 1;
+    margin: 0; padding: var(--s-3) var(--s-4);
+    min-height: calc(var(--fs-lg) * 1.3 * 1.35 * 2 + var(--s-6));
+    border-radius: var(--r-xs);
+    background: var(--carbon-0);
+    box-shadow: inset 0 0 0 1px var(--line), inset 2px 0 0 var(--gold-2);
+    color: var(--ink);
+    font-family: var(--font-serif); font-weight: 400; font-size: calc(var(--fs-lg) * var(--mes-scale)); line-height: 1.35; letter-spacing: 0;
+    overflow-wrap: anywhere;
+    -webkit-user-select: text; user-select: text;
+  }
+
+  /* reminder sheet */
+  .mes-rem { display: grid; gap: var(--s-5); justify-items: stretch; min-width: 0; }
+  .mes-rem .mes-ctl { margin-top: 0; }
+  .mes-clock { display: flex; align-items: baseline; justify-content: center; gap: var(--s-2); padding: var(--s-2) 0 0; }
+  .mes-clock__t { display: inline-flex; align-items: baseline; gap: var(--s-2); color: var(--ink); font-family: var(--font-display); font-weight: 600; font-size: var(--fs-4xl); line-height: 1; letter-spacing: .01em; font-variant-numeric: tabular-nums; }
+  .mes-clock__ap { color: var(--ink-2); font-size: var(--fs-xl); text-transform: uppercase; letter-spacing: var(--track-label); }
+  .mes-clock__z { color: var(--tele); font-family: var(--font-mono); font-weight: 500; font-size: var(--fs-xs); letter-spacing: var(--track-mono); }
+  .mes-presets { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-2); }
+  .mes-presets .k-chip { width: 100%; min-width: 0; justify-content: flex-start; }
+  .mes-usual { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); color: var(--ink-2); font-family: var(--font-ui); font-size: var(--fs-md); line-height: 1.35; }
+  .mes-usual > span { flex: 1 1 0; min-width: 0; }
+  .mes-usual .k-btn { flex: none; }
+  .mes-honest { display: flex; gap: var(--s-2); align-items: flex-start; margin: 0; color: var(--ink-3); font-family: var(--font-ui); font-size: var(--fs-sm); line-height: 1.45; }
+  .mes-honest > svg { flex: none; margin-top: 2px; color: var(--tele); }
+}

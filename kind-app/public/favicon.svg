@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="f-ti" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef1f8"/><stop offset=".5" stop-color="#aeb5c6"/><stop offset="1" stop-color="#6a7186"/></linearGradient>
+    <linearGradient id="f-pl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#11141f"/><stop offset="1" stop-color="#06070d"/></linearGradient>
+    <linearGradient id="f-ig" gradientUnits="userSpaceOnUse" x1="20" y1="226" x2="150" y2="-40"><stop offset="0" stop-color="#ff4a0f"/><stop offset=".55" stop-color="#ff8a1c"/><stop offset="1" stop-color="#ffc43d"/></linearGradient>
+  </defs>
+  <polygon points="32,0.6 59.19,16.3 59.19,47.7 32,63.4 4.81,47.7 4.81,16.3" fill="url(#f-ti)"/>
+  <polygon points="32,5.45 54.99,18.72 54.99,45.28 32,58.55 9.01,45.28 9.01,18.72" fill="url(#f-pl)"/>
+  <g transform="translate(21.78 20.58) scale(0.125)"><path d="M0 16 L16 0 L42 0 L42 82 C66 50 112 40 144 -34 C150 -4 182 42 156 76 C132 100 96 108 70 118 L134 220 L86 220 L42 156 L42 220 L0 220 Z" fill="url(#f-ig)" stroke="url(#f-ig)" stroke-width="10" stroke-linejoin="round"/></g>
+</svg>

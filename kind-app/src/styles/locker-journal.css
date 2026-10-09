@@ -1,0 +1,127 @@
+/* owner: locker-journal (prefix .lcj-) — the Journal tab: serif quote cards on carbon, a stage-coloured spine on each. */
+@layer screen {
+  .lcj {
+    display: flex; flex-direction: column; gap: var(--s-4);
+    padding: var(--s-2) var(--gutter) var(--s-8);
+    min-width: 0;
+  }
+
+  /* ── count + export ─────────────────────────────────────────────────── */
+  .lcj-bar { display: flex; align-items: center; justify-content: space-between; gap: var(--s-4); }
+  .lcj-count { display: flex; align-items: center; gap: var(--s-3); min-width: 0; }
+  .lcj-count__n {
+    font: 600 var(--fs-3xl)/1 var(--font-display); letter-spacing: var(--track-tight); color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .lcj-count__t { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .lcj-count__t b {
+    font: 600 var(--fs-sm)/1 var(--font-display); text-transform: uppercase; letter-spacing: var(--track-label); color: var(--ink);
+  }
+  .lcj-count__t span { font: 400 var(--fs-2xs)/1.2 var(--font-mono); letter-spacing: var(--track-mono); color: var(--ink-3); text-transform: uppercase; }
+
+  /* ── search ─────────────────────────────────────────────────────────── */
+  .lcj-search .k-field__input::-webkit-search-cancel-button,
+  .lcj-search .k-field__input::-webkit-search-decoration { appearance: none; display: none; }
+  .lcj-search__clear {
+    display: grid; place-items: center; flex: none;
+    min-width: var(--tap); min-height: var(--tap); margin-inline: calc(var(--s-3) * -1) calc(var(--s-2) * -1);
+    border: 0; background: none; color: var(--ink-3); cursor: pointer; border-radius: var(--r-full);
+    transition: color var(--t-fast) var(--ease-out);
+  }
+  .lcj-search__clear:hover { color: var(--ink); }
+
+  .lcj-chips {
+    display: flex; gap: var(--s-2); overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain;
+    margin-inline: calc(var(--gutter) * -1); padding-inline: var(--gutter); scroll-padding-inline: var(--gutter);
+  }
+  .lcj-chips::-webkit-scrollbar { display: none; }
+  .lcj-chips .k-chip { flex: none; }
+  .lcj-meta {
+    margin: 0; font: 400 var(--fs-2xs)/1.2 var(--font-mono); letter-spacing: var(--track-mono);
+    text-transform: uppercase; color: var(--ink-3);
+  }
+
+  /* ── the feed ───────────────────────────────────────────────────────── */
+  .lcj-feed { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--s-4); outline: none; }
+  .lcj-item {
+    min-width: 0;
+    animation: lcj-rise var(--t-slow) var(--ease-out) both;
+    animation-delay: calc(var(--i, 0) * var(--t-instant) / 2);
+  }
+  @keyframes lcj-rise { from { opacity: 0; transform: translateY(var(--s-3)); } }
+  html[data-fx="lite"] .lcj-item { animation: none; }
+
+  .lcj-card {
+    position: relative; overflow: hidden; isolation: isolate;
+    display: flex; flex-direction: column; gap: var(--s-2);
+    padding: var(--s-4) var(--s-5) var(--s-5) calc(var(--s-5) + var(--s-1));
+    background: var(--plate);
+    border: 1px solid var(--line-2); border-radius: var(--r-md);
+    box-shadow: var(--bevel), var(--shadow-1);
+  }
+  .lcj-card::before {                       /* the spine */
+    content: ""; position: absolute; inset: 0 auto 0 0; width: calc(var(--s-1) / 2);
+    background: var(--stage); box-shadow: 0 0 var(--s-3) var(--stage-glow);
+  }
+  .lcj-card::after {                        /* catch-light */
+    content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: var(--sheen);
+  }
+
+  .lcj-card__top { display: flex; align-items: center; justify-content: space-between; gap: var(--s-2); min-height: var(--s-8); margin-block: calc(var(--s-1) * -1); }
+  .lcj-card__meta {
+    margin: 0; font: 500 var(--fs-2xs)/1.3 var(--font-mono); letter-spacing: var(--track-mono);
+    text-transform: uppercase; color: var(--ink-2);
+  }
+  .lcj-card__meta i { font-style: normal; color: var(--ink-4); margin-inline: var(--s-1); }
+  .lcj-card__top .k-iconbtn { margin-right: calc(var(--s-3) * -1); }
+
+  .lcj-card__title {
+    margin: 0; font: 600 var(--fs-lg)/1.2 var(--font-ui); letter-spacing: var(--track-tight); color: var(--ink);
+    text-wrap: balance; overflow-wrap: anywhere;
+  }
+  .lcj-card__refs { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-3); }
+  .lcj-card__series { font: 400 var(--fs-xs)/1.2 var(--font-ui); color: var(--ink-3); }
+  .lcj-card__prompt {
+    margin: var(--s-1) 0 0; font: 400 var(--fs-sm)/1.45 var(--font-ui); color: var(--ink-3);
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden;
+  }
+
+  .lcj-quote { position: relative; margin: var(--s-3) 0 0; padding: var(--s-6) 0 0; border-top: 1px solid var(--line); }
+  .lcj-quote::before {
+    content: "\201C"; position: absolute; top: var(--s-1); left: 0;
+    font: 400 var(--fs-4xl)/1 var(--font-serif); color: var(--stage); opacity: .55; pointer-events: none;
+    transform: translateY(calc(var(--s-3) * -1));
+  }
+  .lcj-quote__text {
+    margin: 0; font: 400 calc(var(--fs-base) * var(--read-scale, 1))/1.6 var(--font-serif); color: var(--ink);
+    white-space: pre-wrap; overflow-wrap: anywhere; font-variant-ligatures: common-ligatures;
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 6; overflow: hidden;
+  }
+  .lcj-quote[data-open] .lcj-quote__text { display: block; -webkit-line-clamp: unset; overflow: visible; }
+  .lcj-mark { background: var(--tele-wash); color: var(--tele); border-radius: var(--s-1); box-shadow: 0 0 0 1px var(--tele-glow); padding: 0 1px; }
+
+  .lcj-more {
+    align-self: flex-start; display: inline-flex; align-items: center; gap: var(--s-1);
+    min-height: var(--tap); margin: calc(var(--s-1) * -1) 0 calc(var(--s-3) * -1) calc(var(--s-2) * -1); padding: 0 var(--s-2);
+    background: none; border: 0; cursor: pointer; border-radius: var(--r-xs);
+    font: 600 var(--fs-xs)/1 var(--font-display); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--tele);
+    transition: color var(--t-fast) var(--ease-out);
+  }
+  .lcj-more:hover { color: var(--ink); }
+
+  /* ── empty ──────────────────────────────────────────────────────────── */
+  .lcj--empty { padding-top: var(--s-10); }
+  .lcj-empty { box-sizing: border-box; width: 100%; max-width: min(34ch, 100%); }
+  .lcj-empty--none { padding-block: var(--s-8); }
+  .lcj-empty__word { margin: 0 0 var(--s-5); padding: 0 var(--s-4); text-align: center; }
+  .lcj-empty__word blockquote { margin: 0; font: italic 400 var(--fs-md)/1.5 var(--font-serif); color: var(--ink-2); text-wrap: balance; }
+  .lcj-empty__word figcaption { margin-top: var(--s-2); font: 500 var(--fs-2xs)/1 var(--font-mono); letter-spacing: var(--track-mono); text-transform: uppercase; color: var(--ink-3); }
+
+  /* ── sheets (portalled — same prefix, still our layer) ───────────────── */
+  .lcj-actions { display: flex; flex-direction: column; gap: var(--s-3); padding: var(--s-2) var(--gutter) var(--s-4); }
+  .lcj-actions__note { margin: 0; font: 400 var(--fs-sm)/1.45 var(--font-ui); color: var(--ink-3); }
+  .lcj-foot { display: grid; grid-template-columns: 1fr 2fr; gap: var(--s-3); padding: var(--s-3) var(--gutter); }
+  .lcj-edit { display: flex; flex-direction: column; gap: var(--s-4); padding: var(--s-2) var(--gutter) var(--s-6); }
+  .lcj-edit__prompt { margin: 0; font: 400 var(--fs-sm)/1.45 var(--font-ui); color: var(--ink-3); }
+  .lcj-edit .k-field__input { font-family: var(--font-serif); font-weight: 400; font-size: var(--fs-base); line-height: 1.55; }
+}

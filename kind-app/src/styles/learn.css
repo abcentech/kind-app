@@ -1,0 +1,219 @@
+/* owner: wave-2 learn-path — The Ascent. Prefix .learn-. Tokens only; every rule lives in the screen layer. */
+@layer screen {
+  .learn {
+    --learn-foot: calc(var(--launch-h, 148px) + var(--dock-h) + var(--sab));   /* what the Launch Bar + dock cover */
+    --learn-row: calc(var(--s-20) + var(--s-16));                               /* one day on the path */
+    --learn-rocket: calc(var(--s-20) + var(--s-6));                             /* head-room above the live node */
+    position: absolute; inset: 0; overflow: hidden; isolation: isolate; background: var(--carbon-0);
+  }
+
+  /* ═══ THE SKY ═══════════════════════════════════════════════════════════════════════════════════════════════
+     --scroll is written on .learn-sky by useScrollVar: 0 on the pad, 1 in orbit. Opacity + transform only. */
+  .learn-sky { position: absolute; inset: 0; overflow: hidden; pointer-events: none; contain: strict; isolation: isolate; }
+  .learn-sky > * { position: absolute; inset: 0; }
+  .learn-sky__deep {
+    opacity: clamp(0, calc((var(--scroll, 0) - .4) * 2), 1);
+    will-change: opacity;
+  }
+  .learn-sky__limb {
+    bottom: var(--learn-foot);
+    opacity: clamp(0, calc(1.05 - max(var(--scroll, 0) - .42, .42 - var(--scroll, 0)) * 3.2), .9);
+    transform: translate3d(0, calc(12% + (var(--scroll, 0) - .42) * 70%), 0);     /* sits low: the live node stays on dark sky */
+    will-change: opacity, transform;
+  }
+  .learn-sky__pad {
+    bottom: var(--learn-foot);
+    opacity: clamp(0, calc(1.2 - var(--scroll, 0) * 4.2), 1);
+    transform: translate3d(0, calc(var(--scroll, 0) * 34%), 0);
+    will-change: opacity, transform;
+  }
+  .learn-sky__limb .art-hz { background: none; }                                /* the limb floats over the base sky */
+  /* below the picture's foot (behind the Launch Bar + dock) the ground simply continues */
+  .learn-sky__ground { position: absolute; left: 0; right: 0; top: 100%; height: var(--learn-foot); display: block; }
+  .learn-sky__ground[data-v='pad']  { background: linear-gradient(180deg, var(--carbon-1), var(--carbon-0)); }
+  .learn-sky__ground[data-v='limb'] { background: linear-gradient(180deg, var(--carbon-2), var(--carbon-1)); }
+
+  /* ═══ THE SCROLLER ══════════════════════════════════════════════════════════════════════════════════════════ */
+  .learn-scroll {
+    position: absolute; inset: 0 0 calc(var(--sab) + var(--s-3)) 0; z-index: var(--z-content);   /* ends where the dock's floor does: no art peeks under it */
+    overflow-x: hidden; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch;
+    padding-top: calc(var(--sat) + var(--hud-h));
+    padding-bottom: calc(var(--launch-h, 148px) + var(--dock-h) + var(--s-3) + var(--s-6));
+    scrollbar-width: none;
+  }
+  .learn-scroll::-webkit-scrollbar { display: none; }
+  .learn-content { position: relative; padding-top: var(--s-20); }
+
+  /* ═══ THE PATH ══════════════════════════════════════════════════════════════════════════════════════════════
+     --amp is half the S's width: it follows the column (cqi), capped. Nodes sit at  50% + lane * amp. */
+  .learn-path { position: relative; container-type: inline-size; --amp: min(var(--s-20), 21cqi); }
+  .learn-amp { position: absolute; left: 0; top: 0; width: var(--amp); height: 0; visibility: hidden; pointer-events: none; }
+  .learn-path > :not(.learn-curve):not(.learn-amp) { position: relative; z-index: 1; }
+
+  /* the instrument ruler down the left edge: a hairline tick every 16, a long one every 80 — scrolls with the climb */
+  .learn-path::before, .learn-path::after {
+    content: ''; position: absolute; left: var(--s-2); top: var(--s-12); bottom: var(--s-12); pointer-events: none; opacity: .7;
+  }
+  .learn-path::before { width: var(--s-2); background: repeating-linear-gradient(180deg, var(--line-2) 0 1px, transparent 1px var(--s-4)); }
+  .learn-path::after { width: var(--s-3); background: repeating-linear-gradient(180deg, var(--line-3) 0 1px, transparent 1px var(--s-20)); }
+
+  .learn-curve { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; z-index: 0; }
+  .learn-curve__dash { fill: none; stroke: var(--line-3); stroke-width: 1.25; stroke-dasharray: var(--s-1) var(--s-2); stroke-linecap: round; }
+  .learn-curve__halo, .learn-curve__body, .learn-curve__core {
+    fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 100;
+    animation: learn-draw calc(var(--t-hero) * 1.4) var(--ease-out) both;
+  }
+  .learn-curve__halo { stroke: var(--ignite-glow); stroke-width: var(--s-3); opacity: .3; }
+  .learn-curve__body { stroke-width: var(--s-1); }
+  .learn-curve__core { stroke: var(--ignite-3); stroke-width: calc(var(--s-1) / 2); opacity: .75; }
+  @keyframes learn-draw { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
+
+  .learn-stage { position: relative; }
+  .learn-nodes { list-style: none; margin: 0; padding: 0; }
+  .learn-row { position: relative; min-height: var(--learn-row); }
+
+  /* ── a node ── */
+  .learn-node {
+    display: grid; justify-items: center; align-content: start; padding-top: var(--s-3);
+    translate: calc(var(--amp) * var(--f, 0)) 0;
+  }
+  .learn-row[data-live] .learn-node { padding-top: calc(var(--learn-rocket) + var(--s-3)); padding-bottom: var(--s-3); }
+  .learn-hexwrap { position: relative; }
+  /* the hit area runs on down over the label: one button, one big target */
+  .learn-hex::after { content: ''; position: absolute; inset: calc(var(--s-2) * -1) calc(var(--s-6) * -1) calc(var(--s-12) * -1); }
+
+  .learn-pulse { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+  .learn-pulse polygon {
+    fill: none; stroke: var(--ignite-2); stroke-width: 1.5; vector-effect: non-scaling-stroke; stroke-linejoin: round;
+    transform-origin: 50% 50%; transform-box: fill-box; opacity: 0;
+    animation: learn-pulse calc(var(--t-hero) * 2.4) var(--ease-out) infinite;
+  }
+  .learn-pulse polygon + polygon { animation-delay: calc(var(--t-hero) * 1.2); }
+  @keyframes learn-pulse { 0% { opacity: .75; transform: scale(1); } 100% { opacity: 0; transform: scale(1.55); } }
+
+  .learn-rocket { position: absolute; left: 50%; bottom: calc(100% - var(--s-3)); translate: -50% 0; pointer-events: none; z-index: 2; }
+
+  .learn-mark {
+    position: absolute; z-index: 3; right: calc(var(--s-1) * -1); top: var(--s-1); display: grid; place-items: center;
+    width: var(--s-6); height: var(--s-6); border-radius: var(--r-full); pointer-events: none;
+    background: var(--carbon-3); color: var(--ink-2); box-shadow: var(--bevel), var(--shadow-1);
+  }
+  .learn-mark[data-kind='celebration'] { background: var(--gold); color: var(--ink-on-ignite); box-shadow: var(--bevel), var(--shadow-1), 0 0 var(--s-4) -2px var(--gold-glow); }
+  .learn-mark[data-kind='intro'] { color: var(--tele); }
+
+  .learn-label {
+    display: grid; justify-items: center; gap: var(--s-1); max-width: calc(var(--s-20) * 2); margin-top: var(--s-2); text-align: center; pointer-events: none;
+    /* a dark halo: the flight path may pass behind the words, and the words win */
+    text-shadow: 0 0 var(--s-1) var(--carbon-0), 0 0 var(--s-2) var(--carbon-0), 0 0 var(--s-2) var(--carbon-0), 0 0 var(--s-3) var(--carbon-0), 0 0 var(--s-4) var(--carbon-0), 0 0 var(--s-4) var(--carbon-0);
+  }
+  .learn-label__day {
+    display: inline-flex; align-items: center; gap: var(--s-1); font: 500 var(--fs-2xs)/1.3 var(--font-mono);
+    letter-spacing: var(--track-mono); text-transform: uppercase; color: var(--ink-3); white-space: nowrap;
+  }
+  .learn-label__gold { color: var(--gold-2); width: var(--s-3); height: var(--s-3); }
+  .learn-label__title { max-width: 100%; font: 500 var(--fs-xs)/1.25 var(--font-ui); color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .learn-label__sub { font: 500 var(--fs-2xs)/1.3 var(--font-mono); letter-spacing: var(--track-mono); color: var(--ink-3); white-space: nowrap; }
+  .learn-node[data-state='done'] .learn-label__title { color: var(--ink-3); }
+  .learn-node[data-state='locked'] .learn-label__day { color: var(--ink-4); }
+  .learn-node[data-state='current'] .learn-label__day { color: var(--ignite-3); }
+  .learn-row[data-live] .learn-label { margin-top: var(--s-3); }
+  .learn-row[data-live] .learn-label__title {
+    font-size: var(--fs-md); font-weight: 600; color: var(--ink); white-space: normal; text-wrap: balance;
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2;
+  }
+
+  /* entrance: only the nodes near the live one play it (the rest are off-screen anyway), staggered by --d */
+  .learn-row[data-enter] .learn-hexwrap > .k-hex { animation: learn-rise var(--t-slow) var(--ease-out) backwards; animation-delay: var(--d, 0ms); }
+  .learn-row[data-enter] .learn-label { animation: learn-fade var(--t-slow) var(--ease-out) backwards; animation-delay: var(--d, 0ms); }
+  @keyframes learn-rise { from { opacity: 0; translate: 0 var(--s-4); scale: .9; } }
+  @keyframes learn-fade { from { opacity: 0; } }
+
+  /* ── the stage gate ── */
+  .learn-slab {
+    display: grid; justify-items: center; gap: var(--s-3); padding: var(--s-8) var(--gutter); text-align: center;
+    background:
+      linear-gradient(180deg, color-mix(in oklab, var(--stage) 11%, transparent), transparent 62%),
+      color-mix(in oklab, var(--carbon-0) 84%, transparent);
+    border-top: 1px solid color-mix(in oklab, var(--stage) 46%, var(--line-2));
+    border-bottom: 1px solid var(--line);
+  }
+  .learn-slab__patch { display: grid; place-items: center; filter: grayscale(1) brightness(.62); transition: filter var(--t-slower) var(--ease-out); }
+  .learn-slab[data-state='current'] .learn-slab__patch, .learn-slab[data-state='open'] .learn-slab__patch { filter: grayscale(1) brightness(.85); }
+  .learn-slab[data-cleared] .learn-slab__patch { filter: drop-shadow(0 0 var(--s-5) var(--stage-glow)); }
+  .learn-slab__title {
+    display: inline-flex; align-items: center; gap: var(--s-2); margin: 0;
+    font: 700 var(--fs-lg)/1 var(--font-display); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--stage);
+  }
+  .learn-slab__title i { width: var(--s-1); height: var(--s-1); border-radius: var(--r-full); background: currentColor; opacity: .7; }
+  .learn-slab[data-state='locked'] .learn-slab__title { color: var(--ink-3); }
+  .learn-slab__meta { display: inline-flex; align-items: center; gap: var(--s-3); min-height: var(--s-8); }
+  .learn-slab__count { font: 500 var(--fs-xs)/1 var(--font-mono); letter-spacing: var(--track-mono); color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .learn-ticks { display: inline-flex; gap: var(--s-1); }
+  .learn-ticks i { width: var(--s-2); height: var(--s-3); background: var(--carbon-4); clip-path: var(--clip-cut-sm); transform: skewX(-12deg); }
+  .learn-ticks i[data-on] { background: var(--stage); box-shadow: 0 0 var(--s-2) var(--stage-glow); }
+  .learn-slab__q {
+    margin: 0; max-width: 26ch; font: italic 400 var(--fs-lg)/1.35 var(--font-serif); color: var(--ink-2); text-wrap: balance;
+  }
+
+  /* ── the two ends of the climb ── */
+  .learn-orbit { display: grid; justify-items: center; gap: var(--s-2); padding-bottom: var(--s-8); }
+  .learn-orbit__ring {
+    display: grid; place-items: center; width: calc(var(--s-12) + var(--s-2)); height: calc(var(--s-12) + var(--s-2)); border-radius: var(--r-full);
+    background: var(--carbon-1); box-shadow: inset 0 0 0 1px var(--line-3), var(--shadow-1); color: var(--ink-3);
+  }
+  .learn-orbit[data-lit] .learn-orbit__ring { color: var(--gold-1); box-shadow: inset 0 0 0 1px var(--gold-2), 0 0 var(--s-6) -2px var(--gold-glow); }
+  .learn-orbit b, .learn-pad b { font: 600 var(--fs-2xs)/1 var(--font-mono); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--ink-3); }
+  .learn-pad { display: grid; justify-items: center; gap: var(--s-1); padding: var(--s-12) 0 var(--s-4); font: 500 var(--fs-2xs)/1 var(--font-mono); letter-spacing: var(--track-mono); color: var(--ink-4); }
+
+  /* ── chrome that floats over the climb ── */
+  .learn-top {
+    position: absolute; left: 0; right: 0; top: calc(var(--sat) + var(--hud-h)); z-index: calc(var(--z-content) + 1);
+    display: grid; justify-items: center; gap: var(--s-2); pointer-events: none;
+  }
+  .learn-banner {
+    display: flex; align-items: center; justify-content: center; gap: var(--s-2); width: 100%; min-width: 0; padding: var(--s-1) var(--s-3);
+    background: linear-gradient(180deg, color-mix(in oklab, var(--carbon-0) 90%, transparent), transparent);
+    font: 500 var(--fs-2xs)/1.6 var(--font-mono); letter-spacing: var(--track-mono); color: var(--ink-2); white-space: nowrap;
+  }
+  .learn-banner__head { font-weight: 600; letter-spacing: var(--track-label); text-transform: uppercase; color: var(--ink); }
+  .learn-banner__dash { color: var(--ink-4); }
+  .learn-banner__rest { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .learn-banner__led { flex: none; width: var(--s-2); height: var(--s-2); border-radius: var(--r-full); background: var(--go); box-shadow: 0 0 var(--s-2) var(--go-glow); }
+  .learn-banner[data-mode='upcoming'] .learn-banner__led { background: var(--tele); box-shadow: 0 0 var(--s-2) var(--tele-glow); }
+
+  .learn-chip {
+    display: inline-flex; align-items: center; gap: var(--s-2); height: var(--s-6); padding: 0 var(--s-3); border-radius: var(--r-full);
+    background: color-mix(in oklab, var(--carbon-1) 94%, transparent); box-shadow: inset 0 0 0 1px var(--line-2), var(--shadow-1);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);       /* node labels pass under the chip: frost them, don't let them ghost through */
+    font: 500 var(--fs-2xs)/1 var(--font-mono); letter-spacing: var(--track-mono); text-transform: uppercase; color: var(--ink-2); white-space: nowrap;
+    animation: learn-chip-in var(--t-base) var(--ease-out) both;
+  }
+  .learn-chip b { font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .learn-chip__dot { width: var(--s-2); height: var(--s-2); border-radius: var(--r-full); background: var(--stage); box-shadow: 0 0 var(--s-2) var(--stage-glow); }
+  .learn-chip[data-state='locked'] .learn-chip__dot { background: var(--ink-4); box-shadow: none; }
+  @keyframes learn-chip-in { from { opacity: 0; translate: 0 calc(var(--s-1) * -1); } }
+
+  .learn-jump {
+    position: absolute; right: var(--gutter); bottom: calc(var(--learn-foot) + var(--s-3)); z-index: calc(var(--z-content) + 1);
+    display: inline-flex; align-items: center; gap: var(--s-2); min-height: var(--tap); padding: 0 var(--s-4) 0 var(--s-3); border: 0; border-radius: var(--r-full);
+    background: var(--plate-hi); box-shadow: var(--bevel), var(--shadow-2), inset 0 0 0 1px var(--line-2); color: var(--ignite-3);
+    font: 600 var(--fs-xs)/1 var(--font-mono); letter-spacing: var(--track-label); text-transform: uppercase; -webkit-tap-highlight-color: transparent;
+    opacity: 0; visibility: hidden; translate: 0 var(--s-2); pointer-events: none;
+    transition: opacity var(--t-base) var(--ease-out), translate var(--t-base) var(--ease-out), visibility 0s linear var(--t-base), scale var(--spring-snap-ms) var(--spring-snap);
+  }
+  .learn-jump[data-dir] { opacity: 1; visibility: visible; translate: 0 0; pointer-events: auto; transition-delay: 0s; }
+  .learn-jump:active { scale: .96; transition-duration: var(--t-instant); }
+  .learn-jump span { color: var(--ink); }
+
+  /* ═══ LITE + REDUCED MOTION ═════════════════════════════════════════════════════════════════════════════════ */
+  html[data-fx='lite'] .learn-curve__halo, html[data-fx='lite'] .learn-curve__body, html[data-fx='lite'] .learn-curve__core,
+  html[data-fx='lite'] .learn-row[data-enter] .learn-hexwrap > .k-hex, html[data-fx='lite'] .learn-row[data-enter] .learn-label,
+  html[data-fx='lite'] .learn-chip { animation: none; }
+  html[data-fx='lite'] .learn-pulse { display: none; }
+  html[data-fx='lite'] .learn-jump { transition: opacity var(--t-fast) linear; translate: 0 0; }
+  html[data-fx='lite'] .learn-slab__patch { transition: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .learn-curve__halo, .learn-curve__body, .learn-curve__core, .learn-pulse polygon, .learn-chip,
+    .learn-row[data-enter] .learn-hexwrap > .k-hex, .learn-row[data-enter] .learn-label { animation: none; }
+  }
+}

@@ -1,0 +1,205 @@
+/* owner: complete-reward (prefix .cmr-) — the Card and Drop beats of orbit insertion */
+@layer screen {
+  /* ───────── shared beat frame ─────────
+     A beat fills the stage's content area. It adds only a little top air: the Stage owns the top bar (override with --cmr-top). */
+  .cmr-beat {
+    --cmr-tone: var(--tele);
+    position: relative; box-sizing: border-box; flex: 1 1 0; min-height: 0; width: 100%; height: 100%; max-width: 480px; margin-inline: auto;
+    display: flex; flex-direction: column; align-items: center; overflow-x: clip;
+    padding: var(--cmr-top, var(--s-4)) 0 calc(var(--s-5) + var(--sab));   /* the stage's .cmp-beat already holds the side gutter */
+    color: var(--ink); text-align: center; outline: none;
+  }
+  @media (max-height: 700px) { .cmr-drop__info { --cmr-info-h: 156px; } }
+  .cmr-head { flex: none; display: flex; justify-content: center; min-height: var(--s-6); }
+  .cmr-vh { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+
+  /* the footer is the last thing to arrive: a double-tap on the previous CONTINUE must not skate straight through the reward */
+  .cmr-foot { flex: none; display: flex; gap: var(--s-3); width: 100%; min-height: var(--tap); margin-top: var(--s-4); visibility: hidden; opacity: 0; }
+  .cmr-beat[data-ready] .cmr-foot { visibility: visible; opacity: 1; transition: opacity var(--t-base) var(--ease-out); }
+  .cmr-foot__go { flex: 1 1 0; min-width: 0; }
+
+  /* ═════════════════════════ CARD ═════════════════════════ */
+  .cmr-card__stage {
+    --cw: min(62vw, 34dvh, 252px);
+    position: relative; flex: 1 1 0; min-height: 0; width: 100%;
+    display: grid; place-items: center; perspective: 1100px; container-type: size;
+  }
+  @supports (width: 1cqw) { .cmr-card__stage { --cw: clamp(132px, min(64cqw, 66cqh), 252px); } }
+
+  .cmr-card__tilt {
+    position: relative; width: var(--cw); aspect-ratio: 5 / 7; touch-action: none;
+    transform-style: preserve-3d; transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  }
+  .cmr-card__tilt[data-tilting] { will-change: transform; }
+  .cmr-card__deal, .cmr-card__flip { position: absolute; inset: 0; transform-style: preserve-3d; }
+  .cmr-card__deal { animation: cmr-deal var(--t-hero) var(--spring-bounce) both; }
+  .cmr-card__flip { transform: rotateY(180deg); transition: transform calc(var(--t-hero) - 100ms) var(--spring-snap); }
+  .cmr-card[data-face='up'] .cmr-card__flip { transform: rotateY(0deg); }
+
+  /* thrown from below, face-down, turned over a little, landing with the bounce spring */
+  @keyframes cmr-deal {
+    from { transform: translate3d(0, 62%, -320px) rotateX(58deg) rotateZ(-9deg); opacity: 0; }
+    to   { transform: none; opacity: 1; }
+  }
+
+  .cmr-card__face, .cmr-card__back { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  .cmr-card__front .art-codecard { width: 100%; height: 100%; }
+  .cmr-card__back {
+    --cmr-cut: polygon(8.667% 0, 100% 0, 100% 93.81%, 91.333% 100%, 0 100%, 0 6.19%);   /* the same chamfer CodeCardArt cuts */
+    transform: rotateY(180deg); clip-path: var(--cmr-cut); overflow: hidden; isolation: isolate; background: var(--carbon-1);
+  }
+  .cmr-card__back-art { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .cmr-card__bg-a { stop-color: var(--carbon-3); }
+  .cmr-card__bg-b { stop-color: var(--carbon-0); }
+  .cmr-card__lat { fill: none; stroke: var(--ink-4); stroke-width: .5; stroke-opacity: .6; }
+  .cmr-card__fr { fill: none; stroke-linejoin: round; }
+  .cmr-card__fr.is-1 { stroke: var(--ti-2); stroke-width: 1; stroke-opacity: .85; }
+  .cmr-card__fr.is-2 { stroke: var(--ti-3); stroke-width: .6; stroke-opacity: .7; }
+  .cmr-card__fr.is-3 { stroke: var(--ti-4); stroke-width: .5; }
+  .cmr-card__back[data-rare] .cmr-card__fr.is-1 { stroke: var(--gold-2); stroke-opacity: .6; }   /* the only tell: a gold card has a warm edge */
+  .cmr-card__back[data-rare] .cmr-card__fr.is-2 { stroke: var(--gold-3); }
+  .cmr-card__mark { position: absolute; left: 50%; top: 50%; width: 52%; transform: translate(-50%, -50%); }
+  .cmr-card__mark .brand-mark { display: block; width: 100%; height: auto; }
+
+  /* anticipation: one pass of light over the back while it waits */
+  .cmr-card__glint, .cmr-card__sweep::before {
+    content: ''; position: absolute; inset: -40%; pointer-events: none; transform: translateX(-80%);
+    background: linear-gradient(112deg, transparent 42%, color-mix(in srgb, var(--ink) 24%, transparent) 50%, transparent 58%);
+  }
+  .cmr-card__glint { animation: cmr-sweep 900ms var(--ease-io) calc(var(--t-hero) - 150ms) 1 both; }
+  .cmr-card__back[data-rare] .cmr-card__glint { background: linear-gradient(112deg, transparent 40%, color-mix(in srgb, var(--gold-1) 38%, transparent) 50%, transparent 60%); }
+  .cmr-card__sweep { position: absolute; inset: 0; overflow: hidden; pointer-events: none; clip-path: polygon(8.667% 0, 100% 0, 100% 93.81%, 91.333% 100%, 0 100%, 0 6.19%); }
+  .cmr-card[data-face='up'] .cmr-card__sweep::before { animation: cmr-sweep 1100ms var(--ease-io) 420ms 1 both; }
+  .cmr-card[data-kind='rare'] .cmr-card__sweep::before { background: linear-gradient(112deg, transparent 38%, color-mix(in srgb, var(--gold-1) 46%, transparent) 50%, transparent 62%); }
+  .cmr-card[data-kind='dupe'] .cmr-card__sweep { display: none; }
+  @keyframes cmr-sweep { from { transform: translateX(-80%); } to { transform: translateX(80%); } }
+
+  .cmr-card__ground {
+    position: absolute; left: 50%; top: calc(50% + var(--cw) * .7 - 8px); width: calc(var(--cw) * .9); height: 28px; margin-left: calc(var(--cw) * -.45);
+    border-radius: 50%; pointer-events: none; opacity: 0;
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--carbon-0) 90%, transparent), transparent);
+    animation: cmr-ground var(--t-hero) var(--ease-out) both;
+  }
+  @keyframes cmr-ground { from { opacity: 0; transform: scale(1.5); } 40% { opacity: .2; } to { opacity: .75; transform: none; } }
+  .cmr-card__halo {
+    position: absolute; left: 50%; top: 50%; width: calc(var(--cw) * 2.2); aspect-ratio: 1; margin: calc(var(--cw) * -1.1) 0 0 calc(var(--cw) * -1.1); border-radius: 50%; pointer-events: none;
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--gold-2) 46%, transparent), color-mix(in srgb, var(--gold-3) 18%, transparent) 55%, transparent);
+    opacity: 0; transform: scale(.5); transition: opacity var(--t-hero) var(--ease-out), transform var(--t-hero) var(--ease-out);
+  }
+  .cmr-card[data-face='up'] .cmr-card__halo { opacity: 1; transform: none; transition-delay: 160ms; }
+
+  .cmr-card__slot {
+    width: var(--cw); aspect-ratio: 5 / 7; display: grid; place-items: center; color: var(--ink-4); background: var(--carbon-1);
+    clip-path: polygon(8.667% 0, 100% 0, 100% 93.81%, 91.333% 100%, 0 100%, 0 6.19%); box-shadow: inset 0 0 0 1px var(--line);
+  }
+
+  .cmr-card__meta {
+    flex: none; width: 100%; margin-top: var(--s-4); display: flex; flex-direction: column; align-items: center; gap: var(--s-2);
+    opacity: 0; transform: translateY(var(--s-2));
+  }
+  .cmr-card[data-face='up'] .cmr-card__meta { opacity: 1; transform: none; transition: opacity var(--t-slow) var(--ease-out) 520ms, transform var(--t-slow) var(--ease-out) 520ms; }
+  .cmr-card__no { display: flex; align-items: center; justify-content: center; gap: var(--s-3); margin: 0; }
+  .cmr-card__line { margin: 0; max-width: 32ch; font-family: var(--font-serif); font-size: var(--fs-lg); line-height: 1.35; text-wrap: balance; color: var(--ink); }
+  .cmr-card__line[data-long] { font-size: var(--fs-base); }
+  .cmr-card__note { margin: 0; display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: var(--fs-xs); letter-spacing: var(--track-mono); color: var(--ink-2); }
+  .cmr-card__note .k-icon { color: var(--go); }
+  .cmr-card__note.is-gold { font-family: var(--font-serif); font-style: italic; font-size: var(--fs-md); letter-spacing: 0; color: var(--gold-2); }
+  .cmr-card__hint { margin: 0; font-family: var(--font-mono); font-size: var(--fs-2xs); letter-spacing: var(--track-mono); text-transform: uppercase; color: var(--ink-3); animation: cmr-up var(--t-slow) var(--ease-out) 900ms both; }
+
+  /* ═════════════════════════ DROP ═════════════════════════ */
+  .cmr-drop[data-tone='tele']   { --cmr-tone: var(--tele); }
+  .cmr-drop[data-tone='ignite'] { --cmr-tone: var(--ignite-2); }
+  .cmr-drop[data-tone='gold']   { --cmr-tone: var(--gold-2); }
+
+  .cmr-drop__bay { position: relative; flex: 1 1 0; min-height: 0; width: 100%; display: grid; place-items: end center; container-type: size; }
+  .cmr-drop__box { --cs: clamp(120px, min(66cqw, 66cqh, 232px), 232px); position: relative; width: var(--cs); height: var(--cs); margin-bottom: var(--s-2); }
+  .cmr-drop__chest { position: absolute; inset: 0; transition: transform var(--t-fast) var(--spring-snap); }
+  .cmr-drop__chest .art-chest { width: 100%; height: 100%; }
+  .cmr-drop__box[data-pressed] .cmr-drop__chest { transform: scale(.965); }
+  .cmr-drop[data-phase='shaking'] .cmr-drop__chest { animation: cmr-charge var(--t-slower) var(--ease-in) both; }
+  @keyframes cmr-charge { to { filter: brightness(1.45) saturate(1.25); } }
+
+  .cmr-drop__tap { position: absolute; inset: 0; margin: 0; padding: 0; border: 0; background: none; border-radius: var(--r-md); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .cmr-drop__tap:focus-visible { outline: 2px solid var(--tele); outline-offset: 2px; }
+  /* invite: a small nudge on the idle crate, after the hint starts breathing */
+  .cmr-drop[data-phase='closed'] .cmr-drop__chest { animation: cmr-nudge 3.6s var(--ease-io) 2.4s infinite; }
+  @keyframes cmr-nudge { 0%, 78%, 100% { transform: none; } 84% { transform: translateY(-3px) rotate(-1.4deg); } 90% { transform: translateY(0) rotate(1deg); } 95% { transform: rotate(-.4deg); } }
+
+  .cmr-drop__spill {
+    /* never wider than the bay: a glow cut off by an edge reads as a box */
+    position: absolute; inset-inline: 0; margin-inline: auto; top: 4%; width: min(calc(var(--cs) * 1.75), 100cqw); aspect-ratio: 1; border-radius: 50%; pointer-events: none; opacity: .5; transform: translateY(-14%) scale(.55);
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--ignite-2) 30%, transparent), transparent);
+    transition: opacity var(--t-slower) var(--ease-out), transform var(--t-slower) var(--ease-out);
+  }
+  .cmr-drop[data-phase='open'] .cmr-drop__spill {
+    opacity: 1; transform: translateY(-14%) scale(1);
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--cmr-tone) 50%, transparent), color-mix(in srgb, var(--cmr-tone) 14%, transparent) 55%, transparent);
+  }
+
+  .cmr-drop__item {
+    position: absolute; left: 50%; bottom: calc(var(--cs) * .46); display: grid; place-items: center; transform: translate(-50%, -10%); pointer-events: none;
+    filter: drop-shadow(0 6px 16px color-mix(in srgb, var(--cmr-tone) 55%, transparent)); animation: cmr-rise var(--t-hero) var(--spring-bounce) both;
+  }
+  .cmr-drop__item > * { grid-area: 1 / 1; }
+  .cmr-drop__item > :only-child { animation: cmr-bob 3.4s var(--ease-io) 1.2s infinite alternate; }
+  @keyframes cmr-rise { from { transform: translate(-50%, 80%) scale(.3); opacity: 0; } to { transform: translate(-50%, -10%) scale(1); opacity: 1; } }
+  @keyframes cmr-bob { to { transform: translateY(-5px); } }
+  /* converted shield: the emblem gives way to the XP it became */
+  .cmr-drop__was { animation: cmr-melt 520ms var(--ease-in) 1000ms both; }
+  .cmr-drop__now { animation: cmr-pop 640ms var(--spring-bounce) 1000ms both; }
+  @keyframes cmr-melt { to { opacity: 0; transform: scale(.7) translateY(8px); filter: grayscale(1); } }
+  @keyframes cmr-pop { from { opacity: 0; transform: scale(.5); } to { opacity: 1; transform: none; } }
+
+  /* the patch ring: one arc per fragment */
+  .cmr-ring { position: relative; display: grid; place-items: center; width: 96px; height: 96px; color: var(--gold-2); }
+  .cmr-ring svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .cmr-ring .k-icon { position: relative; filter: drop-shadow(0 0 6px var(--gold-glow)); }
+  .cmr-ring__hex { fill: color-mix(in srgb, var(--carbon-1) 86%, transparent); stroke: var(--ti-4); stroke-width: 1; stroke-linejoin: round; }
+  .cmr-ring__seg { fill: none; stroke: var(--ink-4); stroke-opacity: .5; stroke-width: 6; }
+  .cmr-ring__seg.is-lit { stroke: var(--gold-2); stroke-opacity: 1; }
+  .cmr-ring__seg.is-new { stroke: var(--gold-1); stroke-opacity: 1; stroke-dashoffset: var(--len); filter: drop-shadow(0 0 5px var(--gold-glow)); animation: cmr-seg 720ms var(--ease-out) 380ms both; }
+  .cmr-ring[data-ready] .cmr-ring__seg.is-lit { stroke: var(--gold-1); }
+  .cmr-ring[data-ready] .cmr-ring__hex { stroke: var(--gold-3); }
+  @keyframes cmr-seg { to { stroke-dashoffset: 0; } }
+
+  .cmr-drop__info { flex: none; width: 100%; min-height: var(--cmr-info-h, 176px); margin-top: var(--s-3); display: grid; place-items: center; }
+  .cmr-drop__info > * { grid-area: 1 / 1; }
+  .cmr-drop__hint {
+    margin: 0; font-family: var(--font-mono); font-size: var(--fs-xs); letter-spacing: var(--track-mono); text-transform: uppercase; color: var(--ink-2); opacity: .72;
+    animation: cmr-breathe 1.8s var(--ease-io) 2s infinite alternate; transition: opacity var(--t-fast) linear;
+  }
+  .cmr-drop__hint[data-hide] { opacity: 0; animation: none; }
+  @keyframes cmr-breathe { from { opacity: .5; } to { opacity: 1; } }
+
+  .cmr-drop__reveal { width: 100%; display: flex; flex-direction: column; align-items: center; gap: var(--s-2); }
+  .cmr-drop__reveal > * { margin: 0; animation: cmr-up var(--t-slow) var(--ease-out) both; }
+  .cmr-drop__reveal > :nth-child(2) { animation-delay: 60ms; }
+  .cmr-drop__reveal > :nth-child(3) { animation-delay: 120ms; }
+  @keyframes cmr-up { from { opacity: 0; transform: translateY(var(--s-3)); } to { opacity: 1; transform: none; } }
+  .cmr-drop__num { display: flex; align-items: baseline; gap: var(--s-2); font-family: var(--font-display); font-weight: 700; font-size: var(--fs-4xl); line-height: 1; color: var(--cmr-tone); font-variant-numeric: tabular-nums; }
+  .cmr-drop__unit { font-size: var(--fs-lg); letter-spacing: var(--track-label); color: var(--ink-2); }
+  .cmr-drop__title { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-2xl); line-height: 1.05; letter-spacing: var(--track-label); text-transform: uppercase; color: var(--ink); }
+  .cmr-drop__text { max-width: 30ch; font-size: var(--fs-md); line-height: 1.4; text-wrap: balance; color: var(--ink-2); }
+  .cmr-drop__tile { width: min(100%, 300px); text-align: left; }
+  .cmr-drop__tile[data-ready] { filter: drop-shadow(0 0 14px var(--gold-glow)); }
+  .cmr-drop__tilehead { display: flex; align-items: center; justify-content: space-between; gap: var(--s-2); margin-bottom: var(--s-2); }
+
+  /* ═════════════════════════ lite / reduced motion: no flip, no rattle, no rise, no loops — a 120 ms cross-fade ═════════════════════════ */
+  html[data-fx='lite'] .cmr-card__tilt { animation: cmr-fade var(--t-fast) linear both; transform: none; }
+  html[data-fx='lite'] :is(.cmr-card__deal, .cmr-card__ground, .cmr-card__glint, .cmr-card__hint) { animation: none; }
+  html[data-fx='lite'] .cmr-card__ground { opacity: .6; }
+  html[data-fx='lite'] .cmr-card__flip { transition: none; }
+  html[data-fx='lite'] .cmr-card__sweep { display: none; }
+  html[data-fx='lite'] .cmr-card__halo { transform: none; transition: opacity var(--t-fast) linear; }
+  html[data-fx='lite'] .cmr-card__meta { transform: none; }
+  html[data-fx='lite'] .cmr-card[data-face='up'] .cmr-card__meta { transition: opacity var(--t-fast) linear; }
+  html[data-fx='lite'] .cmr-drop__chest, html[data-fx='lite'] .cmr-drop[data-phase='closed'] .cmr-drop__chest { animation: none; }
+  html[data-fx='lite'] .cmr-drop__spill { transition: opacity var(--t-fast) linear; transform: translateY(-14%); }
+  html[data-fx='lite'] .cmr-drop__item { animation: cmr-fade var(--t-fast) linear both; }
+  html[data-fx='lite'] .cmr-drop__item > :only-child, html[data-fx='lite'] .cmr-drop__hint, html[data-fx='lite'] .cmr-drop__was { animation: none; }
+  html[data-fx='lite'] .cmr-drop__now { animation: cmr-fade var(--t-fast) linear both; }
+  html[data-fx='lite'] .cmr-drop__reveal > * { animation: cmr-fade var(--t-fast) linear both; }
+  html[data-fx='lite'] .cmr-ring__seg.is-new { animation: none; stroke-dashoffset: 0; }
+  html[data-fx='lite'] .cmr-beat[data-ready] .cmr-foot { transition: opacity var(--t-fast) linear; }
+  @keyframes cmr-fade { from { opacity: 0; } to { opacity: 1; } }
+}

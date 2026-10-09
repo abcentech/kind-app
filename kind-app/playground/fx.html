@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>fx lab</title>
+    <link rel="icon" href="data:," />
+    <style>
+      /* playground chrome only — everything visual comes from tokens */
+      html, body { margin: 0; background: var(--carbon-0); color: var(--ink); font-family: var(--font-ui); -webkit-text-size-adjust: 100%; }
+      body { min-height: 100vh; }
+      * { box-sizing: border-box; }
+      .lab { max-width: var(--app-max); margin: 0 auto; padding: 0 var(--gutter) var(--s-16); }
+
+      /* ── HUD: a glass instrument strip. The LEVEL cell is a real control (tap to flip full ↔ lite). ── */
+      .lab-hud {
+        position: sticky; top: 0; z-index: var(--z-hud);
+        margin: 0 calc(var(--gutter) * -1); padding: var(--s-1) var(--gutter);
+        padding-top: calc(var(--s-1) + var(--sat));
+        display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--s-1);
+        background: color-mix(in srgb, var(--carbon-0) 80%, transparent);
+        backdrop-filter: blur(14px) saturate(1.4); -webkit-backdrop-filter: blur(14px) saturate(1.4);
+        box-shadow: 0 1px 0 var(--line);
+      }
+      .lab-hud > div, .lab-hud > button { display: flex; flex-direction: column; gap: 3px; min-width: 0; justify-content: center; min-height: var(--tap); }
+      .lab-hud > button { appearance: none; border: 0; background: none; padding: 0; margin: 0; font: inherit; color: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+      .mono { font-family: var(--font-mono); font-size: var(--fs-2xs); letter-spacing: var(--track-mono); text-transform: uppercase; color: var(--ink-3); }
+      .lab-hud b { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-lg); letter-spacing: .02em; color: var(--ink); font-variant-numeric: tabular-nums; line-height: 1; display: flex; align-items: center; gap: 6px; }
+      .lab-hud b[data-warn] { color: var(--warn); }
+      .lab-hud button b { color: var(--tele); text-decoration: underline; text-decoration-color: var(--line-3); text-underline-offset: 4px; }
+      .lab-hud button[data-lite="true"] b { color: var(--ignite-3); }
+      .led { width: 6px; height: 6px; border-radius: 50%; background: var(--carbon-4); flex: none; transition: background var(--t-fast) linear, box-shadow var(--t-fast) linear; }
+      .led[data-on="true"] { background: var(--ignite-flat); box-shadow: 0 0 8px var(--ignite-glow); }
+
+      .lab-title { padding: var(--s-8) 0 var(--s-5); position: relative; }
+      .lab-title h1 { margin: var(--s-2) 0 0; font-family: var(--font-display); font-weight: 700; text-transform: uppercase; letter-spacing: var(--track-label); font-size: var(--fs-2xl); line-height: 1; }
+      .lab-title p { margin: var(--s-3) 0 0; color: var(--ink-2); font-size: var(--fs-md); line-height: 1.45; max-width: 36ch; }
+      .lab-title .clock { position: absolute; right: 0; top: var(--s-8); text-align: right; font-variant-numeric: tabular-nums; }
+      .eyebrow { font-family: var(--font-display); font-weight: 600; text-transform: uppercase; letter-spacing: var(--track-label); font-size: var(--fs-sm); color: var(--ignite-2); }
+
+      .sec { margin-top: var(--s-10); }
+      .sec > header { display: flex; flex-direction: column; gap: 2px; margin-bottom: var(--s-3); padding-bottom: var(--s-2); border-bottom: 1px solid var(--line); position: relative; }
+      .sec > header::after { content: ''; position: absolute; left: 0; bottom: -1px; width: var(--s-8); height: 1px; background: var(--ignite-flat); }
+      .sec > header h2 { margin: 0; font-family: var(--font-display); font-weight: 600; text-transform: uppercase; letter-spacing: var(--track-label); font-size: var(--fs-md); color: var(--ink); }
+      .sec > header h2 i { font-style: normal; color: var(--ink-3); margin-right: var(--s-2); font-family: var(--font-mono); font-size: var(--fs-xs); letter-spacing: var(--track-mono); font-weight: 400; }
+      .panel { background: var(--plate); border-radius: var(--r-md); box-shadow: var(--bevel), var(--shadow-1); padding: var(--s-4); position: relative; }
+      .row { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+      .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-2); }
+
+      /* hardware: chamfered plates, one hot colour. Inset rims (not outer glows): clip-path would eat an outer shadow. */
+      .chip, .btn {
+        appearance: none; border: 0; cursor: pointer; font: inherit; color: var(--ink); -webkit-tap-highlight-color: transparent;
+        min-height: var(--tap); padding: 0 var(--s-4); border-radius: 0; clip-path: var(--clip-cut-sm);
+        background: var(--plate-hi); box-shadow: var(--bevel);
+        font-family: var(--font-display); font-weight: 600; text-transform: uppercase; letter-spacing: var(--track-label); font-size: var(--fs-md);
+        transition: transform var(--spring-snap-ms) var(--spring-snap), background var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out);
+      }
+      .chip { min-height: 40px; padding: 0 var(--s-3); font-size: var(--fs-sm); position: relative; }
+      .chip[data-on="true"] { background: var(--carbon-4); box-shadow: var(--bevel), inset 0 0 0 1px var(--tele-glow); color: var(--tele); }
+      .chip[data-on="true"]::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: var(--tele); }
+      .chip:active, .btn:active { transform: scale(.97); transition-duration: var(--t-instant); }
+      .btn--hot { background: var(--ignite); color: var(--ink-on-ignite); clip-path: var(--clip-cut); box-shadow: none; position: relative; }
+      .btn--hot::after { content: ''; position: absolute; inset: 0; background: var(--sheen); pointer-events: none; }
+      .btn--go { color: var(--go); }
+      .btn--no { color: var(--nogo); }
+      .btn[aria-pressed="true"] { background: var(--carbon-4); color: var(--ignite-3); box-shadow: var(--bevel), inset 0 0 0 1px var(--ignite-glow); }
+      :focus-visible { outline: 2px solid var(--tele); outline-offset: 2px; }
+
+      /* ── tap field: a viewfinder. Corner brackets, a reticle that tracks the pointer, a coordinate readout. ── */
+      .field {
+        height: 208px; border-radius: var(--r-sm); position: relative; overflow: hidden; touch-action: manipulation; cursor: crosshair;
+        background:
+          linear-gradient(var(--line) 1px, transparent 1px) 0 0 / 100% 32px,
+          linear-gradient(90deg, var(--line) 1px, transparent 1px) 0 0 / 32px 100%,
+          radial-gradient(120% 90% at 50% 0%, var(--carbon-2), var(--carbon-1));
+        box-shadow: inset 0 0 0 1px var(--line-2);
+        display: grid; place-items: center; user-select: none; -webkit-user-select: none; margin-top: var(--s-3);
+      }
+      .field .hint-c { pointer-events: none; text-align: center; line-height: 1.7; }
+      .field .br { position: absolute; width: 14px; height: 14px; border: 0 solid var(--ink-3); pointer-events: none; }
+      .field .br.tl { left: 8px; top: 8px; border-left-width: 1px; border-top-width: 1px; }
+      .field .br.tr { right: 8px; top: 8px; border-right-width: 1px; border-top-width: 1px; }
+      .field .br.bl { left: 8px; bottom: 8px; border-left-width: 1px; border-bottom-width: 1px; }
+      .field .br.bb { right: 8px; bottom: 8px; border-right-width: 1px; border-bottom-width: 1px; }
+      .field .ret { position: absolute; left: 0; top: 0; width: 28px; height: 28px; margin: -14px 0 0 -14px; pointer-events: none; opacity: 0; transform: translate(var(--px, 50%), var(--py, 50%)); transition: opacity var(--t-fast) linear; }
+      .field[data-in="true"] .ret { opacity: 1; }
+      .field .ret::before, .field .ret::after { content: ''; position: absolute; background: var(--tele); }
+      .field .ret::before { left: 13px; top: 0; width: 1px; height: 28px; -webkit-mask: linear-gradient(#000 0 30%, transparent 30% 70%, #000 70%); mask: linear-gradient(#000 0 30%, transparent 30% 70%, #000 70%); }
+      .field .ret::after { top: 13px; left: 0; height: 1px; width: 28px; -webkit-mask: linear-gradient(90deg, #000 0 30%, transparent 30% 70%, #000 70%); mask: linear-gradient(90deg, #000 0 30%, transparent 30% 70%, #000 70%); }
+      .field .ro { position: absolute; left: var(--s-8); right: var(--s-8); bottom: var(--s-3); display: flex; justify-content: space-between; pointer-events: none; font-variant-numeric: tabular-nums; }
+
+      .stage { height: 232px; border-radius: var(--r-sm); position: relative; overflow: hidden; background: linear-gradient(180deg, var(--carbon-1), var(--void)); box-shadow: inset 0 0 0 1px var(--line-2); }
+      .marker { position: absolute; left: 50%; bottom: var(--s-12); width: 40px; aspect-ratio: .866; margin-left: -20px; clip-path: var(--clip-hex); background: var(--titanium); display: grid; place-items: center; }
+      .marker::after { content: ''; width: 12px; height: 12px; border-radius: 50%; background: var(--ignite-flat); box-shadow: 0 0 12px var(--ignite-glow); }
+
+      .plate { position: relative; padding: var(--s-4) var(--s-5); background: var(--plate-hi); clip-path: var(--clip-cut); display: flex; align-items: center; gap: var(--s-4); }
+      .plate kbd { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--ink-3); border: 1px solid var(--line-2); border-radius: var(--r-xs); padding: 2px 7px; }
+      .plate span { font-family: var(--font-serif); font-size: var(--fs-lg); font-style: italic; }
+
+      /* ── the sample code card: carbon weave, an engraved dial, a foil frame that takes the light ── */
+      .tilt-zone { display: grid; place-items: center; padding: var(--s-6) 0 var(--s-4); perspective: 900px; }
+      .card { width: 232px; aspect-ratio: .72; background: var(--gold); clip-path: var(--clip-cut); color: var(--ink); -webkit-user-select: none; user-select: none; touch-action: manipulation; }
+      .card[data-tone="ti"] { background: var(--titanium); }
+      .card__face {
+        position: absolute; inset: 2px; clip-path: var(--clip-cut); --cut: 12.6px; display: flex; flex-direction: column; padding: var(--s-4);
+        background:
+          repeating-linear-gradient(45deg, color-mix(in srgb, var(--ink) 2.4%, transparent) 0 1px, transparent 1px 4px),
+          repeating-linear-gradient(-45deg, color-mix(in srgb, var(--ink) 1.6%, transparent) 0 1px, transparent 1px 4px),
+          linear-gradient(165deg, var(--carbon-3), var(--carbon-1) 62%);
+      }
+      .card__top { display: flex; justify-content: space-between; align-items: center; }
+      .card__top .mono { color: var(--gold-2); }
+      .card[data-tone="ti"] .card__top .mono, .card[data-tone="ti"] .card__art { color: var(--ti-2); }
+      .card__art { flex: 1; display: grid; place-items: center; color: var(--gold-2); }
+      .card h3 { margin: 0; font-family: var(--font-serif); font-style: italic; font-weight: 400; font-size: var(--fs-xl); line-height: 1.15; letter-spacing: var(--track-tight); }
+      .card p { margin: var(--s-1) 0 0; font-family: var(--font-mono); font-size: var(--fs-2xs); color: var(--ink-3); letter-spacing: var(--track-mono); text-transform: uppercase; }
+      .card[data-tone="ti"] .fx-tilt__sheen { opacity: calc(var(--tilt-on, 0) * .45); }
+
+      .big { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-5xl); line-height: .9; letter-spacing: -.01em;
+        background: var(--ignite); -webkit-background-clip: text; background-clip: text; color: transparent; }
+      .big small { font-size: var(--fs-xl); letter-spacing: var(--track-label); color: var(--ink-3); -webkit-text-fill-color: var(--ink-3); margin-left: var(--s-2); }
+
+      .scroller { height: 168px; overflow: auto; border-radius: var(--r-sm); background: var(--carbon-1); box-shadow: inset 0 0 0 1px var(--line-2); padding: var(--s-2); scrollbar-width: thin; }
+      .scroller li { list-style: none; padding: var(--s-3) var(--s-3); margin-bottom: var(--s-2); background: var(--plate); border-radius: var(--r-xs); font-size: var(--fs-md); display: flex; justify-content: space-between; box-shadow: var(--bevel); }
+      .scroller ul { margin: 0; padding: 0; }
+      .meter { height: 6px; border-radius: var(--r-full); background: var(--carbon-4); margin: var(--s-3) 0 var(--s-2); overflow: hidden; }
+      .meter i { display: block; height: 100%; width: 100%; transform-origin: 0 50%; transform: scaleX(var(--demo-scroll, 0)); background: var(--tele); }
+      .kv { display: grid; grid-template-columns: auto 1fr; gap: 2px var(--s-3); margin: var(--s-3) 0 0; }
+      .kv dt { font-family: var(--font-mono); font-size: var(--fs-2xs); color: var(--ink-3); text-transform: uppercase; letter-spacing: var(--track-mono); }
+      .kv dd { margin: 0; font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--ink-2); font-variant-numeric: tabular-nums; }
+      .shots { display: grid; grid-template-columns: 96px 1fr; gap: var(--s-6); align-items: center; margin-bottom: var(--s-4); }
+      .shot-hex { position: relative; width: 96px; aspect-ratio: 1; border-radius: var(--r-full); background: var(--carbon-2); box-shadow: var(--bevel); display: grid; place-items: center; }
+      .hint { color: var(--ink-3); font-size: var(--fs-sm); line-height: 1.45; margin: var(--s-3) 0 0; }
+      .cheat { margin: 0; font-family: var(--font-mono); font-size: var(--fs-xs); line-height: 1.75; color: var(--ink-2); white-space: pre-wrap; overflow-wrap: anywhere; }
+      .cheat b { color: var(--ignite-3); font-weight: 500; }
+      .cheat i { color: var(--ink-3); font-style: normal; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="./fx.jsx"></script>
+  </body>
+</html>

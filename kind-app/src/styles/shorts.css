@@ -1,0 +1,174 @@
+/* owner: wave-2: shorts-reel — the Shorts reel (.sho-) and LiteYouTube (.lyt-, shared with the lesson's Watch slide). */
+@layer screen {
+  /* ── The reel ──────────────────────────────────────────────────────────── */
+  .sho {
+    --sho-top: calc(var(--sat) + var(--hud-h));            /* clear of the glass HUD */
+    --sho-bot: calc(var(--dock-h) + var(--s-3) + var(--sab));           /* clear of the dock */
+    position: absolute; inset: 0; overflow: hidden; background: var(--carbon-0);
+  }
+  .sho--empty { display: grid; place-items: center; padding: var(--sho-top) var(--gutter) var(--sho-bot); }
+
+  .sho-scroll {
+    position: absolute; inset: 0;
+    overflow-x: hidden; overflow-y: auto;
+    scroll-snap-type: y mandatory; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .sho-scroll::-webkit-scrollbar { display: none; }
+  .sho-scroll:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--tele); }
+
+  .sho-item {
+    position: relative; height: 100%; overflow: hidden;
+    scroll-snap-align: start; scroll-snap-stop: always;
+    contain: layout paint style;
+    background: var(--carbon-0);
+  }
+  .sho-item + .sho-item { box-shadow: 0 -1px 0 var(--line); }
+  .sho-story { position: absolute; inset: 0; padding: var(--sho-top) 0 var(--sho-bot); --shs-pb: var(--s-4); }
+
+  /* One video page */
+  .sho-reel { position: absolute; inset: 0; color: var(--ink); user-select: none; -webkit-user-select: none; }
+  .sho-art { position: absolute; inset: 0; background: radial-gradient(90% 60% at 50% 38%, var(--carbon-3), var(--carbon-1) 70%); overflow: hidden; }
+  .sho-art__img {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+    opacity: 0; transition: opacity var(--t-slow) var(--ease-out);
+  }
+  .sho-art__img[data-shown] { opacity: 1; }
+  .sho-reel[data-active] .sho-art__img[data-shown] { animation: sho-drift 18s var(--ease-out) both; }
+  .sho-reel[data-playing] .sho-art__img { opacity: .28; animation: none; }
+  @keyframes sho-drift { from { transform: scale(1); } to { transform: scale(1.06); } }
+
+  .sho-scrim { position: absolute; left: 0; right: 0; pointer-events: none; }
+  .sho-scrim--top { top: 0; height: calc(var(--sho-top) + var(--s-16)); background: linear-gradient(180deg, var(--void) 35%, transparent); opacity: .82; }
+  .sho-scrim--bot { bottom: 0; height: 66%; background: linear-gradient(180deg, transparent, var(--void) 78%); opacity: .94; }
+
+  .sho-meta {
+    position: absolute; z-index: var(--z-content); left: var(--gutter); right: var(--gutter); top: calc(var(--sho-top) + var(--s-3));
+    display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); pointer-events: none;
+    text-shadow: 0 1px 8px var(--void), 0 0 2px var(--void);
+  }
+  .sho-meta__n { font: 500 var(--fs-2xs)/1 var(--font-mono); letter-spacing: var(--track-mono); font-variant-numeric: tabular-nums; color: var(--ink-2); }
+  .sho-meta__n i { font-style: normal; margin: 0 .35em; color: var(--ink-4); }
+
+  .sho-tap { position: absolute; inset: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+
+  /* The play control: the one hot element on the page. */
+  .sho-centre {
+    position: absolute; z-index: var(--z-content); left: 50%; top: 40%; translate: -50% -50%;
+    display: grid; place-items: center; pointer-events: none;
+  }
+  .sho-centre .k-hex { pointer-events: auto; }
+  .sho-ring { position: absolute; width: 88px; aspect-ratio: .866; pointer-events: none; }
+  .sho-ring svg { display: block; width: 100%; height: 100%; overflow: visible; }
+  .sho-ring path { fill: none; stroke: var(--ignite-flat); stroke-width: 2; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+  .sho-reel[data-active] .sho-ring { animation: sho-ping 2.4s var(--ease-out) infinite; }
+  @keyframes sho-ping { 0% { transform: scale(1); opacity: .75; } 70%, 100% { transform: scale(1.62); opacity: 0; } }
+
+  .sho-foot {
+    position: absolute; z-index: var(--z-content); left: 0; right: 0; bottom: 0;
+    display: flex; flex-direction: column; gap: var(--s-3);
+    padding: 0 var(--gutter) calc(var(--sho-bot) + var(--s-3));
+    pointer-events: none;
+  }
+  .sho-foot > * { pointer-events: auto; }
+  .sho-title {
+    margin: 0; max-width: 24ch; color: var(--ink);
+    font: 600 var(--fs-xl)/1.18 var(--font-ui); letter-spacing: var(--track-tight); text-wrap: balance;
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden;
+    text-shadow: 0 1px 12px var(--void);
+  }
+  .sho-actions { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+  .sho-actions > * { flex: 1 1 auto; justify-content: center; }
+  .sho-hint {
+    display: flex; align-items: center; justify-content: center; gap: var(--s-2); margin: 0; padding-top: var(--s-1);
+    font: 500 var(--fs-2xs)/1 var(--font-mono); letter-spacing: var(--track-mono); text-transform: uppercase; color: var(--ink-3);
+    pointer-events: none;
+  }
+  .sho-hint .k-icon { animation: sho-nudge 1.8s var(--ease-io) infinite; }
+  @keyframes sho-nudge { 0%, 100% { transform: translateY(2px); opacity: .5; } 50% { transform: translateY(-3px); opacity: 1; } }
+
+  /* Playing: the Short sits in the clear window between HUD and dock; actions stay under it. */
+  .sho-stage {
+    position: absolute; z-index: var(--z-content); left: var(--gutter); right: var(--gutter);
+    top: calc(var(--sho-top) + var(--s-8)); bottom: calc(var(--sho-bot) + var(--s-12) + var(--s-6));
+    display: grid; place-items: center; container-type: size;
+  }
+  .sho-player {
+    --lyt-radius: var(--r-md);
+    width: 56%;                                       /* fallback without container units */
+    width: min(100cqw, 56.25cqh);
+    box-shadow: 0 0 0 1px var(--line-2), var(--shadow-3);
+    border-radius: var(--r-md);
+  }
+  .sho-reel[data-playing] .sho-foot { padding-top: var(--s-2); }
+  .sho-reel[data-playing] .sho-actions { flex-wrap: nowrap; }
+
+  /* Offline */
+  .sho-offline {
+    position: absolute; inset: 0; display: grid; place-items: center;
+    padding: calc(var(--sho-top) + var(--s-8)) var(--gutter) calc(var(--sho-bot) + var(--s-4));
+  }
+  .sho-reel.is-offline { background: radial-gradient(90% 55% at 50% 36%, var(--carbon-3), var(--carbon-0) 70%); }
+
+  /* Position instrument + desktop paging */
+  .sho-rail {
+    position: absolute; z-index: var(--z-content); right: var(--s-1); width: 2px; border-radius: var(--r-full);
+    top: calc(var(--sho-top) + var(--s-8)); bottom: calc(var(--sho-bot) + var(--s-8));
+    background: var(--line-2); pointer-events: none; overflow: hidden;
+  }
+  .sho-rail i { display: block; width: 100%; background: var(--ink-2); border-radius: var(--r-full); transition: transform var(--t-base) var(--ease-out); }
+  .sho-nav {
+    position: absolute; z-index: var(--z-content); right: var(--s-4); top: 30%;
+    display: none; flex-direction: column; gap: var(--s-2);
+  }
+  @media (hover: hover) and (pointer: fine) { .sho-nav { display: flex; } }
+  .sho-nav__down .k-icon { transform: rotate(180deg); }
+  .sho-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+
+  /* ── LiteYouTube ───────────────────────────────────────────────────────── */
+  .lyt {
+    position: relative; isolation: isolate; width: 100%; aspect-ratio: var(--lyt-r, 16/9);
+    overflow: hidden; border-radius: var(--lyt-radius, var(--r-md)); background: var(--carbon-1); color: var(--ink);
+  }
+  .lyt-poster, .lyt-frame { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .lyt-poster { object-fit: cover; opacity: 0; transition: opacity var(--t-slow) var(--ease-out); }
+  .lyt-poster[data-shown] { opacity: 1; }
+  .lyt-scrim { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, var(--void)); opacity: .5; pointer-events: none; }
+  .lyt-frame { opacity: 0; transition: opacity var(--t-base) var(--ease-out); background: var(--void); }
+  .lyt-frame[data-loaded] { opacity: 1; }
+  .lyt-wait { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
+
+  .lyt-hit {
+    position: absolute; inset: 0; display: grid; place-items: center; width: 100%; height: 100%; padding: 0; border: 0;
+    background: none; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  }
+  .lyt-hit:focus-visible { outline-offset: calc(var(--s-1) * -1); }
+  .lyt-play { position: relative; display: grid; place-items: center; transition: transform var(--spring-snap-ms) var(--spring-snap); }
+  .lyt-hit:active .lyt-play { transform: scale(.95); transition-duration: var(--t-instant); transition-timing-function: var(--ease-out); }
+  .lyt-ring { position: absolute; width: 72px; height: auto; aspect-ratio: .866; overflow: visible; pointer-events: none; animation: sho-ping 2.4s var(--ease-out) infinite; }
+  .lyt-ring path { fill: none; stroke: var(--ignite-flat); stroke-width: 2; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+
+  .lyt-link {
+    display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2); min-height: 48px; padding: 0 var(--s-5);
+    background: var(--plate-hi); color: var(--tele); clip-path: var(--clip-cut-sm); text-decoration: none;
+    font: 600 var(--fs-sm)/1 var(--font-ui); letter-spacing: var(--track-tight);
+  }
+  .lyt-link--float { position: absolute; z-index: var(--z-content); left: 50%; bottom: var(--s-3); translate: -50% 0; }
+  .lyt-card { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: var(--s-3); padding: var(--s-4); text-align: center; color: var(--ink-2); }
+  .lyt-card__t { margin: 0; font: 600 var(--fs-md)/1.3 var(--font-ui); color: var(--ink); }
+
+  /* ── Lite + reduced motion: same information, no loops, no drift ───────── */
+  html[data-fx="lite"] .sho-ring,
+  html[data-fx="lite"] .lyt-ring,
+  html[data-fx="lite"] .sho-hint .k-icon,
+  html[data-fx="lite"] .sho-reel[data-active] .sho-art__img { animation: none; }
+  html[data-fx="lite"] .sho-ring, html[data-fx="lite"] .lyt-ring { transform: scale(1.18); opacity: .45; }
+  html[data-fx="lite"] .sho-art__img, html[data-fx="lite"] .lyt-poster, html[data-fx="lite"] .lyt-frame,
+  html[data-fx="lite"] .sho-rail i, html[data-fx="lite"] .lyt-play { transition-duration: var(--t-fast); }
+  html[data-fx="lite"] .sho-scrim--top, html[data-fx="lite"] .sho-scrim--bot { opacity: 1; }
+  @media (prefers-reduced-motion: reduce) {
+    .sho-ring, .lyt-ring, .sho-hint .k-icon, .sho-reel[data-active] .sho-art__img { animation: none; }
+    .sho-ring, .lyt-ring { transform: scale(1.18); opacity: .45; }
+    .sho-art__img, .lyt-poster, .lyt-frame, .sho-rail i, .lyt-play { transition-duration: var(--t-fast); }
+  }
+}

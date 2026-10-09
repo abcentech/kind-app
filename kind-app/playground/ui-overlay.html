@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>playground · ui-overlay</title>
+    <link rel="icon" href="data:," />
+    <style>
+      /* Playground chrome only (unlayered, .pg-* classes). The components under test style themselves in ui-overlay.css. */
+      html, body { margin: 0; background: var(--carbon-0); color: var(--ink); font: 400 var(--fs-base)/1.5 var(--font-ui); -webkit-font-smoothing: antialiased; }
+      body { min-height: 100vh; }
+      * { box-sizing: border-box; }
+      .pg { max-width: 1120px; margin: 0 auto; padding: 0 var(--gutter) var(--s-20); }
+      .pg-bar {
+        position: sticky; top: 0; z-index: 40; display: flex; gap: var(--s-2); align-items: center;
+        overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain;
+        padding: var(--s-3) var(--gutter); margin: 0 calc(var(--gutter) * -1) var(--s-6);
+        background: var(--carbon-0);
+        border-bottom: 1px solid var(--line);
+      }
+      .pg-bar b { flex: none; white-space: nowrap; font: 600 var(--fs-2xs)/1 var(--font-mono); letter-spacing: var(--track-mono); color: var(--tele); margin-right: var(--s-2); text-transform: uppercase; }
+      .pg-bar::-webkit-scrollbar { display: none; }
+      .pg-btn {
+        flex: none; display: inline-grid; place-items: center; text-align: center; min-height: 36px; padding: 0 var(--s-3); border: 0; cursor: pointer; color: var(--ink); background: var(--plate-hi);
+        clip-path: var(--clip-cut-sm); box-shadow: var(--bevel);
+        font: 700 var(--fs-xs)/1 var(--font-display); letter-spacing: var(--track-label); text-transform: uppercase;
+      }
+      .pg-btn:hover { filter: brightness(1.15); }
+      .pg-btn[data-tone="ignite"] { background: var(--ignite); color: var(--ink-on-ignite); }
+      .pg-btn[data-on] { outline: 0; box-shadow: inset 0 0 0 2px var(--tele); }
+      .pg-sec { padding: var(--s-8) 0; border-top: 1px solid var(--line); }
+      .pg-sec > header { display: flex; align-items: baseline; gap: var(--s-3); flex-wrap: wrap; margin-bottom: var(--s-6); }
+      .pg-sec h2 { margin: 0; font: 700 var(--fs-xl)/1 var(--font-display); letter-spacing: var(--track-label); text-transform: uppercase; }
+      .pg-sec header span { font: 500 var(--fs-2xs)/1 var(--font-mono); letter-spacing: var(--track-mono); color: var(--ink-3); }
+      .pg-sec header p { margin: 0; flex-basis: 100%; color: var(--ink-3); font-size: var(--fs-sm); max-width: 62ch; }
+      .pg-row { display: flex; flex-wrap: wrap; gap: var(--s-8); align-items: flex-end; }
+      .pg-cell { display: grid; gap: var(--s-3); justify-items: center; }
+      .pg-cell--cap-first { position: relative; padding: 112px 0 104px; justify-items: center; }
+      .pg-cell--cap-first > .pg-cap { position: absolute; top: 0; left: 0; }
+      .pg-cap { font: 500 var(--fs-2xs)/1.2 var(--font-mono); letter-spacing: var(--track-mono); color: var(--ink-3); text-transform: uppercase; text-align: center; }
+      .pg-ctl { display: grid; gap: var(--s-2); min-width: 220px; font: 500 var(--fs-2xs)/1 var(--font-mono); letter-spacing: var(--track-mono); color: var(--ink-3); text-transform: uppercase; }
+      .pg-ctl input[type="range"] { width: 100%; accent-color: var(--ignite-2); }
+      .pg-ctl output { color: var(--ink); }
+      .pg-phone {
+        position: relative; width: 390px; height: 600px; overflow: hidden; border-radius: 44px; transform: translateZ(0);
+        background: radial-gradient(120% 70% at 50% 0%, var(--carbon-3), var(--carbon-0) 62%); box-shadow: 0 0 0 1px var(--line-2), var(--shadow-3);
+      }
+      .pg-phone p { margin: 0; }
+      .pg-phone-body { padding: 64px 28px 0; display: grid; gap: var(--s-4); color: var(--ink-2); }
+      .pg-phone-card { height: 84px; border-radius: var(--r-md); background: var(--plate); box-shadow: var(--bevel), var(--shadow-1); }
+      .pg-anchor { position: relative; width: 56px; height: 56px; display: grid; place-items: center; }
+      .pg-anchor i { width: 14px; height: 14px; border-radius: 50%; background: var(--ink-3); }
+      .pg-grid { display: grid; gap: var(--s-12) var(--s-8); grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); padding: var(--s-16) 0 var(--s-8); }
+      .pg-eyebrow { margin: 0 0 var(--s-2); font: 500 var(--fs-2xs)/1 var(--font-mono); letter-spacing: var(--track-mono); color: var(--tele); text-transform: uppercase; }
+      .pg-verse { margin: 0 0 var(--s-2); font: italic 400 var(--fs-xl)/1.4 var(--font-serif); text-wrap: balance; }
+      .pg-ref { margin: 0 0 var(--s-5); font: 500 var(--fs-2xs)/1 var(--font-mono); letter-spacing: var(--track-mono); color: var(--ink-3); }
+      .pg-p { margin: 0 0 var(--s-4); color: var(--ink-2); font-size: var(--fs-md); }
+      .pg-item { display: flex; align-items: center; gap: var(--s-4); padding: var(--s-3) 0; border-bottom: 1px solid var(--line); }
+      .pg-item small { font: 500 var(--fs-2xs)/1 var(--font-mono); letter-spacing: var(--track-mono); color: var(--ink-3); width: 3.2rem; }
+      .pg-input { width: 100%; min-height: var(--tap); margin-top: var(--s-3); padding: 0 var(--s-4); border-radius: var(--r-sm); border: 1px solid var(--line-2); background: var(--carbon-2); color: var(--ink); font: inherit; }
+      .pg-path { position: relative; width: 240px; height: 520px; }
+      .pg-path > * { position: absolute; }
+      .pg-live { font: 500 var(--fs-xs)/1.4 var(--font-mono); color: var(--ink-3); white-space: pre; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="./ui-overlay.jsx"></script>
+  </body>
+</html>

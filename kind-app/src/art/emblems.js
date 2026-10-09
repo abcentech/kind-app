@@ -1,0 +1,10 @@
+// owner: art-emblems agent. The collectibles barrel: `import { MissionPatch, Medal, ... } from '../art'`.
+export { FlameMark } from './FlameMark.jsx'
+export { MissionPatch } from './MissionPatch.jsx'
+export { CodeCardArt } from './CodeCardArt.jsx'
+export { Medal } from './Medal.jsx'
+export { RankInsignia, RANK_COUNT } from './RankInsignia.jsx'
+export { ShieldEmblem } from './ShieldEmblem.jsx'
+export { Chest } from './Chest.jsx'
+export { Trophy } from './Trophy.jsx'
+export { patchGlyphFor, medalGlyphFor, PATCH_GLYPH_NAMES, MEDAL_GLYPH_NAMES } from './emblem-glyphs.js'

@@ -1,19 +1,55 @@
 {
-  "name": "KIND — Daily Family Devotional",
-  "short_name": "KIND",
-  "description": "Kids Inspiring Nation daily family devotional. Raising goDs, building nations.",
   "id": "kind-devotional",
-  "start_url": "./",
+  "name": "KIND — Daily Devotional",
+  "short_name": "KIND",
+  "description": "A five-minute launch into the Word, every day. Streaks, ranks and code cards for teens and families. Kids Inspiring Nation: raising goDs, building nations.",
+  "lang": "en-NG",
+  "dir": "ltr",
+  "start_url": "./?source=pwa",
   "scope": "./",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait",
-  "background_color": "#58cc02",
-  "theme_color": "#ffffff",
-  "categories": ["education", "lifestyle"],
+  "background_color": "#06070d",
+  "theme_color": "#06070d",
+  "categories": ["education", "kids", "lifestyle", "books"],
+  "prefer_related_applications": false,
+  "launch_handler": { "client_mode": ["navigate-existing", "auto"] },
   "icons": [
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
     { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icon-monochrome-512.png", "sizes": "512x512", "type": "image/png", "purpose": "monochrome" },
     { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Today’s launch",
+      "short_name": "Launch",
+      "description": "Open today’s lesson",
+      "url": "./?source=shortcut",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Objectives",
+      "short_name": "Objectives",
+      "description": "Today’s rings, quests and your streak",
+      "url": "./?tab=objectives",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Shorts",
+      "short_name": "Shorts",
+      "description": "Watch the daily Shorts",
+      "url": "./?tab=shorts",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Locker",
+      "short_name": "Locker",
+      "description": "Your code cards, patches and journal",
+      "url": "./?tab=locker",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
   ]
 }

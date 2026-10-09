@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>playground · obj-core</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <!-- Seeds the store BEFORE it loads: ?seed=new | mid | closed | opened  (&goal=20|40|60). Without ?seed the saved state is left alone. -->
+    <script>
+      (function () {
+        var q = new URLSearchParams(location.search), seed = q.get('seed')
+        if (!seed) return
+        var n = q.get('now'), d = n ? new Date(n.length <= 10 ? n + 'T09:00:00' : n) : new Date()
+        var p = function (x) { return String(x).padStart(2, '0') }
+        var key = d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate())
+        var goal = Number(q.get('goal')) || 40
+        var st = { onboarded: true, name: 'Ada', role: 'teen', dailyGoalXp: goal }
+        var tally = {
+          mid: { lessons: 1, xp: 24, right: 2, asked: 3, practice: 0, scored: [] },
+          closed: { lessons: 1, xp: goal + 12, right: 4, asked: 4, practice: 0, scored: [] },
+          opened: { lessons: 1, xp: goal + 12, right: 4, asked: 4, practice: 0, scored: [] },
+        }[seed]
+        if (tally) { st.xp = 140; st.daily = Object.assign({ date: key }, tally) }
+        if (seed === 'opened') { st.claims = {}; st.claims['chest:' + key] = key }
+        if (seed === 'closed' && q.get('seen')) { st.flags = {}; ['lesson', 'xp', 'right'].forEach(function (r) { st.flags['ring:' + key + ':' + r] = key }) }
+        localStorage.setItem('kind-app-v4', JSON.stringify(st))
+      })()
+    </script>
+    <script type="module" src="./obj-core.jsx"></script>
+  </body>
+</html>

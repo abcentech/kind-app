@@ -1,0 +1,270 @@
+/* owner: slides-word (prefix .slw-) — the slides that hold the Word and the learner's own words: Verse · Do · Ask · Pray.
+ * Every slide is a flex child of the shell's .lesson-slide. Content centres with `margin-block: auto` (never
+ * justify-content), so a tall verse at 130 % text size scrolls from its top instead of being cut off above it.
+ * Motion is a progressive enhancement: it exists only under `no-preference` and full fx; everything else is the final state. */
+@layer screen {
+
+  /* ═════════════════════════════════════════ shared ═════════════════════════════════════════ */
+
+  .slw {
+    --slw-read: var(--read-scale, 1);
+    position: relative; isolation: isolate;
+    flex: 1 0 auto; display: flex; flex-direction: column;
+    width: 100%; min-width: 0; overflow-x: clip;
+    padding-bottom: var(--slw-kb, 0px);       /* the keyboard's intrusion into the scrollport (Ask writes it) */
+  }
+  .slw-eyebrow { align-self: flex-start; margin: 0 0 var(--s-6); }
+  .slw-rule {                                  /* the ignition rule: a hairline of fire */
+    display: block; width: var(--s-12); height: 1px; margin: 0; flex: none;
+    background: linear-gradient(90deg, transparent, var(--ignite-2) 28%, var(--ignite-3) 50%, var(--ignite-2) 72%, transparent);
+    box-shadow: 0 0 var(--s-3) var(--ignite-glow);
+    transform-origin: 50% 50%;
+  }
+  .slw :is(strong) { font-weight: 650; color: var(--ink); }
+  .slw :is(em) { font-style: italic; }
+
+  /* ═════════════════════════════════════════ VERSE ═════════════════════════════════════════ */
+
+  .slw-verse__sheet {
+    margin-block: auto;
+    display: flex; flex-direction: column; align-items: center; text-align: center;
+    padding-block: var(--s-4);
+  }
+  .slw-verse .slw-eyebrow { align-self: center; }
+  .slw-verse__text {
+    margin: 0; max-width: 24em;
+    font-size: max(var(--fs-lg), calc(clamp(var(--fs-xl), 8.6vw, calc(var(--fs-2xl) * 1.0625)) * var(--slw-read)));
+    line-height: 1.3;
+  }
+  .slw-verse[data-len="s"] .slw-verse__text { font-size: max(var(--fs-lg), calc(clamp(var(--fs-xl), 7.7vw, var(--fs-2xl)) * var(--slw-read))); line-height: 1.34; }
+  .slw-verse[data-len="m"] .slw-verse__text { font-size: max(var(--fs-lg), calc(clamp(var(--fs-xl), 6.9vw, calc(var(--fs-2xl) * .9375)) * var(--slw-read))); line-height: 1.38; }
+  .slw-verse[data-len="l"] .slw-verse__text { font-size: max(var(--fs-lg), calc(var(--fs-xl) * var(--slw-read))); line-height: 1.42; }
+  .slw-verse[data-len="l"] .slw-verse__sheet { align-items: stretch; text-align: start; }   /* a long passage reads ragged-right */
+  .slw-verse[data-len="l"] .slw-verse__text { text-wrap: pretty; }
+  .slw-verse[data-len="l"] :is(.slw-rule, .slw-verse__cite, .slw-verse__act) { align-self: flex-start; }
+  .slw-verse[data-len="l"] .slw-verse__act { justify-content: flex-start; }
+  .slw-verse .slw-rule { margin-block: var(--s-6) var(--s-4); }
+  .slw-verse__cite { margin: 0; font-style: normal; display: inline-flex; align-items: baseline; gap: var(--s-2); }
+  .slw-verse__tr { color: var(--ink-3); }
+  .slw-verse__tr::before { content: ""; display: inline-block; width: 1px; height: .9em; margin-right: var(--s-2); background: var(--line-3); vertical-align: -.1em; }
+  .slw-verse__act { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--s-3); margin-top: var(--s-8); }
+
+  /* ═════════════════════════════════════════ DO ═════════════════════════════════════════ */
+
+  .slw-do__brief { display: flex; flex-direction: column; gap: var(--s-6); }
+  .slw-do__lead {
+    margin: 0; color: var(--ink); text-wrap: pretty;
+    font-size: calc(var(--fs-lg) * var(--slw-read)); line-height: 1.4; font-weight: 520; letter-spacing: var(--track-tight);
+  }
+  .slw-do__lead[data-solo] {                   /* a single instruction is the hero of the slide */
+    font-size: calc(clamp(var(--fs-xl), 6.6vw, var(--fs-2xl)) * var(--slw-read)); line-height: 1.22; font-weight: 600;
+    letter-spacing: var(--track-tight); text-wrap: balance;
+  }
+  .slw-do__steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+  .slw-do__step {
+    --slw-n: var(--s-10);
+    position: relative; display: grid; grid-template-columns: var(--slw-n) minmax(0, 1fr); column-gap: var(--s-4);
+    padding-bottom: var(--s-6);
+  }
+  .slw-do__step:last-child { padding-bottom: 0; }
+  .slw-do__step::before {                      /* the rail: a hairline from numeral to numeral */
+    content: ""; position: absolute; left: calc(var(--slw-n) / 2); top: calc(var(--fs-2xl) + var(--s-2)); bottom: var(--s-2);
+    width: 1px; background: var(--line-2); transition: background-color var(--t-slow) var(--ease-out);
+  }
+  .slw-do__step:last-child::before { display: none; }
+  .slw-do__n {
+    font-family: var(--font-display); font-weight: 700; font-size: var(--fs-2xl); line-height: 1;
+    letter-spacing: calc(var(--track-label) * .15); font-variant-numeric: lining-nums tabular-nums;
+    color: var(--ink-3); transition: color var(--t-slow) var(--ease-out);
+  }
+  .slw-do__t {
+    margin: 0; padding-top: var(--s-1); color: var(--ink); text-wrap: pretty;
+    font-size: calc(var(--fs-base) * 1.06 * var(--slw-read)); line-height: 1.45;
+  }
+  .slw-do__note { margin: 0; color: var(--ink-2); font-size: calc(var(--fs-md) * var(--slw-read)); line-height: 1.5; text-wrap: pretty; }
+  .slw-do[data-armed] .slw-do__n { color: var(--go); }
+  .slw-do[data-armed] .slw-do__step::before { background: color-mix(in srgb, var(--go) 42%, var(--line-2)); }
+
+  /* the commit plate: a chamfered machined slab with the real <Switch> seated in it */
+  .slw-dock { margin-top: auto; padding-top: var(--s-10); flex: none; }
+  .slw-frame { display: block; width: 100%;                                /* .u-cut-frame: draws the focus ring on the chamfered silhouette */
+    --frame-filter: drop-shadow(0 var(--s-3) var(--s-4) color-mix(in srgb, var(--void) 72%, transparent))
+                    drop-shadow(0 0 var(--s-4) transparent);
+    filter: var(--frame-filter);
+    transition: filter var(--t-slow) var(--ease-out);
+  }
+  .slw-do[data-armed] .slw-frame {
+    --frame-filter: drop-shadow(0 var(--s-3) var(--s-4) color-mix(in srgb, var(--void) 72%, transparent))
+                    drop-shadow(0 0 var(--s-4) var(--go-glow));
+  }
+  .slw-commit {
+    --slw-rim: linear-gradient(160deg, var(--ti-3), var(--ti-4) 55%, var(--ti-3));
+    position: relative; isolation: isolate;
+    display: flex; align-items: center; gap: var(--s-4);
+    box-sizing: border-box; width: 100%; min-height: calc(var(--tap) * 1.5); padding: var(--s-4) var(--s-5) var(--s-4) var(--s-6);
+    background: var(--slw-rim); clip-path: var(--clip-cut);
+    cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+    transform: scale(1);
+    transition: transform var(--spring-snap-ms) var(--spring-snap);
+  }
+  .slw-commit:active { transform: scale(.985); transition-duration: var(--t-instant); transition-timing-function: var(--ease-out); }
+  .slw-commit::before {                        /* the face, inset 1px so the rim reads as a bezel */
+    content: ""; position: absolute; inset: 1px; z-index: -2;
+    --c: calc(var(--cut) - .586px);
+    background: var(--plate-hi);
+    clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c));
+  }
+  .slw-commit::after {                         /* the sheen, and the green wash that arrives when armed */
+    content: ""; position: absolute; inset: 1px; z-index: -1; pointer-events: none;
+    --c: calc(var(--cut) - .586px);
+    background: linear-gradient(90deg, var(--go-wash), transparent 78%), var(--sheen);
+    clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c));
+    opacity: .5; transition: opacity var(--t-slow) var(--ease-out);
+  }
+  .slw-do[data-armed] .slw-commit { --slw-rim: linear-gradient(160deg, color-mix(in srgb, var(--go) 75%, var(--ti-1)), color-mix(in srgb, var(--go) 38%, var(--ti-4)) 55%, color-mix(in srgb, var(--go) 60%, var(--ti-3))); }
+  .slw-do[data-armed] .slw-commit::after { opacity: 1; }
+  .slw-commit__txt { flex: 1 1 0%; min-width: 0; display: flex; flex-direction: column; gap: var(--s-1); }
+  .slw-commit__eyebrow { transition: color var(--t-base) var(--ease-out); }
+  .slw-do[data-armed] .slw-commit__eyebrow { --k-c: var(--go); }
+  .slw-commit__title {
+    font-family: var(--font-display); font-weight: 700; font-size: calc(var(--fs-xl) * 1.08); line-height: 1; text-transform: uppercase;
+    letter-spacing: calc(var(--track-label) * .6); color: var(--ink);
+  }
+  .slw-commit__sub { font-size: var(--fs-sm); line-height: 1.35; color: var(--ink-2); }
+  .slw-commit__sub[data-mono] { font-family: var(--font-mono); font-size: var(--fs-2xs); letter-spacing: var(--track-mono); text-transform: uppercase; color: var(--go); font-variant-numeric: tabular-nums; }
+  .slw-commit__sw { flex: none; transform: scale(1.22); transform-origin: right center; }
+
+  /* ═════════════════════════════════════════ ASK ═════════════════════════════════════════ */
+
+  .slw-ask__prompt {
+    display: block; margin: 0 0 var(--s-6); text-wrap: balance; color: var(--ink-word);
+    font-family: var(--font-serif); font-weight: 420; font-optical-sizing: auto;
+    font-size: max(var(--fs-lg), calc(clamp(var(--fs-xl), 6.6vw, calc(var(--fs-2xl) * .9375)) * var(--slw-read)));
+    line-height: 1.3; letter-spacing: calc(var(--track-tight) * .5);
+  }
+  .slw-field { position: relative; }
+  .slw-field__input {
+    display: block; box-sizing: border-box; width: 100%; margin: 0;
+    min-height: calc(var(--fs-lg) * 1.5 * 3 + var(--s-8)); max-height: none;
+    padding: var(--s-4) var(--s-4) var(--s-4) var(--s-8);
+    border: 0; border-radius: var(--r-md); resize: none; overflow: hidden;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--void) 78%, var(--carbon-1)), var(--carbon-1));
+    box-shadow: inset 0 2px 5px color-mix(in srgb, var(--void) 80%, transparent), inset 0 0 0 1px var(--line-2), 0 1px 0 var(--rim-lo);
+    color: var(--ink); caret-color: var(--ignite-2);
+    font-family: var(--font-serif); font-weight: 400; font-optical-sizing: auto;
+    font-size: max(var(--fs-lg), calc(var(--fs-lg) * var(--slw-read))); line-height: 1.5; letter-spacing: 0;
+    overflow-wrap: anywhere; scrollbar-width: thin;
+    transition: box-shadow var(--t-base) var(--ease-out);
+  }
+  .slw-field__input::placeholder { color: var(--ink-3); opacity: 1; font-style: italic; }
+  .slw-field__input:focus { box-shadow: inset 0 2px 5px color-mix(in srgb, var(--void) 80%, transparent), inset 0 0 0 1px color-mix(in srgb, var(--tele) 46%, transparent), 0 1px 0 var(--rim-lo); }
+  .slw-field__led {                            /* the instrument LED: dark at rest, telemetry blue while you write */
+    position: absolute; left: var(--s-4); top: calc(var(--s-4) + .6em); width: 6px; height: 6px; border-radius: 50%;
+    background: var(--ink-4); pointer-events: none;
+    box-shadow: inset 0 1px 1px color-mix(in srgb, var(--void) 70%, transparent);
+    transition: background-color var(--t-base) var(--ease-out), box-shadow var(--t-base) var(--ease-out);
+  }
+  .slw-field:focus-within .slw-field__led { background: var(--tele); box-shadow: 0 0 8px 2px var(--tele-glow); }
+
+  .slw-ask__bar { display: flex; align-items: center; gap: var(--s-3); min-height: var(--tap); padding-inline: var(--s-1); }
+  .slw-status { display: inline-flex; align-items: center; gap: var(--s-2); flex: 1 1 auto; min-width: 0; color: var(--ink-3); }
+  .slw-status[data-phase="saved"] { color: var(--go); }
+  .slw-status[data-phase="dirty"] { color: var(--ink-2); }
+  .slw-status__led { flex: none; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .slw-status[data-phase="saved"] .slw-status__led { box-shadow: 0 0 8px 2px var(--go-glow); }
+  .slw-count { flex: none; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .slw-count[data-near] { color: var(--warn); }
+  .slw-done { display: none; flex: none; }
+
+  .slw-ask__more { margin-top: var(--s-4); display: flex; flex-direction: column; gap: var(--s-3); }
+  .slw-ask__more-label { margin: 0; }
+  .slw-q {
+    position: relative; display: flex; align-items: flex-start; gap: var(--s-3); width: 100%; min-height: var(--tap);
+    margin: 0; padding: var(--s-3) var(--s-4) var(--s-3) var(--s-3); border: 0; border-radius: var(--r-sm); text-align: start;
+    background: var(--carbon-2); color: var(--ink-2); box-shadow: inset 0 0 0 1px var(--line-2), inset 0 1px 0 var(--rim-lo);
+    font: inherit; font-size: calc(var(--fs-md) * var(--slw-read)); line-height: 1.4; text-wrap: pretty;
+    cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+    transition: transform var(--spring-snap-ms) var(--spring-snap), background-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out);
+  }
+  .slw-q:active { transform: scale(.985); transition-duration: var(--t-instant); transition-timing-function: var(--ease-out); }
+  @media (hover: hover) { .slw-q:hover:not([aria-pressed="true"]) { background: var(--carbon-3); color: var(--ink); } }
+  .slw-q__ic { flex: none; margin-top: 1px; color: var(--tele); }
+  .slw-q[aria-pressed="true"] { color: var(--ink-3); cursor: default; }
+  .slw-q[aria-pressed="true"] .slw-q__ic { color: var(--go); }
+  .slw-ask__help { display: flex; align-items: flex-start; gap: var(--s-2); margin: var(--s-6) 0 0; padding-inline: var(--s-1); color: var(--ink-3); font-size: var(--fs-sm); line-height: 1.4; }
+  .slw-ask__help > svg { flex: none; margin-top: 1px; }
+
+  /* the keyboard is up: the prompt shrinks to a caption, everything optional steps aside, the field gets the room */
+  .slw-ask[data-kb] .slw-eyebrow, .slw-ask[data-kb] .slw-ask__more, .slw-ask[data-kb] .slw-ask__help { display: none; }
+  .slw-ask[data-kb] .slw-ask__prompt {
+    margin-bottom: var(--s-3); font-size: max(var(--fs-md), calc(var(--fs-md) * var(--slw-read))); line-height: 1.35;
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden;
+  }
+  .slw-ask[data-kb] .slw-done { display: inline-flex; }
+
+  /* ═════════════════════════════════════════ PRAY ═════════════════════════════════════════ */
+
+  .slw-pray .slw-eyebrow { align-self: center; }
+  .slw-pray__stage {
+    position: relative; isolation: isolate; margin-block: auto;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+    min-height: calc(var(--s-20) * 4.2); padding-block: var(--s-8);
+  }
+  .slw-ring {                                  /* breathing: one slow in-and-out; transform + opacity only */
+    position: absolute; left: 50%; top: 50%; z-index: -1; width: min(100%, calc(var(--s-20) * 4.6)); aspect-ratio: 1;
+    translate: -50% -50%; pointer-events: none;
+  }
+  .slw-ring > i { position: absolute; inset: 0; border-radius: 50%; opacity: .55; transform: scale(.96); }
+  .slw-ring > i:nth-child(1) { background: radial-gradient(closest-side, color-mix(in srgb, var(--gold-2) 16%, transparent), transparent 94%); }
+  .slw-ring > i:nth-child(2) { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gold-2) 34%, transparent), 0 0 var(--s-8) -4px color-mix(in srgb, var(--gold-2) 22%, transparent); }
+  .slw-ring > i:nth-child(3) { inset: calc(var(--s-3) * -1); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gold-2) 14%, transparent); }
+  .slw-pray__body { display: flex; flex-direction: column; align-items: center; gap: var(--s-4); }
+  .slw-pray__p {
+    margin: 0; max-width: 22em; text-wrap: pretty; color: var(--ink-word);
+    font-family: var(--font-serif); font-weight: 380; font-optical-sizing: auto;
+    font-size: max(var(--fs-lg), calc(clamp(var(--fs-lg), 5.9vw, calc(var(--fs-xl) * 1.0625)) * var(--slw-read)));
+    line-height: 1.5; letter-spacing: calc(var(--track-tight) * .4);
+    font-variant-numeric: oldstyle-nums proportional-nums;
+  }
+  .slw-pray__p[data-short] { text-wrap: balance; }
+  .slw-amen {
+    margin: var(--s-6) 0 0; display: flex; flex-direction: column; align-items: center; gap: var(--s-4);
+    font-family: var(--font-serif); font-style: italic; font-weight: 560; color: var(--ink);
+    font-size: max(var(--fs-xl), calc(var(--fs-2xl) * 1.08 * var(--slw-read))); line-height: 1; letter-spacing: calc(var(--track-tight) * .5);
+  }
+  .slw-pray__hint { margin: var(--s-8) 0 0; color: var(--ink-3); font-size: var(--fs-sm); line-height: 1.4; text-wrap: balance; }
+
+  /* ═════════════════════════════════════════ motion (progressive) ═════════════════════════════════════════ */
+
+  @media (prefers-reduced-motion: no-preference) {
+    html:not([data-fx="lite"]) .slw[data-active] .slw-in {
+      animation: slw-rise var(--t-slower) var(--ease-out) both;
+      animation-delay: calc(var(--i, 0) * 70ms);
+    }
+    html:not([data-fx="lite"]) .slw[data-active] .slw-rule { animation: slw-ignite var(--t-hero) var(--ease-io) both; animation-delay: calc(var(--i, 2) * 70ms + var(--t-fast)); }
+    html:not([data-fx="lite"]) .slw[data-active] .slw-ring > i { animation: slw-breathe calc(var(--t-hero) * 8) var(--ease-io) infinite; }
+    html:not([data-fx="lite"]) .slw[data-active] .slw-ring > i:nth-child(2) { animation-delay: calc(var(--t-hero) * -.9); }
+    html:not([data-fx="lite"]) .slw[data-active] .slw-ring > i:nth-child(3) { animation-delay: calc(var(--t-hero) * -1.8); }
+    html:not([data-fx="lite"]) .slw-status__led[data-blip] { animation: slw-blip var(--t-slower) var(--ease-out) both; }
+    @keyframes slw-rise { from { opacity: 0; transform: translateY(var(--s-3)); } }
+    @keyframes slw-ignite { from { transform: scaleX(0); opacity: 0; } }
+    @keyframes slw-breathe { 0%, 100% { transform: scale(.88); opacity: .3; } 50% { transform: scale(1.04); opacity: 1; } }
+    @keyframes slw-blip { 0% { transform: scale(2.4); opacity: .4; } 100% { transform: scale(1); opacity: 1; } }
+  }
+  /* lite / reduced motion: the same slide, already at rest; the ring is a still halo at mid-breath */
+  html[data-fx="lite"] .slw-ring > i { transform: scale(1); opacity: .7; }
+  html[data-fx="lite"] .slw-commit, html[data-fx="lite"] .slw-q { transition-duration: var(--t-fast); transition-timing-function: linear; }
+  html[data-fx="lite"] .slw-commit:active, html[data-fx="lite"] .slw-q:active { transform: none; }
+  html[data-fx="lite"] .slw-commit__sw { transform: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .slw-ring > i { transform: scale(1); opacity: .7; }
+    .slw-commit, .slw-q { transition-duration: var(--t-fast); transition-timing-function: linear; }
+    .slw-commit:active, .slw-q:active { transform: none; }
+  }
+  @media (forced-colors: active) {
+    .slw-field__input { border: 1px solid CanvasText; box-shadow: none; }
+    .slw-commit { background: CanvasText; }
+    .slw-commit::before { background: Canvas; }
+    .slw-ring { display: none; }
+  }
+}

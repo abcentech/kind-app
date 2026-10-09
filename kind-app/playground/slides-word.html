@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>slides-word · playground</title>
+    <style>
+      /* stand-in for the shell's .lesson-slide + chrome (lesson.css belongs to lesson-shell); playground only */
+      .pg-lesson { position: absolute; inset: 0; display: flex; flex-direction: column; background: var(--carbon-0); padding-top: var(--sat); }
+      .pg-head { flex: none; display: flex; align-items: center; gap: var(--s-4); height: var(--tap); padding: 0 var(--gutter); }
+      .pg-head .k-seg { flex: 1; }
+      .pg-slide.lesson-slide {
+        flex: 1 1 0%; min-height: 0; display: flex; flex-direction: column; overflow-y: auto; overscroll-behavior: contain;
+        padding: var(--s-4) var(--gutter) var(--s-6); scrollbar-width: none;
+        -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 var(--s-4), #000 calc(100% - var(--s-6)), transparent 100%);
+        mask-image: linear-gradient(to bottom, transparent 0, #000 var(--s-4), #000 calc(100% - var(--s-6)), transparent 100%);
+      }
+      .pg-foot { flex: none; padding: var(--s-3) var(--gutter) calc(var(--s-4) + var(--sab)); }
+      .pg-tag { font: 500 var(--fs-2xs)/1 var(--font-mono); color: var(--ink-3); letter-spacing: var(--track-mono); text-transform: uppercase; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="./slides-word.jsx"></script>
+  </body>
+</html>

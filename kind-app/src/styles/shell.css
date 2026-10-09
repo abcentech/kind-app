@@ -1,0 +1,95 @@
+/* owner: orchestrator (app shell). The phone column, the letterbox, the screen stack, the dock slot. */
+@layer screen {
+  .shell {
+    position: fixed; inset: 0;
+    display: grid; place-items: center;
+    background:
+      radial-gradient(120% 80% at 50% 110%, rgba(255, 112, 32, .07), transparent 60%),
+      radial-gradient(90% 60% at 50% -10%, rgba(99, 216, 255, .06), transparent 62%),
+      var(--void);
+  }
+
+  /* The phone column. On a phone it *is* the screen; on a laptop it becomes a bezelled instrument in the dark. */
+  .shell-frame {
+    position: relative; isolation: isolate; overflow: hidden;
+    width: 100%; height: 100%; max-width: var(--app-max);
+    background: var(--carbon-0);
+    contain: layout paint;
+  }
+  @media (min-width: 720px) and (min-height: 640px) {
+    .shell-frame {
+      height: min(calc(100% - 48px), 940px);
+      border-radius: var(--r-xl);
+      box-shadow: 0 0 0 1px var(--line-2), 0 0 0 7px var(--carbon-1), 0 0 0 8px var(--line), var(--shadow-3), 0 0 120px -30px var(--ignite-glow);
+    }
+  }
+
+  /* Glass edge: a hairline of reflected light along the top of the display, over everything but input. */
+  .shell-frame::after {
+    content: ''; position: absolute; inset: 0; z-index: calc(var(--z-toast) + 1); pointer-events: none; border-radius: inherit;
+    background: linear-gradient(180deg, rgba(255, 255, 255, .07), rgba(255, 255, 255, 0) 14%);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .035);
+  }
+  @media (max-width: 719px), (max-height: 639px) { .shell-frame::after { display: none; } }
+  .shell-frame.is-arrive { animation: shell-arrive var(--t-base) var(--ease-out) both; }
+  @keyframes shell-arrive { from { opacity: 0; } to { opacity: 1; } }
+
+  /* On a laptop the dark around the instrument carries a faint nameplate, like a bench unit. */
+  @media (min-width: 720px) and (min-height: 640px) {
+    .shell::after {
+      content: 'KIND  ·  ASCENT  ·  MISSION CONSOLE'; position: absolute; left: 0; right: 0; bottom: 10px; text-align: center; pointer-events: none;
+      font: 500 var(--fs-2xs)/1 var(--font-mono); letter-spacing: .32em; color: var(--ink-4, rgba(244, 246, 251, .22));
+    }
+  }
+
+  /* Screens stack inside the frame. Each owns its own scroll container. */
+  .shell-screens { position: absolute; inset: 0; }
+  .shell-screen {
+    position: absolute; inset: 0;
+    overflow-x: hidden; overflow-y: auto; overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    padding-top: calc(var(--sat) + var(--hud-h));
+    padding-bottom: calc(var(--dock-h) + var(--sab) + var(--s-8));
+    scrollbar-width: none;
+  }
+  .shell-screen::-webkit-scrollbar { display: none; }
+  .shell-screen[hidden] { display: none; }
+  .shell-screen.is-bare { padding-top: 0; }                 /* screens that draw their own header */
+
+  .shell-screen.is-entering { animation: shell-in var(--t-slow) var(--ease-out) both; }
+  @keyframes shell-in { from { opacity: 0; transform: translateY(8px) scale(.995); } to { opacity: 1; transform: none; } }
+
+  /* The dock lives at the bottom of the frame, above everything but overlays. */
+  .shell-dock { position: absolute; left: 0; right: 0; bottom: 0; z-index: var(--z-dock); pointer-events: none; }
+  .shell-dock > * { pointer-events: auto; }
+
+  /* Full-screen overlays (lesson, onboarding, splash) fill the frame, not the window. */
+  .shell-layer { position: absolute; inset: 0; z-index: var(--z-lesson); background: var(--carbon-0); overflow: hidden; }
+  .shell-layer.is-splash { z-index: var(--z-splash); }
+  .shell-layer.is-celebrate { z-index: var(--z-celebrate); }
+
+  /* Off-nominal screen (error boundary). */
+  .shell-fault { display: grid; place-content: center; gap: var(--s-4); height: 100%; padding: var(--s-8); text-align: center; }
+  .shell-fault h1 { font: 700 var(--fs-xl)/1.1 var(--font-display); letter-spacing: var(--track-label); text-transform: uppercase; }
+  .shell-fault p { color: var(--ink-2); max-width: 28ch; margin-inline: auto; }
+
+  .shell-fault.is-inline { position: absolute; inset: 0; background: var(--carbon-0); z-index: 1; }
+  .shell-screen > .shell-fault.is-inline { position: relative; min-height: 70%; background: none; }
+  .shell-fault-actions { display: flex; gap: var(--s-3); justify-content: center; flex-wrap: wrap; }
+
+  /* Lazy-tab placeholder: console bars warming up, never a blank frame. */
+  .shell-skel { position: absolute; inset: 0; display: grid; align-content: start; gap: var(--s-4); padding: calc(var(--sat) + var(--hud-h) + var(--s-6)) var(--s-5) 0; pointer-events: none; }
+  .shell-skel i { display: block; height: 72px; border-radius: var(--r-lg); background: var(--carbon-1); box-shadow: var(--bevel); opacity: .7; animation: shell-skel 1.4s ease-in-out infinite; }
+  .shell-skel i:nth-child(1) { height: 120px; } .shell-skel i:nth-child(3) { animation-delay: .15s; } .shell-skel i:nth-child(4) { animation-delay: .3s; }
+  @keyframes shell-skel { 50% { opacity: .35; } }
+  @media (prefers-reduced-motion: reduce) { .shell-skel i { animation: none; } }
+  :root[data-fx='lite'] .shell-skel i { animation: none; }
+
+  /* Offline pill */
+  .shell-offline::before { content: ''; display: inline-block; width: 6px; height: 6px; margin-right: 8px; vertical-align: 1px; border-radius: 50%; background: var(--warn); box-shadow: 0 0 6px var(--warn); }
+  .shell-offline {
+    position: absolute; z-index: var(--z-toast); left: 50%; top: calc(var(--sat) + var(--hud-h) + 6px); transform: translateX(-50%);
+    padding: 6px 12px; border-radius: var(--r-full); background: var(--carbon-3); box-shadow: var(--bevel), var(--shadow-1);
+    font: 500 var(--fs-2xs)/1 var(--font-mono); letter-spacing: var(--track-mono); color: var(--ink-2); text-transform: uppercase;
+  }
+}

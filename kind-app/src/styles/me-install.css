@@ -1,0 +1,117 @@
+/* owner: me-install (prefix .mei-) — the install card, post-lesson prompt, the guide sheet and its drawings, and the goDs University restyle. */
+@layer screen {
+  /* ── the Me card ─────────────────────────────────────────────────────── */
+  .mei-card { display: flex; flex-direction: column; gap: var(--s-4); }
+  .mei-card__head { display: flex; align-items: flex-start; gap: var(--s-4); }
+  .mei-badge { flex: none; display: grid; place-items: center; inline-size: var(--s-12); block-size: var(--s-12); }
+  .mei-card__text { display: flex; flex-direction: column; gap: var(--s-1); min-inline-size: 0; }
+  .mei-card__title { margin: var(--s-1) 0 0; font: 600 var(--fs-lg)/1.2 var(--font-ui); letter-spacing: var(--track-tight); color: var(--ink); text-wrap: balance; }
+  .mei-card__body { margin: 0; font-size: var(--fs-md); line-height: 1.45; color: var(--ink-2); text-wrap: pretty; }
+  .mei-spec { display: flex; flex-wrap: wrap; gap: var(--s-2) var(--s-4); margin: 0; padding: var(--s-3) 0 0; list-style: none; border-top: 1px solid var(--line); }
+  .mei-spec li { display: inline-flex; align-items: center; gap: var(--s-2); font: 500 var(--fs-2xs)/1 var(--font-mono); letter-spacing: var(--track-mono); text-transform: uppercase; color: var(--ink-3); }
+  .mei-spec .k-icon { color: var(--tele); }
+  .mei-card__actions { display: flex; flex-direction: column; align-items: stretch; gap: var(--s-2); }
+  .mei-card__actions > .k-btn[data-v="ghost"] { align-self: center; }
+  .mei-fold .k-row__icon { color: var(--tele); }
+
+  /* ── the post-lesson prompt: one compact line ───────────────────────── */
+  .mei-prompt { container-type: inline-size; display: flex; align-items: center; gap: var(--s-3); }
+  .mei-prompt__mark { flex: none; display: grid; place-items: center; }
+  .mei-prompt__title { flex: 1 1 0; min-inline-size: 0; margin: 0; font: 600 var(--fs-md)/1.25 var(--font-ui); color: var(--ink); text-wrap: balance;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .mei-prompt > .k-btn, .mei-prompt > .k-iconbtn { flex: none; }
+  @container (max-width: 340px) { .mei-prompt__mark { display: none; } }
+
+  /* ── the guide sheet ─────────────────────────────────────────────────── */
+  .mei-guide { display: flex; flex-direction: column; gap: var(--s-3); padding-block-end: var(--s-2); }
+  .mei-count { margin: 0; font: 500 var(--fs-2xs)/1 var(--font-mono); letter-spacing: var(--track-mono); color: var(--ink-3); }
+  .mei-stage { overflow: hidden; border-radius: var(--r-md); background: var(--carbon-0); box-shadow: inset 0 0 0 1px var(--line-2), var(--shadow-1);
+    animation: mei-in var(--t-slow) var(--ease-out) both; }
+  .mei-art { display: block; inline-size: 100%; block-size: auto; }
+  .mei-head { display: flex; align-items: center; gap: var(--s-2); margin: var(--s-1) 0 0; font: 600 var(--fs-xl)/1.1 var(--font-display); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--ink);
+    animation: mei-in var(--t-base) var(--ease-out) both; }
+  .mei-head .k-icon { color: var(--tele); }
+  .mei-text { margin: 0; font-size: var(--fs-base); line-height: 1.45; color: var(--ink-2); text-wrap: pretty; }
+  .mei-text--lead { font-size: var(--fs-md); color: var(--ink); }
+  .mei-note { margin: 0; padding-block-start: var(--s-3); border-top: 1px solid var(--line); font-size: var(--fs-sm); line-height: 1.45; color: var(--ink-3); text-wrap: pretty; }
+  .mei-foot { display: flex; align-items: center; gap: var(--s-3); }
+  .mei-foot > .k-btn[data-full] { flex: 1 1 0; }
+  .mei-steps { display: flex; flex-direction: column; gap: var(--s-3); margin: 0; padding: 0; list-style: none; }
+  .mei-steps li { display: flex; align-items: flex-start; gap: var(--s-3); }
+  .mei-steps__n { flex: none; display: grid; place-items: center; inline-size: var(--s-8); aspect-ratio: 100 / 115.47; clip-path: var(--clip-hex); background: var(--carbon-4); box-shadow: inset 0 0 0 1px var(--tele);
+    font: 600 var(--fs-sm)/1 var(--font-mono); color: var(--tele); }
+  .mei-steps__t { padding-block-start: var(--s-1); font-size: var(--fs-base); line-height: 1.4; color: var(--ink); text-wrap: pretty; }
+
+  /* ── the drawings: tokens only; the one accent is --tele ─────────────── */
+  .mei-page { fill: var(--carbon-0); stroke: var(--line-2); stroke-width: 1; }
+  .mei-chrome { fill: var(--carbon-2); }
+  .mei-ghost rect, .mei-skel { fill: var(--carbon-4); }
+  .mei-pill { fill: var(--carbon-3); }
+  .mei-group { fill: var(--carbon-3); }
+  .mei-menu { fill: var(--carbon-3); stroke: var(--line-3); stroke-width: 1; }
+  .mei-x { fill: var(--carbon-4); }
+  .mei-grab { fill: var(--ink-4); }
+  .mei-scroll { fill: var(--ink-4); }
+  .mei-hair { stroke: var(--line-2); stroke-width: 1; fill: none; }
+  .mei-lock { fill: var(--ink-3); }
+  .mei-dot { fill: var(--ink); }
+  .mei-glyph { fill: none; stroke: var(--ink-2); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .mei-glyph.mei-hot { stroke: var(--ink); stroke-width: 2; }
+  .mei-glyph.mei-dim { stroke: var(--ink-4); }
+  .mei-aa { fill: var(--ink-2); font: 600 var(--fs-xs) var(--font-ui); letter-spacing: var(--track-mono); }
+  .mei-lab { fill: var(--ink); font: 500 var(--fs-sm) var(--font-ui); }
+  .mei-lab--b { font-weight: 600; }
+  .mei-add { fill: var(--tele); font: 700 var(--fs-sm) var(--font-ui); }
+  .mei-row--hot .mei-lab { fill: var(--ink); font-weight: 600; }
+  .mei-hl { fill: var(--tele-wash); stroke: var(--tele); stroke-width: 1.2; }
+  .mei-icon { fill: var(--ignite-flat); }
+  .mei-icon__k { fill: var(--ink-on-ignite); font: 700 var(--fs-lg) var(--font-display); }
+  .mei-icon__k--lg { font-size: var(--fs-2xl); }
+  .mei-st1 { stop-color: var(--ignite-1); }
+  .mei-st3 { stop-color: var(--ignite-3); }
+  .mei-ring { fill: none; stroke: var(--tele); stroke-width: 2; }
+  .mei-ring--pulse { transform-box: fill-box; transform-origin: center; opacity: 0; animation: mei-pulse calc(var(--t-slower) * 2.4) var(--ease-out) infinite; }
+  .mei-pin { fill: var(--tele); }
+  .mei-pin__n { fill: var(--carbon-0); font: 700 var(--fs-2xs) var(--font-mono); }
+
+  /* ── goDs University ─────────────────────────────────────────────────── */
+  .mei-gu { display: flex; flex-direction: column; gap: var(--s-3); }
+  .mei-gu--demo { gap: var(--s-4); }
+  .mei-gu__top { display: flex; }
+  .mei-gu__stack { display: flex; flex-direction: column; align-items: stretch; gap: var(--s-4); }
+  .mei-gu__dek { margin: 0; font-size: var(--fs-sm); line-height: 1.5; color: var(--ink-2); text-wrap: pretty; }
+  .mei-gu__dek b { color: var(--ink); font-weight: 600; word-break: break-all; }
+  .mei-gu__ghost { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-3); padding-block-start: var(--s-4); border-top: 1px solid var(--line); opacity: .45; }
+  .mei-gu__who { display: flex; align-items: center; gap: var(--s-3); }
+  .mei-gu__icon { flex: none; display: grid; place-items: center; inline-size: var(--s-10); block-size: var(--s-10); border-radius: var(--r-sm); background: var(--carbon-3); color: var(--tele); }
+  .mei-gu__who-t { display: flex; flex: 1 1 0; flex-direction: column; gap: var(--s-1); min-inline-size: 0; text-align: start; }
+  .mei-gu__who-t b { font: 600 var(--fs-md)/1.2 var(--font-ui); color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mei-gu__who-t small { font: 500 var(--fs-2xs)/1.2 var(--font-mono); letter-spacing: var(--track-mono); text-transform: uppercase; color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mei-gu__head { display: flex; align-items: center; gap: var(--s-3); inline-size: 100%; min-block-size: calc(var(--tap) + var(--s-6)); padding: var(--s-3) var(--s-4); border: 0; background: none; color: inherit; font: inherit; text-align: start; cursor: pointer; border-radius: inherit; }
+  .mei-gu__head small { white-space: normal; }
+  .mei-gu__head:focus-visible { outline: 2px solid var(--tele); outline-offset: -2px; }
+  .mei-gu__av { flex: none; display: grid; place-items: center; inline-size: var(--s-10); aspect-ratio: 100 / 115.47; clip-path: var(--clip-hex); background: var(--titanium); color: var(--carbon-0); font: 700 var(--fs-lg)/1 var(--font-display); text-transform: uppercase; }
+  .mei-gu__rate { flex: none; font: 600 var(--fs-2xl)/1 var(--font-display); font-variant-numeric: tabular-nums; color: var(--ink); }
+  .mei-gu__rate i { margin-inline-start: var(--s-1); font: 500 var(--fs-sm) var(--font-mono); color: var(--ink-3); }
+  .mei-gu__chev { flex: none; color: var(--ink-3); transition: transform var(--t-base) var(--ease-out); }
+  .mei-gu__child[data-open] .mei-gu__chev { transform: rotate(180deg); }
+  .mei-gu__body { display: flex; flex-direction: column; gap: var(--s-3); padding: 0 var(--s-4) var(--s-4); }
+  .mei-gu__strip { display: flex; gap: var(--s-1); }
+  .mei-gu__strip i { flex: 1 1 0; min-inline-size: 0; block-size: var(--s-5); border-radius: var(--s-1); background: var(--carbon-4); box-shadow: inset 0 1px 0 var(--rim-lo); }
+  .mei-gu__strip i[data-in] { background: var(--go); box-shadow: inset 0 1px 0 var(--rim-hi), 0 0 var(--s-2) calc(var(--s-1) * -1) var(--go-glow); }
+  .mei-gu__more { display: flex; flex-direction: column; gap: var(--s-4); margin: 0 var(--s-4); padding: var(--s-4) 0; border-top: 1px solid var(--line); animation: mei-in var(--t-base) var(--ease-out) both; }
+  .mei-gu__figs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-3); }
+  .mei-gu__notes { display: flex; flex-direction: column; gap: var(--s-4); margin: 0; }
+  .mei-gu__note { --nc: var(--ti-2); padding-inline-start: var(--s-3); border-inline-start: 2px solid var(--nc); }
+  .mei-gu__note[data-tone="go"] { --nc: var(--go); }
+  .mei-gu__note[data-tone="tele"] { --nc: var(--tele); }
+  .mei-gu__note dt { display: flex; align-items: center; gap: var(--s-1); font: 500 var(--fs-2xs)/1 var(--font-mono); letter-spacing: var(--track-mono); text-transform: uppercase; color: var(--nc); }
+  .mei-gu__note dd { margin: var(--s-2) 0 0; font-size: var(--fs-md); line-height: 1.45; color: var(--ink); text-wrap: pretty; }
+  .mei-gu__err { display: flex; align-items: flex-start; gap: var(--s-2); margin: var(--s-4) 0 0; padding: var(--s-3); border-radius: var(--r-xs); background: var(--nogo-wash); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--nogo) 40%, transparent); color: var(--ink); font-size: var(--fs-md); line-height: 1.4; }
+  .mei-gu__err .k-icon { flex: none; margin-block-start: 1px; color: var(--nogo); }
+  .mei-gu__code input { font-family: var(--font-mono); font-size: var(--fs-lg); letter-spacing: .3em; }
+
+  /* ── motion ──────────────────────────────────────────────────────────── */
+  @keyframes mei-in { from { opacity: 0; transform: translateY(var(--s-2)); } to { opacity: 1; transform: none; } }
+  @keyframes mei-pulse { 0% { opacity: .7; transform: scale(.8); } 70%, 100% { opacity: 0; transform: scale(1.5); } }
+}

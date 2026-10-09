@@ -1,0 +1,321 @@
+/* owner: complete-rank (prefix .cmk-) — the Rank band, the rank-up moment, the Medals and the Patch beats.
+ *
+ * Every motion here is a transition keyed to a data-* flag the beat's clock flips (data-hit / -name / -word / -next / -foot,
+ * data-run, data-sew / -done / -text), so lite mode needs no second code path: html[data-fx='lite'] makes transforms instant and
+ * lets opacity cross-fade (base.css), and what changed is still on screen. The only keyframes are one-shot sweeps and the slow
+ * ambient loops (rays, breathing), which lite and reduced motion switch off. Sizes come from the spacing/type tokens; the few
+ * clamp() bounds are the beat's own art scale.
+ *
+ * Layout contract with the shell: a beat is position:absolute; inset:0 inside the Stage, leaves --cmp-top (default 56px + safe area)
+ * clear for the Stage's top bar, and draws its own CONTINUE in .cmk-foot. */
+@layer screen {
+
+  /* ───────────────────────── the frame every beat shares ───────────────────────── */
+  .cmk-beat {
+    --cmk-top: var(--cmp-top, calc(var(--sat) + var(--s-12) + var(--s-2)));
+    position: absolute; inset: 0; z-index: var(--z-content);
+    display: flex; flex-direction: column;
+    padding: var(--cmk-top) var(--gutter) calc(var(--s-6) + var(--sab));
+    color: var(--ink);
+    overflow: hidden;
+    opacity: 0; transition: opacity var(--t-slow) var(--ease-out);
+    user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
+  }
+  .cmk-beat[data-in] { opacity: 1; }
+  .cmk-beat:not([data-in]) { pointer-events: none; }
+
+  .cmk-body {
+    position: relative; flex: 1 1 auto; min-height: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; justify-content: safe center;
+    gap: var(--s-4); width: 100%; max-width: 420px; margin-inline: auto;
+    text-align: center;
+  }
+  .cmk-body > * { max-width: 100%; }
+
+  .cmk-foot {
+    flex: none; width: 100%; max-width: 420px; margin-inline: auto; padding-top: var(--s-4);
+    opacity: 0; visibility: hidden; transform: translateY(var(--s-3));
+    transition: opacity var(--t-slow) var(--ease-out), transform var(--t-slow) var(--ease-out), visibility 0s linear var(--t-slow);
+  }
+  .cmk-beat[data-foot] .cmk-foot { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
+
+  .cmk-eyebrow { display: inline-flex; align-items: center; gap: var(--s-2); color: var(--ink-2); }
+  .cmk-eyebrow__sep { display: block; width: var(--s-4); height: var(--hair); background: var(--line-3); }
+  .cmk-eyebrow__n {
+    font-family: var(--font-mono); font-weight: 500; font-size: var(--fs-xs); letter-spacing: var(--track-mono);
+    font-variant-numeric: tabular-nums slashed-zero; color: var(--ink-3);
+  }
+
+  /* the display face every title in this file shares: Barlow, upper, tracked, tabular numerals */
+  .cmk-bar__name, .cmk-up__name, .cmk-medal__title, .cmk-sum__title, .cmk-patch__name, .cmk-xp__n, .cmk-up__next-name {
+    margin: 0; font-family: var(--font-display); font-weight: 700; text-transform: uppercase;
+    font-variant-numeric: lining-nums tabular-nums; text-wrap: balance;
+  }
+
+  /* ═══════════════════════════ RANK · the band ═══════════════════════════ */
+  .cmk-bar__ins { position: relative; display: grid; place-items: center; }
+  .cmk-bar__halo {
+    position: absolute; left: 50%; top: 50%; width: 260%; aspect-ratio: 1; translate: -50% -50%; border-radius: 50%; pointer-events: none;
+    background: radial-gradient(closest-side, var(--tele-wash), transparent);
+  }
+  .cmk-bar__ins .art-rank { position: relative; }
+  .cmk-bar__name { font-size: clamp(var(--fs-2xl), 9.4vw, var(--fs-3xl)); line-height: .96; letter-spacing: calc(var(--track-label) * .4); }
+
+  .cmk-xp { display: flex; flex-direction: column; align-items: center; gap: var(--s-2); margin-top: var(--s-2); }
+  .cmk-xp__gain { opacity: 0; transform: translateY(var(--s-2)) scale(.92); }
+  .cmk-bar[data-run] .cmk-xp__gain { opacity: 1; transform: none; transition: opacity var(--t-base) var(--ease-out), transform var(--spring-bounce-ms) var(--spring-bounce); }
+  .cmk-xp__row { display: flex; align-items: baseline; justify-content: center; gap: var(--s-2); }
+  .cmk-xp__n { font-size: clamp(var(--fs-4xl), 19vw, var(--fs-5xl)); line-height: .86; letter-spacing: calc(var(--track-label) * .07); }
+  .cmk-xp__u { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-xl); letter-spacing: var(--track-label); color: var(--ink-3); text-transform: uppercase; }
+
+  .cmk-bandwrap { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--s-3); width: 100%; margin-top: var(--s-3); }
+  .cmk-bandwrap__end { width: calc(var(--s-8) * .866); height: var(--s-8); }
+  .cmk-bandwrap__end.is-next { opacity: .42; filter: grayscale(.85); }
+  .cmk-band {
+    position: relative; height: var(--s-3); overflow: hidden;
+    clip-path: polygon(var(--s-1) 0, 100% 0, calc(100% - var(--s-1)) 100%, 0 100%);
+  }
+  .cmk-band > * { position: absolute; }
+  .cmk-band__track {
+    inset: 0;
+    background:
+      repeating-linear-gradient(90deg, transparent 0, transparent calc(10% - var(--hair)), var(--line-2) calc(10% - var(--hair)), var(--line-2) 10%),
+      linear-gradient(180deg, color-mix(in srgb, var(--void) 60%, var(--carbon-3)), var(--carbon-3));
+  }
+  .cmk-band__base {
+    inset: 0; transform: scaleX(var(--p)); transform-origin: 0 50%;
+    background: linear-gradient(180deg, var(--tele-2), color-mix(in srgb, var(--tele-2) 55%, var(--void)));
+  }
+  .cmk-band__gain {
+    top: 0; bottom: 0; left: calc(var(--a) * 100%); width: calc((var(--b) - var(--a)) * 100%);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--tele) 62%, var(--ink)), var(--tele) 58%, var(--tele-2));
+    transform: scaleX(0); transform-origin: 0 50%;
+    transition: transform var(--cmk-fill, 1100ms) var(--ease-out);
+  }
+  .cmk-bar[data-run] .cmk-band__gain { transform: none; }
+  /* the tip rides a full-width rail that slides by the same fraction the gain scales by, so the two stay locked on transforms alone */
+  .cmk-band__run { inset: 0; transform: translateX(calc((var(--a) - var(--b)) * 100%)); transition: transform var(--cmk-fill, 1100ms) var(--ease-out); }
+  .cmk-bar[data-run] .cmk-band__run { transform: none; }
+  .cmk-band__tip {
+    position: absolute; top: 0; bottom: 0; left: calc(var(--b) * 100% - var(--s-1)); width: var(--s-1);
+    background: var(--ink); box-shadow: 0 0 var(--s-3) var(--tele), 0 0 var(--s-1) var(--ink);
+    opacity: 0; transition: opacity var(--t-base) var(--ease-out);
+  }
+  .cmk-bar[data-run] .cmk-band__tip { opacity: 1; }
+  .cmk-togo { margin: 0; font-family: var(--font-mono); font-size: var(--fs-xs); font-weight: 500; letter-spacing: var(--track-mono); text-transform: uppercase; color: var(--ink-2); font-variant-numeric: tabular-nums slashed-zero; }
+
+  /* ═══════════════════════════ RANK-UP · the moment ═══════════════════════════ */
+  .cmk-up { --cmk-ins: clamp(120px, 21svh, 188px); }
+  .cmk-up .cmk-body { gap: var(--s-3); }
+  .cmk-up__veil {
+    position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(120% 90% at 50% 36%, color-mix(in srgb, var(--void) 22%, transparent), color-mix(in srgb, var(--void) 80%, transparent) 72%);
+    opacity: 0; transition: opacity var(--t-slower) var(--ease-out);
+  }
+  .cmk-up[data-in] .cmk-up__veil { opacity: 1; }
+  .cmk-up__eyebrow { color: var(--gold-2); }
+  .cmk-up__arrow { color: var(--gold-2); }
+
+  .cmk-up__ins {
+    position: relative; display: grid; place-items: center;
+    width: calc(var(--cmk-ins) * .866); height: var(--cmk-ins); margin-block: var(--s-2);
+    transform: scale(1.7); opacity: 0;
+  }
+  .cmk-up[data-hit] .cmk-up__ins { transform: none; opacity: 1; transition: transform var(--spring-slam-ms) var(--spring-slam), opacity var(--t-fast) linear; }
+  .cmk-up__ins .art-rank { position: relative; z-index: 1; width: 100%; height: 100%; }
+  .cmk-up__bloom, .cmk-up__rays {
+    position: absolute; left: 50%; top: 50%; aspect-ratio: 1; translate: -50% -50%; border-radius: 50%; pointer-events: none;
+    opacity: 0; transition: opacity var(--t-slower) var(--ease-out), transform var(--t-hero) var(--ease-out);
+  }
+  .cmk-up__bloom {
+    width: 420%; transform: scale(.5);
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--gold-2) 44%, transparent), color-mix(in srgb, var(--gold-3) 14%, transparent) 48%, transparent);
+  }
+  .cmk-up__rays {
+    width: 560%;
+    background: repeating-conic-gradient(from 0deg, color-mix(in srgb, var(--gold-1) 22%, transparent) 0deg 2.5deg, transparent 2.5deg 15deg);
+    -webkit-mask-image: radial-gradient(closest-side, var(--void) 14%, transparent 80%);
+    mask-image: radial-gradient(closest-side, var(--void) 14%, transparent 80%);
+  }
+  .cmk-up[data-hit] .cmk-up__bloom { opacity: 1; transform: none; }
+  .cmk-up[data-hit] .cmk-up__rays { opacity: .55; }
+  html:not([data-fx='lite']) .cmk-up[data-hit] .cmk-up__rays { animation: cmk-spin 90s linear infinite; }
+  html:not([data-fx='lite']) .cmk-up[data-hit] .cmk-up__bloom { animation: cmk-breathe 3.4s var(--ease-io) 1s infinite alternate; }
+
+  .cmk-up__sweep { position: absolute; inset: 0; z-index: 2; overflow: hidden; clip-path: var(--clip-hex); pointer-events: none; }
+  .cmk-up__sweep::before {
+    content: ""; position: absolute; top: -10%; bottom: -10%; left: 0; width: 62%;
+    background: linear-gradient(100deg, transparent, color-mix(in srgb, var(--ink) 62%, transparent) 50%, transparent);
+    mix-blend-mode: screen; transform: translateX(-140%) skewX(-14deg);
+  }
+  .cmk-up[data-hit] .cmk-up__sweep::before { animation: cmk-sweep 950ms var(--ease-io) 200ms both; }
+
+  .cmk-up__name {
+    display: flex; justify-content: center;
+    font-size: calc(clamp(var(--fs-4xl), 20vw, var(--fs-5xl)) * var(--cmk-fit, 1));
+    line-height: .9; letter-spacing: calc(var(--track-label) * .1);
+    text-shadow: 0 0 var(--s-8) color-mix(in srgb, var(--gold-2) 40%, transparent);
+  }
+  .cmk-up__ch { display: inline-block; opacity: 0; transform: translateY(.34em) scale(.92); }
+  .cmk-up[data-name] .cmk-up__ch {
+    opacity: 1; transform: none;
+    transition: transform var(--spring-bounce-ms) var(--spring-bounce) calc(var(--i) * 45ms), opacity var(--t-base) var(--ease-out) calc(var(--i) * 45ms);
+  }
+
+  .cmk-up__text, .cmk-up__word, .cmk-up__next { opacity: 0; transform: translateY(var(--s-2)); }
+  .cmk-up[data-word] .cmk-up__text, .cmk-up[data-word] .cmk-up__word, .cmk-up[data-next] .cmk-up__next {
+    opacity: 1; transform: none; transition: opacity var(--t-slow) var(--ease-out), transform var(--t-slow) var(--ease-out);
+  }
+  .cmk-up__text { margin: 0; max-width: 30ch; font-size: var(--fs-base); line-height: 1.4; color: var(--ink-2); text-wrap: balance; }
+  .cmk-up__word { margin: 0; max-width: 34ch; }
+  .cmk-up__verse { margin: 0; }
+  .cmk-up__ref { margin-top: var(--s-2); color: var(--gold-2); }
+
+  .cmk-up__next {
+    display: flex; align-items: center; gap: var(--s-3); width: 100%; max-width: 320px; margin-top: var(--s-1);
+    padding: var(--s-2) var(--s-4); text-align: left;
+    background: var(--plate); box-shadow: var(--bevel); clip-path: var(--clip-cut-sm);
+  }
+  .cmk-up__next-ins { flex: none; opacity: .5; filter: grayscale(.7); }
+  .cmk-up__next-t { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: var(--s-1); }
+  .cmk-up__next-name { font-size: var(--fs-lg); line-height: 1; letter-spacing: calc(var(--track-label) * .5); text-wrap: nowrap; }
+  .cmk-up__next-xp { font-family: var(--font-mono); font-size: var(--fs-2xs); font-weight: 500; letter-spacing: var(--track-mono); text-transform: uppercase; color: var(--ink-2); font-variant-numeric: tabular-nums slashed-zero; }
+  .cmk-up__next-bar { display: block; height: calc(var(--s-1) - 1px); background: var(--carbon-4); overflow: hidden; }
+  .cmk-up__next-bar > i { display: block; height: 100%; background: var(--gold-2); transform-origin: 0 50%; }
+
+  /* ═══════════════════════════ MEDALS ═══════════════════════════ */
+  .cmk-medals {
+    --cmk-medal: clamp(168px, 31svh, 244px);
+    --tier: var(--ti-2); --tier-glow: color-mix(in srgb, var(--ti-2) 40%, transparent);
+  }
+  .cmk-medals[data-tier='bronze'] { --tier: var(--ignite-2); --tier-glow: var(--ignite-glow); }
+  .cmk-medals[data-tier='silver'] { --tier: var(--ti-1); --tier-glow: color-mix(in srgb, var(--ti-1) 38%, transparent); }
+  .cmk-medals[data-tier='gold'] { --tier: var(--gold-2); --tier-glow: var(--gold-glow); }
+  .cmk-medals[data-tier='ti'] { --tier: var(--tele); --tier-glow: var(--tele-glow); }
+
+  .cmk-segs { display: flex; gap: var(--s-1); width: 100%; max-width: 240px; margin: 0 0 var(--s-2); padding: 0; list-style: none; }
+  .cmk-seg { position: relative; flex: 1 1 0; height: calc(var(--s-1) - 1px); overflow: hidden; background: var(--carbon-4); }
+  .cmk-seg::after { content: ""; position: absolute; inset: 0; background: var(--ink); transform: scaleX(0); transform-origin: 0 50%; }
+  .cmk-seg[data-s='done']::after { transform: none; background: var(--ink-2); }
+  /* the timer bar is the one thing lite must not collapse: it is what tells you the medal will move on (data-motion keeps it running) */
+  .cmk-medals[data-auto] .cmk-seg[data-s='cur']::after { animation: cmk-fill var(--cmk-ms, 2900ms) linear both; }
+  .cmk-medals[data-hold] .cmk-seg[data-s='cur']::after { animation-play-state: paused; }
+  .cmk-medals:not([data-auto]) .cmk-seg[data-s='cur']::after { transform: none; opacity: .6; }
+
+  .cmk-medal .cmk-eyebrow { margin-bottom: var(--s-2); }
+  .cmk-medal { display: flex; flex-direction: column; align-items: center; gap: var(--s-4); width: 100%; cursor: pointer; touch-action: manipulation; }
+  .cmk-medal__art { position: relative; display: grid; place-items: center; width: calc(var(--cmk-medal) * .78); height: var(--cmk-medal); }
+  .cmk-medal__disc { position: relative; z-index: 1; height: 100%; aspect-ratio: 100 / 128; transform: translateY(calc(var(--s-10) * -1)) scale(1.45) rotate(-7deg); opacity: 0; }
+  .cmk-medal[data-hit] .cmk-medal__disc { transform: none; opacity: 1; transition: transform var(--spring-slam-ms) var(--spring-slam), opacity var(--t-fast) linear; }
+  .cmk-medal__disc .art-medal { width: 100%; height: 100%; }
+  .cmk-medal__halo, .cmk-medal__rays {
+    position: absolute; left: 50%; top: 62%; aspect-ratio: 1; translate: -50% -50%; border-radius: 50%; pointer-events: none;
+    opacity: 0; transition: opacity var(--t-slower) var(--ease-out);
+  }
+  .cmk-medal__halo { width: 200%; background: radial-gradient(closest-side, color-mix(in srgb, var(--tier) 34%, transparent), color-mix(in srgb, var(--tier) 8%, transparent) 56%, transparent); }
+  .cmk-medal__rays {
+    display: none; width: 260%;
+    background: repeating-conic-gradient(from 0deg, color-mix(in srgb, var(--tier) 26%, transparent) 0deg 2.5deg, transparent 2.5deg 15deg);
+    -webkit-mask-image: radial-gradient(closest-side, var(--void) 16%, transparent 78%);
+    mask-image: radial-gradient(closest-side, var(--void) 16%, transparent 78%);
+  }
+  .cmk-medals[data-tier='gold'] .cmk-medal__rays, .cmk-medals[data-tier='ti'] .cmk-medal__rays { display: block; }
+  .cmk-medal[data-hit] .cmk-medal__halo { opacity: 1; }
+  .cmk-medal[data-hit] .cmk-medal__rays { opacity: .7; }
+  html:not([data-fx='lite']) .cmk-medal[data-hit] .cmk-medal__rays { animation: cmk-spin 80s linear infinite; }
+
+  .cmk-medal__words { display: flex; flex-direction: column; align-items: center; gap: var(--s-2); opacity: 0; transform: translateY(var(--s-3)); }
+  .cmk-medal[data-text] .cmk-medal__words { opacity: 1; transform: none; transition: opacity var(--t-slow) var(--ease-out), transform var(--t-slow) var(--ease-out); }
+  .cmk-medal__title { font-size: clamp(var(--fs-2xl), 9.4vw, var(--fs-3xl)); line-height: .96; letter-spacing: calc(var(--track-label) * .3); }
+  .cmk-medal__desc { margin: 0; max-width: 28ch; font-size: var(--fs-base); line-height: 1.4; color: var(--ink-2); text-wrap: pretty; }
+
+  .cmk-sum { display: flex; flex-direction: column; align-items: center; gap: var(--s-3); width: 100%; }
+  .cmk-sum__title { font-size: clamp(var(--fs-2xl), 9.4vw, var(--fs-3xl)); line-height: .96; letter-spacing: calc(var(--track-label) * .3); }
+  .cmk-sum__grid { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--s-5) var(--s-2); width: 100%; margin: var(--s-3) 0 0; padding: 0; list-style: none; }
+  .cmk-sum__grid.is-long { max-height: calc(100svh - var(--cmk-top) - 15rem); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; }
+  .cmk-sum__item {
+    display: flex; flex-direction: column; align-items: center; gap: var(--s-2); flex: 0 0 calc((100% - var(--s-2) * 2) / 3); min-width: 0;
+    opacity: 0; transform: translateY(var(--s-2)) scale(.7);
+  }
+  .cmk-sum[data-on] .cmk-sum__item {
+    opacity: 1; transform: none;
+    transition: transform var(--spring-bounce-ms) var(--spring-bounce) calc(var(--i) * 70ms), opacity var(--t-base) var(--ease-out) calc(var(--i) * 70ms);
+  }
+  .cmk-sum__name { font-size: var(--fs-sm); line-height: 1.2; color: var(--ink-2); text-wrap: balance; }
+
+  /* ═══════════════════════════ PATCH · sewn on ═══════════════════════════ */
+  .cmk-patch { --cmk-patch: clamp(148px, 29svh, 220px); }
+  .cmk-patch .cmk-body { gap: var(--s-3); }
+  .cmk-patch__eyebrow { color: var(--stage); }
+  .cmk-patch__art { position: relative; width: var(--cmk-patch); height: var(--cmk-patch); margin-block: var(--s-3); flex: none; }
+  .cmk-patch__glow {
+    position: absolute; left: 50%; top: 50%; width: 200%; aspect-ratio: 1; translate: -50% -50%; border-radius: 50%; pointer-events: none;
+    background: radial-gradient(closest-side, var(--stage-glow), transparent 72%);
+    opacity: 0; transition: opacity var(--t-hero) var(--ease-out);
+  }
+  .cmk-patch[data-hit] .cmk-patch__glow { opacity: .8; }
+  html:not([data-fx='lite']) .cmk-patch[data-done] .cmk-patch__glow { animation: cmk-breathe 3.6s var(--ease-io) infinite alternate; }
+
+  .cmk-patch__piece {
+    position: absolute; inset: 0; transform: scale(1.4) rotate(-9deg); opacity: 0;
+  }
+  .cmk-patch[data-hit] .cmk-patch__piece { transform: none; opacity: 1; transition: transform var(--spring-slam-ms) var(--spring-slam), opacity var(--t-fast) linear; }
+  .cmk-patch__piece .art-patch { width: 100%; height: 100%; }
+
+  .cmk-patch__ring { position: absolute; left: 50%; top: 50%; width: 114%; height: 114%; translate: -50% -50%; overflow: visible; pointer-events: none; }
+  /* the thread: a dashed circle seen through a mask whose own stroke is drawn on (dashoffset); the head is a short dash that
+     travels the same path on the same clock, so the bright point can never get ahead of or behind the stitching */
+  .cmk-patch__stitch { fill: none; stroke: var(--stage); stroke-width: 2.2; stroke-linecap: round; stroke-dasharray: 5 4.4; }
+  .cmk-patch__reveal { stroke-dasharray: 100; stroke-dashoffset: 100; }
+  .cmk-patch__head { fill: none; stroke: var(--ink); stroke-width: 3.2; stroke-linecap: round; stroke-dasharray: .8 99.2; stroke-dashoffset: 0; opacity: 0; }
+  .cmk-patch__head.is-glow { stroke: var(--stage); stroke-width: 12; stroke-opacity: .34; stroke-dasharray: 1.6 98.4; }
+  .cmk-patch[data-sew] .cmk-patch__reveal { stroke-dashoffset: 0; transition: stroke-dashoffset var(--cmk-sew, 1050ms) var(--ease-io); }
+  .cmk-patch[data-sew] .cmk-patch__head { opacity: 1; stroke-dashoffset: -100; transition: stroke-dashoffset var(--cmk-sew, 1050ms) var(--ease-io), opacity var(--t-fast) linear; }
+  .cmk-patch[data-done] .cmk-patch__head { opacity: 0; transition: stroke-dashoffset var(--cmk-sew, 1050ms) var(--ease-io), opacity var(--t-base) var(--ease-out); }
+
+  .cmk-patch__gloss { position: absolute; inset: 0; border-radius: 50%; overflow: hidden; pointer-events: none; }
+  .cmk-patch__gloss::before {
+    content: ""; position: absolute; top: -10%; bottom: -10%; left: 0; width: 46%;
+    background: linear-gradient(100deg, transparent, color-mix(in srgb, var(--ink) 54%, transparent) 50%, transparent);
+    mix-blend-mode: screen; transform: translateX(-140%) skewX(-14deg);
+  }
+  .cmk-patch[data-done] .cmk-patch__gloss::before { animation: cmk-sweep 1000ms var(--ease-io) both; }
+
+  .cmk-patch__words { display: flex; flex-direction: column; align-items: center; gap: var(--s-2); opacity: 0; transform: translateY(var(--s-3)); }
+  .cmk-patch[data-text] .cmk-patch__words { opacity: 1; transform: none; transition: opacity var(--t-slow) var(--ease-out), transform var(--t-slow) var(--ease-out); }
+  .cmk-patch__earned { margin: 0; color: var(--ink-3); text-transform: uppercase; }
+  .cmk-patch__name {
+    font-size: calc(clamp(var(--fs-2xl), 11vw, var(--fs-3xl)) * var(--cmk-fit, 1)); line-height: .96; letter-spacing: calc(var(--track-label) * .3);
+    text-shadow: 0 0 var(--s-6) var(--stage-glow);
+  }
+  .cmk-patch__q { margin: 0; max-width: 30ch; font-family: var(--font-serif); font-style: italic; font-weight: 380; font-size: var(--fs-lg); line-height: 1.34; color: var(--ink-word); text-wrap: balance; }
+  .cmk-patch__word { margin: var(--s-2) 0 0; max-width: 34ch; }
+  .cmk-patch__verse { margin: 0; color: var(--ink-2); }
+  .cmk-patch__ref { margin-top: var(--s-2); }
+
+  /* ───────────────────────── short phones: the Word steps aside, the moment stays ───────────────────────── */
+  @media (max-height: 700px) {
+    .cmk-up__text, .cmk-patch__word { display: none; }
+    .cmk-body { gap: var(--s-3); }
+  }
+  @media (max-height: 560px) {
+    .cmk-up { --cmk-ins: 96px; }
+    .cmk-up__word, .cmk-up__next { display: none; }
+    .cmk-medals { --cmk-medal: 132px; }
+    .cmk-patch { --cmk-patch: 120px; }
+  }
+
+  /* ───────────────────────── motion ───────────────────────── */
+  @keyframes cmk-sweep { from { transform: translateX(-140%) skewX(-14deg); } to { transform: translateX(320%) skewX(-14deg); } }
+  @keyframes cmk-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  @keyframes cmk-spin { to { rotate: 360deg; } }
+  @keyframes cmk-breathe { from { opacity: .62; } to { opacity: 1; } }
+
+  /* a tap that fast-forwards: everything lands on the quick fade, the per-letter and per-medal staggers collapse */
+  .cmk-beat[data-ff][data-ff] :is(*, *::before, *::after) { transition-duration: var(--t-fast); transition-delay: 0s; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cmk-up__rays, .cmk-medal__rays { display: none; }
+  }
+  html[data-fx='lite'] :is(.cmk-up__rays, .cmk-medal__rays, .cmk-up__sweep, .cmk-patch__gloss) { display: none; }
+}

@@ -1,0 +1,213 @@
+/* owner: ex-match (prefix .exm-) — the Match board: chamfered plates, hex terminals, wires routed through the gutter. */
+@layer screen {
+  .exm {
+    /* geometry: all on the 4 px grid */
+    --exm-gut: calc(var(--s-8) + var(--s-1));                     /* the wiring channel */
+    --exm-pin-w: var(--s-6);  --exm-pin-h: calc(var(--s-6) + var(--s-1));
+    --exm-cut-in: calc(var(--cut-sm) - var(--hair) * .6);         /* inner chamfer: a 1-hair border on a 45 degree cut */
+    --exm-clip-l: var(--clip-cut-sm);
+    --exm-clip-r: polygon(0 0, calc(100% - var(--cut-sm)) 0, 100% var(--cut-sm), 100% 100%, var(--cut-sm) 100%, 0 calc(100% - var(--cut-sm)));
+    --exm-clip-l-in: polygon(var(--exm-cut-in) 0, 100% 0, 100% calc(100% - var(--exm-cut-in)), calc(100% - var(--exm-cut-in)) 100%, 0 100%, 0 var(--exm-cut-in));
+    --exm-clip-r-in: polygon(0 0, calc(100% - var(--exm-cut-in)) 0, 100% var(--exm-cut-in), 100% 100%, var(--exm-cut-in) 100%, 0 calc(100% - var(--exm-cut-in)));
+
+    --exm-rim: linear-gradient(180deg, color-mix(in srgb, var(--ti-2) 40%, var(--carbon-4)) 0%, var(--carbon-4) 44%, color-mix(in srgb, var(--ti-3) 24%, var(--carbon-3)) 100%);
+    --exm-rim-hv: linear-gradient(180deg, color-mix(in srgb, var(--ti-2) 62%, var(--carbon-4)) 0%, var(--carbon-4) 44%, color-mix(in srgb, var(--ti-3) 34%, var(--carbon-3)) 100%);
+
+    container: exm / inline-size;
+    display: flex; flex-direction: column; gap: var(--s-4);
+    width: 100%; min-width: 0;
+  }
+
+  /* One hue per pair, by the term's position: the same colour on the term, its wire and its answer. Deliberately not stage-3
+     (ember) or stage-4 (mint): they sit a few degrees from --nogo / --go, and nothing may hint at a verdict before CHECK. */
+  .exm [data-c="0"] { --exm-c: var(--stage-1); --exm-cg: var(--stage-1-glow); }
+  .exm [data-c="1"] { --exm-c: var(--stage-2); --exm-cg: var(--stage-2-glow); }
+  .exm [data-c="2"] { --exm-c: var(--stage-5); --exm-cg: var(--stage-5-glow); }
+  .exm [data-c="3"] { --exm-c: var(--ti-2); --exm-cg: color-mix(in srgb, var(--ti-2) 38%, transparent); }
+
+  /* ── telemetry head ───────────────────────────────────────────────── */
+  .exm-head { display: flex; flex-direction: column; align-items: flex-start; gap: var(--s-2); }
+  .exm-meter { display: inline-flex; align-items: center; gap: var(--s-2); flex: none; }
+  .exm-ticks { display: inline-flex; gap: var(--s-1); }
+  .exm-tick {
+    display: block; width: var(--s-4); height: var(--s-1);
+    background: var(--carbon-4); box-shadow: inset 0 0 0 var(--hair) var(--line-2);
+    transition: background-color var(--t-base) var(--ease-out), box-shadow var(--t-base) var(--ease-out);
+  }
+  .exm-tick[data-on] { background: var(--exm-c); box-shadow: 0 0 8px -1px var(--exm-cg); }
+  .exm-tick[data-ok="go"] { background: var(--go); box-shadow: 0 0 8px -1px var(--go-glow); }
+  .exm-tick[data-ok="nogo"] { background: var(--nogo); box-shadow: 0 0 8px -1px var(--nogo-glow); }
+  .exm-hint {
+    min-width: 0; text-wrap: balance;
+    color: var(--ink-3); font: 500 var(--fs-2xs)/1.35 var(--font-mono); letter-spacing: var(--track-mono);
+    transition: color var(--t-base) var(--ease-out);
+  }
+  .exm-hint[data-tone="tele"] { color: var(--tele); }
+  .exm-hint[data-tone="go"] { color: var(--go); }
+  .exm-hint[data-tone="nogo"] { color: var(--nogo); }
+
+  /* ── board ────────────────────────────────────────────────────────── */
+  /* The grid is the offsetParent the wires are measured against: keep it (and the two lists) free of transforms. */
+  .exm-grid {
+    position: relative; display: grid; align-items: start;
+    grid-template-columns: minmax(0, var(--exm-lw, 1fr)) var(--exm-gut) minmax(0, var(--exm-rw, 1fr));
+  }
+  .exm-col { grid-row: 1; display: flex; flex-direction: column; gap: var(--s-3); min-width: 0; margin: 0; padding: 0; list-style: none; }
+  .exm-col[data-side="l"] { grid-column: 1; }
+  .exm-col[data-side="r"] { grid-column: 3; }
+
+  /* the cell is the unclipped frame (focus ring + glow are painted on it, on the chamfered silhouette: .u-cut-frame) */
+  .exm-cell {
+    --exm-edge: var(--line-2);
+    --exm-a: var(--carbon-2); --exm-b: var(--carbon-1);
+    --exm-pin-edge: var(--line-3); --exm-pin-fill: var(--carbon-1); --exm-pin-ink: var(--ink-3);
+    --exm-ink: var(--ink);
+    --exm-rim-on: var(--exm-rim);                                  /* resting plates carry the titanium rim; every state below swaps it for its own colour */
+    --ring-gap: var(--carbon-0);
+    animation: exm-in var(--t-slow) var(--ease-out) backwards;
+    animation-delay: calc(var(--exm-d, 0) * var(--t-instant) / 2);
+    transition: filter var(--t-base) var(--ease-out);
+  }
+  @keyframes exm-in { from { opacity: 0; transform: translateY(var(--s-2)); } to { opacity: 1; transform: none; } }
+
+  .exm-plate {
+    appearance: none; margin: 0; border: 0; font: inherit; color: var(--exm-ink); text-align: start; cursor: pointer;
+    touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+    display: flex; width: 100%; min-height: calc(var(--tap) + var(--s-2)); padding: var(--hair);
+    background-color: var(--exm-edge); background-image: var(--exm-rim-on, none);
+    clip-path: var(--exm-clip-l);
+    transition: transform var(--spring-snap-ms) var(--spring-snap), background-color var(--t-fast) var(--ease-out);
+  }
+  .exm-cell[data-side="r"] .exm-plate { clip-path: var(--exm-clip-r); }
+  .exm-plate:active:not([aria-disabled="true"]) {
+    transform: scale(.97);
+    transition-duration: var(--t-instant), var(--t-fast); transition-timing-function: var(--ease-out), var(--ease-out);
+  }
+  .exm-plate[aria-disabled="true"] { cursor: default; }
+
+  .exm-face {
+    position: relative; flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: var(--s-2);
+    padding: var(--s-2) var(--s-2) var(--s-2) var(--s-3);
+    background: var(--carbon-weave), linear-gradient(180deg, var(--exm-a), var(--exm-b)); background-size: var(--s-4) var(--s-4), auto;
+    box-shadow: var(--bevel);
+    clip-path: var(--exm-clip-l-in);
+  }
+  .exm-cell[data-side="r"] .exm-face { padding: var(--s-2) var(--s-3) var(--s-2) var(--s-2); clip-path: var(--exm-clip-r-in); }
+  .exm-face::before { content: ''; position: absolute; inset: 0; background: var(--sheen); pointer-events: none; }
+
+  .exm-main { position: relative; display: flex; align-items: center; gap: var(--s-2); min-width: 0; }
+  .exm-text {
+    flex: 1; min-width: 0; color: var(--exm-ink); font: 450 calc(var(--fs-md) * var(--read-scale, 1))/1.32 var(--font-ui);
+    overflow-wrap: anywhere; hyphens: auto; text-wrap: pretty;
+  }
+  .exm-cell[data-side="l"] .exm-text { font-weight: 600; }
+
+  /* ── hex terminal ─────────────────────────────────────────────────── */
+  .exm-pin { position: relative; flex: none; display: block; width: var(--exm-pin-w); height: var(--exm-pin-h); }
+  .exm-hex { display: grid; place-items: center; width: 100%; height: 100%; background: var(--exm-pin-edge); clip-path: var(--clip-hex); transition: background-color var(--t-fast) var(--ease-out); }
+  .exm-hex__in {
+    display: grid; place-items: center; width: calc(100% - var(--hair) * 2); height: calc(100% - var(--hair) * 2);
+    background: var(--exm-pin-fill); color: var(--exm-pin-ink); clip-path: var(--clip-hex);
+    font: 600 var(--fs-md)/1 var(--font-display); font-variant-numeric: tabular-nums; padding-top: var(--hair);
+    transition: background-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out);
+  }
+  .exm-pin[data-mini] { --exm-pin-w: var(--s-5); --exm-pin-h: calc(var(--s-5) + var(--s-1)); flex: none; }
+  .exm-pin[data-mini] .exm-hex__in { font-size: var(--fs-sm); }
+
+  .exm-pip {
+    position: absolute; top: calc(var(--s-1) * -1.25); z-index: 1;
+    display: grid; place-items: center; width: var(--s-4); height: var(--s-4); border-radius: var(--r-full);
+    color: var(--ink-on-ignite); box-shadow: 0 0 0 calc(var(--hair) * 2) var(--carbon-1);
+    animation: exm-pop var(--spring-bounce-ms) var(--spring-bounce) backwards;
+    animation-delay: calc(var(--exm-d, 0) * var(--t-instant) + var(--t-base));
+  }
+  .exm-cell[data-side="l"] .exm-pip { right: calc(var(--s-1) * -1.75); }      /* toward the wire side, away from the text */
+  .exm-cell[data-side="r"] .exm-pip { left: calc(var(--s-1) * -1.75); }
+  .exm-pip svg { width: var(--s-3); height: var(--s-3); }
+  .exm-pip[data-s="go"] { background: var(--go); }
+  .exm-pip[data-s="nogo"] { background: var(--nogo); }
+  @keyframes exm-pop { from { transform: scale(0); opacity: 0; } 60% { opacity: 1; } to { transform: none; opacity: 1; } }
+
+  /* ── states ───────────────────────────────────────────────────────── */
+  @media (hover: hover) {
+    .exm:not([data-locked]) .exm-cell[data-state="rest"]:not([data-target]) .exm-plate:hover { --exm-rim-on: var(--exm-rim-hv); }
+  }
+  .exm-cell[data-target] { --exm-rim-on: none; --exm-edge: var(--tele-2); --exm-pin-edge: var(--tele-2); }
+  .exm-cell[data-state="pending"], .exm-cell[data-state="paired"], .exm-cell[data-state="go"], .exm-cell[data-state="nogo"] { --exm-rim-on: none; }
+  .exm-cell[data-state="pending"] {
+    --exm-edge: var(--tele); --exm-pin-edge: var(--tele); --exm-pin-ink: var(--tele);
+    --frame-filter: drop-shadow(0 0 10px var(--tele-glow));
+  }
+  .exm-cell[data-state="paired"] {
+    --exm-edge: var(--exm-c); --exm-pin-edge: var(--exm-c); --exm-pin-fill: var(--exm-c); --exm-pin-ink: var(--ink-on-ignite);
+  }
+  .exm-cell[data-state="go"] {
+    --exm-edge: var(--go); --exm-pin-edge: var(--go); --exm-pin-fill: var(--go); --exm-pin-ink: var(--ink-on-ignite);
+  }
+  .exm-cell[data-state="nogo"] {
+    --exm-edge: var(--nogo); --exm-pin-edge: var(--nogo); --exm-pin-fill: var(--nogo); --exm-pin-ink: var(--ink-on-ignite);
+  }
+  @supports (color: color-mix(in srgb, red, blue)) {
+    .exm-cell[data-state="paired"] {
+      --exm-edge: color-mix(in srgb, var(--exm-c) 82%, var(--carbon-0));
+      --exm-a: color-mix(in srgb, var(--exm-c) 14%, var(--carbon-2));
+      --exm-b: color-mix(in srgb, var(--exm-c) 6%, var(--carbon-1));
+    }
+    .exm-cell[data-state="go"] { --exm-a: color-mix(in srgb, var(--go) 13%, var(--carbon-2)); --exm-b: color-mix(in srgb, var(--go) 5%, var(--carbon-1)); }
+    .exm-cell[data-state="nogo"] { --exm-a: color-mix(in srgb, var(--nogo) 13%, var(--carbon-2)); --exm-b: color-mix(in srgb, var(--nogo) 5%, var(--carbon-1)); }
+    .exm-cell[data-target] { --exm-edge: color-mix(in srgb, var(--tele) 50%, var(--line-2)); --exm-pin-edge: color-mix(in srgb, var(--tele) 55%, var(--line-3)); }
+  }
+
+  /* the true partner, shown on every missed answer plate */
+  .exm-key {
+    display: flex; flex-direction: column; gap: var(--s-1);
+    padding-top: var(--s-2); border-top: var(--hair) dashed var(--go);
+    animation: exm-fade var(--t-slow) var(--ease-out) backwards; animation-delay: calc(var(--exm-d, 0) * var(--t-instant) + var(--t-base));
+  }
+  .exm-key__row { display: flex; align-items: flex-start; gap: var(--s-2); }
+  .exm-key__text { min-width: 0; color: var(--go); font: 500 var(--fs-sm)/1.3 var(--font-ui); overflow-wrap: anywhere; text-wrap: pretty; padding-top: var(--s-1); }
+
+  /* ── wires ────────────────────────────────────────────────────────── */
+  .exm-wires { position: absolute; inset: 0; z-index: 2; overflow: visible; pointer-events: none; }
+  .exm-trace { fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; animation: exm-draw var(--t-slow) var(--ease-out) backwards; }
+  .exm-halo { stroke: var(--carbon-0); stroke-width: calc(var(--s-1) * 1.75); }      /* knocks the wire out beneath the one that crosses it */
+  .exm-line {
+    stroke: var(--exm-c); stroke-width: calc(var(--s-1) / 2);
+    filter: drop-shadow(0 0 3px var(--exm-cg)); transition: stroke var(--t-base) var(--ease-out);
+  }
+  .exm-jack { fill: var(--exm-c); stroke: var(--carbon-0); stroke-width: calc(var(--hair) * 2); transform-box: fill-box; transform-origin: center; animation: exm-jack var(--spring-snap-ms) var(--spring-snap) backwards; transition: fill var(--t-base) var(--ease-out); }
+  @keyframes exm-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+  @keyframes exm-jack { from { transform: scale(0); } to { transform: none; } }
+  @keyframes exm-fade { from { opacity: 0; } to { opacity: 1; } }
+
+  .exm-wire[data-ok="go"] { --exm-c: var(--go); --exm-cg: var(--go-glow); }
+  .exm-wire[data-ok="nogo"] { --exm-c: var(--nogo); --exm-cg: var(--nogo-glow); }
+  .exm-wire[data-ok="nogo"] .exm-trace { stroke-dasharray: var(--s-1) var(--s-1); animation: exm-fade var(--t-base) var(--ease-out) backwards; }
+  .exm-wire[data-ok="nogo"] .exm-line { opacity: .72; filter: none; }
+  .exm-wire[data-ok="nogo"] .exm-halo { stroke-dasharray: none; }
+  .exm-wire[data-ok] .exm-halo { display: none; }          /* a verdict is final: nothing to trace, so no overpass knock-outs breaking same-colour wires */
+
+  .exm-wire--pending { --exm-c: var(--tele); }
+  .exm-stub { fill: none; stroke: var(--tele); stroke-width: calc(var(--s-1) / 2); stroke-linecap: round; stroke-dasharray: var(--s-1) var(--s-1); animation: exm-march var(--t-hero) linear infinite; }
+  @keyframes exm-march { to { stroke-dashoffset: calc(var(--s-1) * -2); } }
+
+  /* ── narrow: a 360 px phone leaves ~144 px a column ───────────────── */
+  @container exm (max-width: 340px) {
+    .exm-text { font-size: calc(var(--fs-sm) * var(--read-scale, 1)); line-height: 1.3; }
+    .exm-key__text { font-size: var(--fs-xs); }
+    .exm-main { gap: var(--s-1); }
+  }
+
+  /* ── lite / reduced motion: the same information, no loops, no glow ─ */
+  html[data-fx="lite"] .exm-stub { animation: none; }
+  html[data-fx="lite"] .exm-line { filter: none; }
+  html[data-fx="lite"] .exm-cell, html[data-fx="lite"] .exm-cell[data-state] { --frame-filter: initial; }   /* drops the glow; the focus ring is the a11y layer's and stays (the var must be unset, never `none`) */
+  html[data-fx="lite"] .exm-cell, html[data-fx="lite"] .exm-trace, html[data-fx="lite"] .exm-jack { animation-name: exm-fade; animation-duration: var(--t-fast); animation-timing-function: linear; }
+  html[data-fx="lite"] .exm-pip { animation: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .exm-stub { animation: none; }
+    .exm-cell, .exm-trace, .exm-jack { animation-name: exm-fade; animation-duration: var(--t-fast); animation-timing-function: linear; }
+    .exm-pip { animation: none; }
+    .exm-plate:active:not([aria-disabled="true"]) { transform: none; }
+  }
+}

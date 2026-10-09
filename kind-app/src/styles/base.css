@@ -1,0 +1,475 @@
+/* ============================================================================
+ *  KIND · v7 "Ascent" — foundation: reset → base → a11y.            owner: foundation
+ *
+ *  Three layers, nothing else.
+ *    reset  neutralise the UA, change nothing about how we look
+ *    base   the cockpit defaults (page, type, scroll, links) + the .t-* / .u-* utilities
+ *    a11y   the last layer, so it beats every component: focus ring, [hidden], .u-sr,
+ *           reduced-motion / lite, contrast, forced-colours. The ONLY !important in the
+ *           project live here, and only because an inline style must lose to them.
+ *
+ *  Utilities live in `base`, so a component (`ui`) or screen always wins over them: they
+ *  are defaults you compose with custom props (--gap, --ring…), not weapons.
+ *  Raw values: none, except the handful of physical constants noted inline.
+ * ========================================================================= */
+
+/* ─────────────────────────────────────────────────────────────────── reset */
+@layer reset {
+  *, *::before, *::after { box-sizing: border-box; }
+  * { margin: 0; }
+
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; tab-size: 4; }
+
+  :where(img, picture, video, canvas, svg, audio, iframe, embed, object) { display: block; }
+  :where(img, video, picture) { max-width: 100%; height: auto; }
+  :where(img) { font-style: italic; }            /* alt text reads as alt text */
+  :where(iframe) { border: 0; }
+
+  :where(button, input, select, textarea, optgroup) {
+    font: inherit; letter-spacing: inherit; color: inherit; margin: 0;
+  }
+  :where(button, [type='button'], [type='submit'], [type='reset']) {
+    -webkit-appearance: none; appearance: none;
+    background: none; border: 0; padding: 0; border-radius: 0;
+    text-align: inherit; cursor: pointer;
+  }
+  :where(input:not([type='checkbox'], [type='radio'], [type='range'], [type='file'], [type='color']), textarea, select) {
+    -webkit-appearance: none; appearance: none;
+    background: none; border: 0; padding: 0; border-radius: 0;   /* iOS rounds inputs on its own */
+  }
+  :where(textarea) { resize: vertical; }
+  :where(input[type='number']) { -moz-appearance: textfield; appearance: textfield; }
+  :where(input[type='number'])::-webkit-inner-spin-button,
+  :where(input[type='number'])::-webkit-outer-spin-button,
+  :where(input[type='search'])::-webkit-search-cancel-button,
+  :where(input[type='search'])::-webkit-search-decoration { -webkit-appearance: none; appearance: none; }
+  :where(fieldset) { border: 0; padding: 0; min-width: 0; }
+  :where(legend) { padding: 0; }
+  :where(summary) { cursor: pointer; list-style: none; }
+  :where(summary)::-webkit-details-marker { display: none; }
+  :where(dialog) { color: inherit; background: none; border: 0; padding: 0; max-width: none; max-height: none; }
+
+  :where(a) { color: inherit; text-decoration: none; }
+  :where(h1, h2, h3, h4, h5, h6) { font: inherit; text-wrap: balance; }
+  :where(p, li, dd, figcaption, blockquote) { overflow-wrap: break-word; text-wrap: pretty; }
+  :where(ul, ol, menu) { list-style: none; padding: 0; }   /* give lists role="list" so VoiceOver keeps them */
+  :where(b, strong) { font-weight: 650; }
+  :where(small) { font-size: .875em; }
+  :where(sub, sup) { font-size: .75em; line-height: 0; position: relative; vertical-align: baseline; }
+  :where(sup) { top: -.5em; }
+  :where(sub) { bottom: -.25em; }
+  :where(address) { font-style: normal; }
+  :where(abbr[title]) { text-decoration: underline dotted; text-underline-offset: .2em; }
+  :where(code, kbd, samp, pre) { font-family: var(--font-mono); font-size: .92em; }
+  :where(hr) { border: 0; height: 0; border-block-start: 1px solid var(--line); overflow: visible; }
+  :where(table) { border-collapse: collapse; border-spacing: 0; }
+
+  /* app, not document: controls and pictures are not text you drag-select */
+  :where(button, [role='button'], [role='tab'], [role='switch'], summary, img, svg, canvas, video) {
+    -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+  }
+  :where(img, svg, video, canvas) { -webkit-user-drag: none; }
+  :where([contenteditable], input, textarea) { -webkit-user-select: text; user-select: text; }
+
+  /* kill the 300 ms delay and double-tap zoom everywhere a finger lands */
+  :where(a, button, input, select, textarea, label, summary, [role='button'], [role='tab'], [role='switch'], [tabindex]) {
+    touch-action: manipulation;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────── base */
+@layer base {
+  :root {
+    /* derived helpers — promote to tokens.css if you want them frozen (see REQUESTS) */
+    --hair: 1px;                         /* 0.5px on retina: the hairline of a printed spec sheet */
+    --grain-opacity: .04;
+    --ink-word: color-mix(in oklab, var(--ink) 90%, var(--gold-1));   /* Scripture is warm; the hardware is cold */
+    /* 2/2 twill carbon, the weave on a real monocoque tub: each strand passes over two, under two, shifted one row per
+       step, so the ribs run diagonal. 4px strands on a 16px tile, each lit from the top-left and dark where it dives. */
+    --carbon-weave: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><defs><linearGradient id='h' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='white' stop-opacity='.07'/><stop offset='.45' stop-color='white' stop-opacity='.012'/><stop offset='1' stop-color='black' stop-opacity='.27'/></linearGradient><linearGradient id='v' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='white' stop-opacity='.05'/><stop offset='.45' stop-color='white' stop-opacity='.008'/><stop offset='1' stop-color='black' stop-opacity='.29'/></linearGradient></defs><rect x='0' y='0' width='4' height='4' fill='url(%23h)'/><rect x='4' y='0' width='4' height='4' fill='url(%23h)'/><rect x='8' y='0' width='4' height='4' fill='url(%23v)'/><rect x='12' y='0' width='4' height='4' fill='url(%23v)'/><rect x='0' y='4' width='4' height='4' fill='url(%23v)'/><rect x='4' y='4' width='4' height='4' fill='url(%23h)'/><rect x='8' y='4' width='4' height='4' fill='url(%23h)'/><rect x='12' y='4' width='4' height='4' fill='url(%23v)'/><rect x='0' y='8' width='4' height='4' fill='url(%23v)'/><rect x='4' y='8' width='4' height='4' fill='url(%23v)'/><rect x='8' y='8' width='4' height='4' fill='url(%23h)'/><rect x='12' y='8' width='4' height='4' fill='url(%23h)'/><rect x='0' y='12' width='4' height='4' fill='url(%23h)'/><rect x='4' y='12' width='4' height='4' fill='url(%23v)'/><rect x='8' y='12' width='4' height='4' fill='url(%23v)'/><rect x='12' y='12' width='4' height='4' fill='url(%23h)'/></svg>");
+  }
+  @supports not (color: color-mix(in oklab, red, blue)) { :root { --ink-word: var(--ink); } }
+  @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 2dppx) { :root { --hair: .5px; } }
+
+  html {
+    background: var(--carbon-0);
+    color: var(--ink);
+    color-scheme: dark;
+    font-family: var(--font-ui);
+    font-size: 100%;                     /* honour the user's browser text size; reading scale is --read-scale */
+    -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+    font-synthesis: none;                /* no fake bold / italic, ever — if a weight is missing we want to know */
+    text-rendering: optimizeLegibility;
+    font-kerning: normal;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    overscroll-behavior: none;
+    accent-color: var(--ignite-flat);
+    caret-color: var(--ignite-flat);
+    scrollbar-color: var(--carbon-4) transparent;
+    scroll-padding-top: calc(var(--hud-h) + var(--sat) + var(--s-4));
+  }
+  body {
+    min-height: 100vh; min-height: 100dvh;
+    background: var(--carbon-0);
+    color: var(--ink);
+    font-size: var(--fs-base);
+    line-height: 1.45;
+    overflow-x: clip;                    /* a stray glow must never create a sideways scroll */
+  }
+  #root { min-height: 100vh; min-height: 100dvh; background: var(--carbon-0); }
+
+  /* Filmic grain over everything, below the fx canvas and the splash. soft-light means it only shows
+     where there is light: invisible on the black, alive in the glows. Dropped entirely in lite. */
+  body::after {
+    content: ''; position: fixed; inset: 0; z-index: var(--z-toast);
+    background: var(--grain) 0 0 / 160px 160px;
+    opacity: var(--grain-opacity);
+    mix-blend-mode: soft-light;
+    pointer-events: none;
+  }
+  html[data-fx='lite'] body::after { display: none; }
+
+  ::selection { background: var(--tele-glow); color: var(--ink); text-shadow: none; }
+  ::placeholder { color: var(--ink-3); opacity: 1; }
+  input:-webkit-autofill {
+    -webkit-text-fill-color: var(--ink);
+    box-shadow: inset 0 0 0 100vmax var(--carbon-2);          /* paints over Chrome's yellow */
+    transition: background-color 600000s 0s;                  /* …and stops it ever animating back */
+  }
+  :where(mark) { background: var(--ignite-wash); color: inherit; }
+
+  /* Prose links only: anything with a class is a component and styles itself. */
+  a:not([class]) {
+    color: var(--tele);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: .22em;
+  }
+  @supports (color: color-mix(in srgb, red, blue)) {
+    a:not([class]) { text-decoration-color: color-mix(in srgb, currentColor 45%, transparent); }
+  }
+  @media (hover: hover) { a:not([class]):hover { text-decoration-color: currentColor; } }
+
+  /* Scrollbars: thin carbon, invisible until you need them; gone on touch. */
+  * { scrollbar-width: thin; }
+  @supports not (scrollbar-width: thin) {
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--carbon-4); border-radius: var(--r-full); border: 2px solid transparent; background-clip: padding-box; }
+    ::-webkit-scrollbar-corner { background: transparent; }
+  }
+  @media (hover: none) and (pointer: coarse) {
+    * { scrollbar-width: none; }
+    @supports not (scrollbar-width: none) { ::-webkit-scrollbar { display: none; } }
+  }
+
+  /* ── Type ───────────────────────────────────────────────────────────────
+     Fluid between the 360 px and 480 px column: clamp(token, vw, token). --read-scale (0.9–1.3, set from
+     prefs.textScale by the lesson) scales only the reading classes. */
+
+  .t-display {                                    /* stage titles, big numerals, CTAs */
+    font-family: var(--font-display); font-weight: 700; text-transform: uppercase;
+    font-size: clamp(var(--fs-3xl), 13.4vw, var(--fs-4xl));
+    line-height: .92; letter-spacing: calc(var(--track-label) * .15);
+    font-variant-numeric: lining-nums tabular-nums;
+    text-wrap: balance;
+  }
+  .t-display-xl { font-size: clamp(var(--fs-4xl), 20vw, var(--fs-5xl)); line-height: .86; letter-spacing: calc(var(--track-label) * .07); }
+  .t-display-sm { font-size: clamp(var(--fs-2xl), 8.9vw, var(--fs-3xl)); line-height: .96; }
+
+  .t-label, .t-label-sm {                         /* the eyebrow: Barlow Condensed, upper, tracked */
+    font-family: var(--font-display); font-weight: 600; text-transform: uppercase;
+    letter-spacing: var(--track-label); color: var(--ink-2);
+  }
+  .t-label    { font-size: var(--fs-md); line-height: 1.2; }
+  .t-label-sm { font-size: var(--fs-sm); line-height: 1.2; }
+
+  .t-mono, .t-mono-sm {                           /* telemetry: T-02:14:09 · DAY 12/31 · +40 XP */
+    font-family: var(--font-mono); font-weight: 500; letter-spacing: var(--track-mono);
+    font-variant-numeric: tabular-nums slashed-zero; font-variant-ligatures: none;
+    color: var(--ink-2);
+  }
+  .t-mono    { font-size: var(--fs-xs);  line-height: 1.35; }
+  .t-mono-sm { font-size: var(--fs-2xs); line-height: 1.3; }
+
+  /* The Word. Set like the cover of a book: large, warm, balanced, never below 20 px. */
+  .t-scripture, .t-scripture-lg, .t-scripture-sm {
+    font-family: var(--font-serif); font-weight: 380; font-optical-sizing: auto;
+    color: var(--ink-word);
+    letter-spacing: calc(var(--track-tight) * .5); line-height: 1.38;
+    font-variant-numeric: oldstyle-nums proportional-nums;
+    font-variant-ligatures: common-ligatures contextual;
+    text-wrap: balance;
+    hanging-punctuation: first last;
+    text-shadow: 0 0 1.5em var(--ignite-wash);    /* a candle behind the page */
+  }
+  /* max(--fs-lg, …): the 90 % text-size setting must never drag the Word under 20 px (design §3). */
+  .t-scripture    { font-size: max(var(--fs-lg), calc(clamp(var(--fs-xl), 6.8vw, calc(var(--fs-2xl) * 1.0625)) * var(--read-scale, 1))); }
+  .t-scripture-lg { font-size: max(var(--fs-lg), calc(clamp(var(--fs-2xl), 8.4vw, var(--fs-3xl)) * var(--read-scale, 1))); line-height: 1.26; letter-spacing: calc(var(--track-tight) * .75); }
+  .t-scripture-sm { font-size: max(var(--fs-lg), calc(clamp(var(--fs-lg), 5.4vw, var(--fs-xl)) * var(--read-scale, 1))); line-height: 1.42; }
+  :is(.t-scripture, .t-scripture-lg, .t-scripture-sm) :is(em, i) { font-style: italic; }
+  /* The ornament on a book's cover: a gold opening quote above the verse. Decorative, so its text alternative is empty;
+     the closing quote stays in the text, where a screen reader and a copy-paste both want it. */
+  .t-quote::before {
+    content: '\201C'; content: '\201C' / '';
+    display: block; height: .46em; margin-bottom: .14em;
+    font-family: var(--font-serif); font-style: normal; font-weight: 500; font-size: 3.2em; line-height: .86;
+    letter-spacing: 0; color: var(--gold-2); text-shadow: none; text-align: inherit;
+  }
+  .t-hang { text-indent: -.42em; }                /* opening quote hangs where hanging-punctuation is unsupported */
+  @supports (hanging-punctuation: first) { .t-hang { text-indent: 0; } }
+  .t-ref {                                        /* JOHN 3:16 — mono, beneath the verse */
+    font-family: var(--font-mono); font-weight: 500; font-size: var(--fs-xs); line-height: 1.3;
+    text-transform: uppercase; letter-spacing: .12em; color: var(--ink-2);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .t-title {                                      /* screen and card titles */
+    font-family: var(--font-ui); font-weight: 640;
+    font-size: clamp(var(--fs-xl), 7vw, var(--fs-2xl));
+    line-height: 1.12; letter-spacing: var(--track-tight);
+    text-wrap: balance;
+  }
+  .t-title-serif {                                /* a lesson's title: it is the Word's, so it is Newsreader */
+    font-family: var(--font-serif); font-weight: 500; letter-spacing: calc(var(--track-tight) * .7); line-height: 1.12;
+    font-size: calc(clamp(var(--fs-xl), 7.4vw, var(--fs-2xl)) * var(--read-scale, 1));
+  }
+  .t-lead { font-size: calc(var(--fs-lg) * var(--read-scale, 1)); line-height: 1.4; letter-spacing: var(--track-tight); text-wrap: pretty; }
+  .t-body { font-size: calc(var(--fs-base) * var(--read-scale, 1)); line-height: 1.5; text-wrap: pretty; }
+  .t-body-sm { font-size: calc(var(--fs-md) * var(--read-scale, 1)); line-height: 1.45; color: var(--ink-2); text-wrap: pretty; }
+  .t-caption { font-size: var(--fs-sm); line-height: 1.4; color: var(--ink-3); }
+  .t-num { font-variant-numeric: tabular-nums lining-nums; }
+
+  .t-ignite {                                     /* the ignition gradient — ONE hero numeral per screen */
+    background: var(--ignite); -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+    filter: drop-shadow(0 0 .35em var(--ignite-wash));
+  }
+  .t-c-ink { color: var(--ink); }      .t-c-ink-2 { color: var(--ink-2); }   .t-c-ink-3 { color: var(--ink-3); }
+  .t-c-tele { color: var(--tele); }    .t-c-ignite { color: var(--ignite-2); }
+  .t-c-go { color: var(--go); }        .t-c-nogo { color: var(--nogo); }     .t-c-gold { color: var(--gold-2); }
+
+  /* ── Layout ───────────────────────────────────────────────────────────── */
+  .u-stack  { display: flex; flex-direction: column; gap: var(--gap, var(--s-4)); }
+  .u-row    { display: flex; align-items: center; gap: var(--gap, var(--s-3)); }
+  .u-wrap   { flex-wrap: wrap; }
+  .u-spread { justify-content: space-between; }
+  .u-center { display: grid; place-items: center; }
+  .u-grow   { flex: 1 1 0%; min-width: 0; }
+  .u-fill   { position: absolute; inset: 0; }
+  .u-flow > * + * { margin-top: var(--flow, 1em); }          /* prose rhythm */
+  .u-ta-c { text-align: center; }
+  .u-nowrap { white-space: nowrap; }
+  .u-truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .u-clamp-2, .u-clamp-3 { display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
+  .u-clamp-2 { -webkit-line-clamp: 2; line-clamp: 2; }
+  .u-clamp-3 { -webkit-line-clamp: 3; line-clamp: 3; }
+  .u-no-select { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+
+  .u-safe-t { padding-top: calc(var(--sat) + var(--safe-extra, 0px)); }
+  .u-safe-b { padding-bottom: calc(var(--sab) + var(--safe-extra, 0px)); }
+  .u-safe-x { padding-left: var(--sal); padding-right: var(--sar); }
+
+  .u-scroll-y {
+    overflow-x: hidden; overflow-y: auto;
+    -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain;
+  }
+  .u-scroll-x {
+    overflow-x: auto; overflow-y: hidden;
+    -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain;
+  }
+  .u-noscrollbar { scrollbar-width: none; }
+  .u-noscrollbar::-webkit-scrollbar { display: none; }
+  /* Edge fade for a scrolling row or column: the thumb can see there is more. The padding is as long as the fade, so
+     at rest the first and last item sit clear of it and only content that has scrolled away is dissolved. */
+  .u-fade-x { --fade: var(--s-6); padding-inline: var(--fade);
+    -webkit-mask-image: linear-gradient(90deg, transparent, black var(--fade), black calc(100% - var(--fade)), transparent);
+    mask-image: linear-gradient(90deg, transparent, black var(--fade), black calc(100% - var(--fade)), transparent); }
+  .u-fade-y { --fade: var(--s-6); padding-block: var(--fade);
+    -webkit-mask-image: linear-gradient(180deg, transparent, black var(--fade), black calc(100% - var(--fade)), transparent);
+    mask-image: linear-gradient(180deg, transparent, black var(--fade), black calc(100% - var(--fade)), transparent); }
+
+  /* A 1 px line that is 0.5 px on retina. Border-based so it follows radius. */
+  .u-hairline   { border: var(--hair) solid var(--line); }
+  .u-hairline-2 { border: var(--hair) solid var(--line-2); }
+  .u-hairline-t { border-top: var(--hair) solid var(--line); }
+  .u-hairline-b { border-bottom: var(--hair) solid var(--line); }
+  .u-hairline-x { border-inline: var(--hair) solid var(--line); }
+
+  /* Instrument ruler: minor tick every 8, major every 40. Decoration that is also a scale. */
+  .u-ruler {
+    height: var(--s-2);
+    background:
+      repeating-linear-gradient(90deg, var(--line-3) 0 var(--hair), transparent var(--hair) var(--s-10)) 0 100% / 100% 100% no-repeat,
+      repeating-linear-gradient(90deg, var(--line-2) 0 var(--hair), transparent var(--hair) var(--s-2)) 0 100% / 100% 50% no-repeat;
+  }
+
+  /* Invisible hit-area extender: a 24 px glyph keeps its look and gets a 48 px target. */
+  .u-tap { position: relative; }
+  .u-tap::after {
+    content: ''; position: absolute;
+    inset-block: min(0px, calc((100% - var(--tap)) / 2));
+    inset-inline: min(0px, calc((100% - var(--tap)) / 2));
+  }
+
+  /* Press physics: weight on the way down, overshoot on the way up. */
+  .u-press { transition: transform var(--spring-snap-ms) var(--spring-snap); }
+  .u-press:active { transform: scale(.97); transition-duration: var(--t-instant); transition-timing-function: var(--ease-out); }
+
+  /* ── Shape ────────────────────────────────────────────────────────────── */
+  .u-clip-cut     { clip-path: var(--clip-cut); }
+  .u-clip-cut-sm  { clip-path: var(--clip-cut-sm); }
+  .u-clip-cut-tr  { clip-path: var(--clip-cut-tr); }
+  .u-clip-cut-bl  { clip-path: var(--clip-cut-bl); }
+  .u-clip-hex      { clip-path: var(--clip-hex); aspect-ratio: .866; }
+  .u-clip-hex-flat { clip-path: var(--clip-hex-flat); aspect-ratio: 1.1547; }
+
+  /* clip-path clips outlines, shadows and glows. Wrap the shape in .u-cut-frame: the focus ring (a stacked
+     drop-shadow, so it follows the chamfer) and any glow are painted on the wrapper, outside the clip.
+     --ring (colour) and --ring-gap (the 2 px air between part and ring: match the surface behind).
+     A component's own glow goes in --frame-filter (a drop-shadow() list, never `none`). Ring: see a11y layer. */
+  .u-cut-frame { display: inline-flex; position: relative; max-width: 100%; filter: var(--frame-filter, none); }
+  .u-cut-frame.is-block { display: flex; }
+
+  /* ── Materials ────────────────────────────────────────────────────────── */
+  .u-carbon { background: var(--carbon-weave), var(--plate); background-size: 16px 16px, auto; box-shadow: var(--bevel); }
+
+  /* Glass is chrome-only (HUD, dock, sheets). Anything that blurs behind itself carries data-glass
+     so the a11y layer can swap it for solid carbon in lite mode. */
+  .u-glass, [data-glass] {
+    background: var(--carbon-1);
+    -webkit-backdrop-filter: blur(22px) saturate(1.5); backdrop-filter: blur(22px) saturate(1.5);
+  }
+  @supports (color: color-mix(in srgb, red, blue)) {
+    .u-glass, [data-glass] { background: color-mix(in srgb, var(--carbon-1) 64%, transparent); }
+  }
+  .u-glass { box-shadow: var(--bevel); }
+}
+
+/* ─────────────────────────────────────────────────────────────────── a11y */
+@layer a11y {
+  [hidden]:not([hidden='until-found']) { display: none; }
+
+  /* Focus: 2 px --tele, 2 px off, follows the border radius. Tunable per component through --ring,
+     --ring-w, --ring-off. Roving-tabindex children still get it; programmatic focus targets do not. */
+  :focus-visible {
+    outline: var(--ring-w, 2px) solid var(--ring, var(--tele));
+    outline-offset: var(--ring-off, 2px);
+  }
+  :where(main, h1, h2, [role='dialog'], [data-autofocus])[tabindex='-1']:focus-visible { outline: none; }
+  /* a clipped part cannot show an outside ring: pull it inside (use .u-cut-frame for the proper one) */
+  :is(.u-clip-cut, .u-clip-cut-sm, .u-clip-cut-tr, .u-clip-cut-bl, .u-clip-hex, .u-clip-hex-flat):focus-visible {
+    outline-offset: calc(var(--ring-w, 2px) * -2.5);
+  }
+  .u-cut-frame :focus-visible { outline: none; }                /* the wrapper draws it, on the silhouette */
+  .u-cut-frame:has(:focus-visible) {
+    filter:
+      drop-shadow(2px 0 0 var(--ring-gap, var(--carbon-0))) drop-shadow(-2px 0 0 var(--ring-gap, var(--carbon-0)))
+      drop-shadow(0 2px 0 var(--ring-gap, var(--carbon-0))) drop-shadow(0 -2px 0 var(--ring-gap, var(--carbon-0)))
+      drop-shadow(2px 0 0 var(--ring, var(--tele))) drop-shadow(-2px 0 0 var(--ring, var(--tele)))
+      drop-shadow(0 2px 0 var(--ring, var(--tele))) drop-shadow(0 -2px 0 var(--ring, var(--tele)))
+      var(--frame-filter, );
+  }
+
+  /* iOS Safari zooms the whole page when a field under 16 px takes focus. A component may set its own size; this
+     only lifts it back to the threshold, and only on iOS (the one browser with the behaviour). */
+  @supports (-webkit-touch-callout: none) {
+    input:not([type='checkbox'], [type='radio'], [type='range'], [type='file'], [type='color']), textarea, select { font-size: max(16px, 1em) !important; }
+  }
+
+  /* Visually hidden, still announced. Lives here so no component can un-hide it. */
+  .u-sr {
+    position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0;
+    overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+  }
+  .u-skip {
+    position: fixed; z-index: var(--z-splash);
+    top: calc(var(--sat) + var(--s-3)); left: calc(var(--sal) + var(--s-3));
+    padding: var(--s-3) var(--s-5);
+    background: var(--ignite-flat); color: var(--ink-on-ignite);
+    font-family: var(--font-display); font-weight: 700; text-transform: uppercase; letter-spacing: var(--track-label);
+    clip-path: var(--clip-cut-sm);
+    transform: translateY(-200%);
+  }
+  .u-skip:focus-visible { transform: none; outline: var(--ring-w, 2px) solid var(--ink-on-ignite); outline-offset: calc(var(--ring-w, 2px) * -2.5); }   /* clipped by the chamfer, so inside */
+
+  /* ── Lite + reduced motion ───────────────────────────────────────────────
+     Information survives, choreography does not: animations jump to their end state (0.01 ms, not 0, so
+     animationend / transitionend still fire and nothing waits forever), loops run once, transforms are
+     instant and colour/opacity changes become short cross-fades. Genuinely essential motion (a loading
+     spinner) opts out with data-motion="essential". */
+  @media (prefers-reduced-motion: reduce) {
+    *:not([data-motion='essential'], [data-motion='essential'] *),
+    *:not([data-motion='essential'], [data-motion='essential'] *)::before,
+    *:not([data-motion='essential'], [data-motion='essential'] *)::after {
+      animation-duration: .01ms !important; animation-delay: 0s !important; animation-iteration-count: 1 !important;
+      transition-delay: 0s !important; transition-duration: .01ms !important;
+      scroll-behavior: auto !important;
+    }
+    ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+  }
+  html[data-fx='lite'] *:not([data-motion='essential'], [data-motion='essential'] *),
+  html[data-fx='lite'] *:not([data-motion='essential'], [data-motion='essential'] *)::before,
+  html[data-fx='lite'] *:not([data-motion='essential'], [data-motion='essential'] *)::after {
+    animation-duration: .01ms !important; animation-delay: 0s !important; animation-iteration-count: 1 !important;
+    transition-delay: 0s !important;
+    /* 9 colour/opacity properties cross-fade, 12 geometry ones are instant. Keep both lists the same length. */
+    transition-property: opacity, color, background-color, border-color, outline-color, fill, stroke, text-decoration-color, box-shadow,
+      transform, translate, scale, rotate, filter, clip-path, width, height, max-height, stroke-dashoffset, background-position, visibility !important;
+    transition-duration: var(--t-fast), var(--t-fast), var(--t-fast), var(--t-fast), var(--t-fast), var(--t-fast), var(--t-fast), var(--t-fast), var(--t-fast),
+      .01ms, .01ms, .01ms, .01ms, .01ms, .01ms, .01ms, .01ms, .01ms, .01ms, .01ms, .01ms !important;
+    scroll-behavior: auto !important;
+    will-change: auto !important;
+  }
+  html[data-fx='lite'] ::view-transition-group(*), html[data-fx='lite'] ::view-transition-old(*), html[data-fx='lite'] ::view-transition-new(*) { animation: none !important; }
+  html[data-fx='lite'] * {
+    -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+  }
+  /* …and glass without blur is unreadable, so it goes solid. */
+  html[data-fx='lite'] :is(.u-glass, [data-glass]) { background: var(--carbon-1); }
+  @media (prefers-reduced-transparency: reduce) {
+    * { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+    :is(.u-glass, [data-glass]) { background: var(--carbon-1); }
+  }
+
+  /* ── More contrast ───────────────────────────────────────────────────────
+     tokens.css is unlayered, so a layered override would lose; !important on a custom property is the
+     one way a layer can re-point a token. Secondary text becomes full ink (hierarchy is size and weight now), hairlines become real boundaries (>= 3:1). */
+  @media (prefers-contrast: more) {
+    :root {
+      --ink-2: var(--ink) !important; --ink-3: color-mix(in srgb, var(--ink) 86%, var(--carbon-0)) !important; --ink-4: color-mix(in srgb, var(--ink) 55%, var(--carbon-0)) !important;   /* disabled stays legible (≥ 5:1) but still reads as disabled */
+      --line: color-mix(in srgb, var(--ink) 30%, transparent) !important;
+      --line-2: color-mix(in srgb, var(--ink) 42%, transparent) !important;
+      --line-3: color-mix(in srgb, var(--ink) 56%, transparent) !important;
+      --rim-hi: color-mix(in srgb, var(--ink) 48%, transparent) !important;
+      --grain-opacity: 0 !important;
+      --ring-w: 3px !important;
+    }
+    .t-scripture, .t-scripture-lg, .t-scripture-sm { text-shadow: none; }
+  }
+  html[data-contrast='more'] {
+    --ink-2: var(--ink) !important; --ink-3: color-mix(in srgb, var(--ink) 86%, var(--carbon-0)) !important; --ink-4: color-mix(in srgb, var(--ink) 55%, var(--carbon-0)) !important;   /* disabled stays legible (≥ 5:1) but still reads as disabled */
+    --line: color-mix(in srgb, var(--ink) 30%, transparent) !important;
+    --line-2: color-mix(in srgb, var(--ink) 42%, transparent) !important;
+    --line-3: color-mix(in srgb, var(--ink) 56%, transparent) !important;
+    --rim-hi: color-mix(in srgb, var(--ink) 48%, transparent) !important;
+    --grain-opacity: 0 !important;
+    --ring-w: 3px !important;
+  }
+  html[data-contrast='more'] :is(.t-scripture, .t-scripture-lg, .t-scripture-sm) { text-shadow: none; }
+
+  /* ── Forced colours (Windows High Contrast) ──────────────────────────────
+     The system repaints colours and strips shadows and gradients, so what is left must still read as a
+     control: give controls a boundary, un-clip the chamfers that would eat it, never leave gradient text. */
+  @media (forced-colors: active) {
+    body::after { display: none; }
+    :where(button, [role='button'], [role='tab'], [role='switch'], input, select, textarea, summary):not(:focus-visible) {
+      outline: 1px solid ButtonBorder; outline-offset: -1px;
+    }
+    :where(button, [role='button'], [role='tab'], [role='switch']):is(.u-clip-cut, .u-clip-cut-sm, .u-clip-cut-tr, .u-clip-cut-bl, .u-clip-hex, .u-clip-hex-flat) { clip-path: none; }
+    .t-ignite { background: none; -webkit-text-fill-color: currentColor; color: CanvasText; filter: none; }
+    .u-skip { clip-path: none; border: 2px solid ButtonText; }
+    :focus-visible { outline-color: Highlight; }
+  }
+}

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>obj-streak playground</title>
+    <script>
+      // ?seed=new|streak6|lost|midrank|maxrank  — written before the store boots. Dates are relative to ?now= (or the real clock).
+      ;(function () {
+        var q = new URLSearchParams(location.search), seed = q.get('seed')
+        if (!seed) return
+        var base = q.get('now') ? new Date(q.get('now') + 'T12:00:00') : new Date()
+        var key = function (off) {
+          var d = new Date(base.getFullYear(), base.getMonth(), base.getDate() + off)
+          return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
+        }
+        var log = function (from, to, xp) {
+          var o = {}
+          for (var i = from; i <= to; i++) o[key(i)] = { lessons: 1, xp: xp + ((i * 7) % 5) * 12, right: 3, goal: true }
+          return o
+        }
+        var st = { v: 6, onboarded: true, name: 'Ada', role: 'teen', dailyGoalXp: 40 }
+        if (seed === 'streak6') Object.assign(st, { xp: 520, streak: 6, best: 12, shields: 1, lastDone: key(0), log: Object.assign(log(-12, -7, 45), log(-5, 0, 50)), saves: (function () { var o = {}; o[key(-6)] = 'shield'; return o })() })
+        if (seed === 'lost') Object.assign(st, { xp: 410, streak: 12, best: 12, shields: 0, lastDone: key(-5), log: log(-16, -5, 45) })
+        if (seed === 'midrank') Object.assign(st, { xp: 1650, streak: 3, best: 8, shields: 2, lastDone: key(0), log: log(-2, 0, 60) })
+        if (seed === 'maxrank') Object.assign(st, { xp: 5400, streak: 31, best: 31, shields: 2, lastDone: key(0), log: log(-30, 0, 90) })
+        localStorage.setItem('kind-app-v4', JSON.stringify(st))
+      })()
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="./obj-streak.jsx"></script>
+  </body>
+</html>

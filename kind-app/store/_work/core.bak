@@ -1,0 +1,314 @@
+// KIND brand build — every icon, social card, splash and store asset, generated from code.
+//
+//   node scripts/make-icons.mjs            regenerate everything (deterministic)
+//   node scripts/make-icons.mjs --check    regenerate in memory, fail if any file on disk differs
+//   node scripts/make-icons.mjs --dev      also write review sheets to store/_work/out
+//
+// No npm installs, no fonts at render time: the wordmark is Barlow Condensed (OFL) converted to outlines with
+// opentype.js; colours are read from src/styles/tokens.css so the brand can never drift from the app.
+import sharp from 'sharp'
+import opentype from 'opentype.js'
+import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, statSync } from 'node:fs'
+import { createHash } from 'node:crypto'
+import { dirname, join, relative, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const HERE = dirname(fileURLToPath(import.meta.url))
+const ROOT = resolve(HERE, '..')
+const PUB = join(ROOT, 'public')
+const STORE = join(ROOT, 'store')
+const ARGS = process.argv.slice(2)
+const CHECK = ARGS.includes('--check')
+const DEV = ARGS.includes('--dev')
+const ONLY = (ARGS.find((a) => a.startsWith('--only=')) || '').slice(7).split(',').filter(Boolean)
+const want = (k) => !ONLY.length || ONLY.includes(k)
+
+// ───────────────────────────────────────────────────────────────────────────
+// 0 · tokens → palette
+// ───────────────────────────────────────────────────────────────────────────
+const tokenCss = readFileSync(join(ROOT, 'src/styles/tokens.css'), 'utf8')
+const TOK = {}
+for (const m of tokenCss.matchAll(/--([a-z0-9-]+)\s*:\s*(#[0-9a-fA-F]{6})\b/g)) TOK[m[1]] = m[2].toLowerCase()
+const need = (k) => { if (!TOK[k]) throw new Error(`token --${k} not found in tokens.css`); return TOK[k] }
+const P = {
+  void: need('void'), c0: need('carbon-0'), c1: need('carbon-1'), c2: need('carbon-2'), c3: need('carbon-3'), c4: need('carbon-4'),
+  ink: need('ink'), ink2: need('ink-2'), ink3: need('ink-3'), ink4: need('ink-4'), onIgnite: need('ink-on-ignite'),
+  i1: need('ignite-1'), i2: need('ignite-2'), i3: need('ignite-3'),
+  tele: need('tele'), tele2: need('tele-2'),
+  g1: need('gold-1'), g2: need('gold-2'), g3: need('gold-3'),
+  t1: need('ti-1'), t2: need('ti-2'), t3: need('ti-3'), t4: need('ti-4'),
+}
+const rgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16))
+const hex = (c) => '#' + c.map((v) => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0')).join('')
+const mix = (a, b, t) => { const A = rgb(a), B = rgb(b); return hex(A.map((v, i) => v + (B[i] - v) * t)) }
+const rgba = (h, a) => { const [r, g, b] = rgb(h); return `rgba(${r},${g},${b},${a})` }
+// titanium ramp: brightness 0..1 → metal (tokens only)
+const metal = (b) => {
+  const stops = [[0, P.t4], [0.34, P.t3], [0.68, P.t2], [1, P.t1]]
+  b = Math.max(0, Math.min(1, b))
+  for (let i = 1; i < stops.length; i++) if (b <= stops[i][0]) return mix(stops[i - 1][1], stops[i][1], (b - stops[i - 1][0]) / (stops[i][0] - stops[i - 1][0]))
+  return P.t1
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+// 1 · small maths
+// ───────────────────────────────────────────────────────────────────────────
+const f2 = (n) => (Math.round(n * 100) / 100).toString()
+const rad = (d) => (d * Math.PI) / 180
+const hexV = (cx, cy, R, i) => [cx + R * Math.cos(rad(-90 + 60 * i)), cy + R * Math.sin(rad(-90 + 60 * i))]
+const pts = (arr) => arr.map(([x, y]) => f2(x) + ',' + f2(y)).join(' ')
+const hexPoints = (cx, cy, R) => pts([0, 1, 2, 3, 4, 5].map((i) => hexV(cx, cy, R, i)))
+function mulberry32(a) { return () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296 } }
+
+// ───────────────────────────────────────────────────────────────────────────
+// 2 · the mark — geometry (512 space; the hexagon is centred on 256,256)
+// ───────────────────────────────────────────────────────────────────────────
+const HX = { cx: 256, cy: 256, R0: 200 }
+// Rim, outside in (apothem widths): outer chamfer 6 · flat band 10 · inner chamfer 5.
+const apo = (R) => R * Math.cos(rad(30))
+const fromApo = (a) => a / Math.cos(rad(30))
+const RIM = (() => {
+  const a0 = apo(HX.R0)
+  return { R0: HX.R0, R1: fromApo(a0 - 6), R2: fromApo(a0 - 16), R3: fromApo(a0 - 21) }
+})()
+
+// The K, drawn in its own space: stem 0..42, cap line y=0, baseline y=220; the flame rises above the cap line.
+// Arm and leg both leave the stem at 58°; the arm bends up into a flame lick (the "rising trajectory").
+const K_LOCAL = {
+  body: 'M0 16 L16 0 L42 0 L42 82 C66 50 112 40 144 -34 C150 -4 182 42 156 76 C132 100 96 108 70 118 L134 220 L86 220 L42 156 L42 220 L0 220 Z',
+  // hot core: a smaller flame inside the lick (large sizes only)
+  core: 'M104 84 C126 80 148 64 144 44 C142 30 138 18 139 -2 C128 24 108 42 94 62 C90 72 94 86 104 84 Z',
+  box: { x0: 0, y0: -34, x1: 170, y1: 220 },
+}
+const K_T = { x: 170, y: 146, s: 1.04 } // placement in the 512 space
+const kAbs = (x, y) => [K_T.x + x * K_T.s, K_T.y + y * K_T.s]
+
+// ───────────────────────────────────────────────────────────────────────────
+// 3 · the badge (SVG fragment builder)
+// ───────────────────────────────────────────────────────────────────────────
+// opts: id (unique prefix) · tile 'rounded'|'full'|'none' · scale (hex scale about centre) · detail 'full'|'lite'
+function badge({ id = 'b', tile = 'rounded', scale = 1, detail = 'full', glow = false, shadow = tile !== 'none', halo = false } = {}) {
+  const { cx, cy } = HX
+  const full = detail === 'full'
+  const u = (n) => `${id}-${n}`
+  const L = -105 // light azimuth (deg): from above, a touch left
+  const light = (n) => 0.5 + 0.5 * Math.cos(rad(n - L))
+
+  // ── defs
+  const kx0 = K_T.x, ky1 = K_T.y + 220 * K_T.s
+  const [tipX, tipY] = kAbs(150, -34)
+  const defs = `
+    <radialGradient id="${u('tile')}" cx="50%" cy="26%" r="78%">
+      <stop offset="0" stop-color="${P.c3}"/><stop offset=".5" stop-color="${P.c1}"/><stop offset="1" stop-color="${P.c0}"/>
+    </radialGradient>
+    <linearGradient id="${u('ti')}" gradientUnits="userSpaceOnUse" x1="${f2(cx - 60)}" y1="${f2(cy - 200)}" x2="${f2(cx + 60)}" y2="${f2(cy + 200)}">
+      <stop offset="0" stop-color="${P.t1}"/><stop offset=".34" stop-color="${P.t2}"/><stop offset=".62" stop-color="${P.t4}"/><stop offset="1" stop-color="${P.t2}"/>
+    </linearGradient>
+    <linearGradient id="${u('plate')}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="${P.c2}"/><stop offset=".6" stop-color="${P.c1}"/><stop offset="1" stop-color="${P.c0}"/>
+    </linearGradient>
+    <radialGradient id="${u('plateLight')}" gradientUnits="userSpaceOnUse" cx="${cx}" cy="${cy - 70}" r="190">
+      <stop offset="0" stop-color="${P.c4}" stop-opacity=".55"/><stop offset="1" stop-color="${P.c4}" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="${u('bloom')}" gradientUnits="userSpaceOnUse" cx="${f2(tipX - 8)}" cy="${f2(tipY + 70)}" r="130">
+      <stop offset="0" stop-color="${P.i2}" stop-opacity=".26"/><stop offset=".55" stop-color="${P.i1}" stop-opacity=".07"/><stop offset="1" stop-color="${P.i1}" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="${u('ig')}" gradientUnits="userSpaceOnUse" x1="${f2(kx0 + 20)}" y1="${f2(ky1)}" x2="${f2(tipX + 10)}" y2="${f2(tipY)}">
+      <stop offset="0" stop-color="${P.i1}"/><stop offset=".56" stop-color="${P.i2}"/><stop offset="1" stop-color="${P.i3}"/>
+    </linearGradient>
+    <linearGradient id="${u('sheen')}" gradientUnits="userSpaceOnUse" x1="0" y1="${f2(K_T.y - 34)}" x2="0" y2="${f2(K_T.y + 150)}">
+      <stop offset="0" stop-color="#fff" stop-opacity=".30"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="${u('core')}" gradientUnits="userSpaceOnUse" x1="${f2(kx0 + 100 * K_T.s)}" y1="${f2(K_T.y + 90 * K_T.s)}" x2="${f2(kx0 + 140 * K_T.s)}" y2="${f2(K_T.y - 6 * K_T.s)}">
+      <stop offset="0" stop-color="${P.i3}" stop-opacity="0"/><stop offset=".45" stop-color="${P.i3}" stop-opacity=".55"/><stop offset="1" stop-color="${P.g1}" stop-opacity=".95"/>
+    </linearGradient>
+    <linearGradient id="${u('shade')}" gradientUnits="userSpaceOnUse" x1="0" y1="${f2(K_T.y + 120 * K_T.s)}" x2="0" y2="${f2(K_T.y + 224 * K_T.s)}">
+      <stop offset="0" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".10"/>
+    </linearGradient>
+    <linearGradient id="${u('edge')}" gradientUnits="userSpaceOnUse" x1="0" y1="${f2(K_T.y - 34)}" x2="0" y2="${f2(K_T.y + 230)}">
+      <stop offset="0" stop-color="#fff" stop-opacity=".85"/><stop offset=".35" stop-color="#fff" stop-opacity=".25"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="${u('halo')}" gradientUnits="userSpaceOnUse" cx="${cx}" cy="${cy}" r="${RIM.R0 * 1.9}"><stop offset=".35" stop-color="${P.i2}" stop-opacity=".11"/><stop offset=".6" stop-color="${P.tele2}" stop-opacity=".05"/><stop offset="1" stop-color="${P.tele2}" stop-opacity="0"/></radialGradient>
+    <clipPath id="${u('plateClip')}"><polygon points="${hexPoints(cx, cy, RIM.R3)}"/></clipPath>
+    <clipPath id="${u('kClip')}"><path transform="translate(${K_T.x} ${K_T.y}) scale(${K_T.s})" d="${K_LOCAL.body}"/></clipPath>
+    <filter id="${u('blur8')}" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="8"/></filter>
+    <filter id="${u('blur14')}" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="14"/></filter>
+    <filter id="${u('blur1')}" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.6"/></filter>
+    <filter id="${u('blur3')}" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3"/></filter>
+    ${full ? `<pattern id="${u('weave')}" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="4" height="4" fill="#fff" fill-opacity=".026"/><rect x="4" width="4" height="4" fill="#000" fill-opacity=".13"/>
+      <rect y="4" width="4" height="4" fill="#000" fill-opacity=".09"/><rect x="4" y="4" width="4" height="4" fill="#fff" fill-opacity=".012"/>
+    </pattern>` : ''}`
+
+  // ── tile
+  let tileSvg = ''
+  if (tile === 'rounded') tileSvg = `<rect width="512" height="512" rx="115" fill="url(#${u('tile')})"/>${full ? `<rect width="512" height="512" rx="115" fill="url(#${u('weave')})"/>` : ''}<rect x=".75" y=".75" width="510.5" height="510.5" rx="114.25" fill="none" stroke="${rgba(P.t1, 0.1)}" stroke-width="1.5"/>`
+  if (tile === 'full') tileSvg = `<rect width="512" height="512" fill="url(#${u('tile')})"/>${full ? `<rect width="512" height="512" fill="url(#${u('weave')})"/>` : ''}`
+
+  // ── rim facets
+  const facets = []
+  const level = [RIM.R0, RIM.R1, RIM.R2, RIM.R3]
+  for (let i = 0; i < 6; i++) {
+    const nOut = -60 + 60 * i
+    const bOut = light(nOut), bIn = light(nOut + 180)
+    const quad = (Ra, Rb) => pts([hexV(cx, cy, Ra, i), hexV(cx, cy, Ra, i + 1), hexV(cx, cy, Rb, i + 1), hexV(cx, cy, Rb, i)])
+    facets.push(`<polygon points="${quad(level[0], level[1])}" fill="${metal(0.18 + 0.82 * bOut ** 1.4)}"/>`)
+    facets.push(`<polygon points="${quad(level[2], level[3])}" fill="${metal(0.1 + 0.74 * bIn ** 1.5)}"/>`)
+  }
+  const hair = []
+  if (full) for (let i = 0; i < 6; i++) {
+    const b = light(-60 + 60 * i)
+    const [x1, y1] = hexV(cx, cy, RIM.R0 - 0.6, i), [x2, y2] = hexV(cx, cy, RIM.R0 - 0.6, i + 1)
+    hair.push(`<line x1="${f2(x1)}" y1="${f2(y1)}" x2="${f2(x2)}" y2="${f2(y2)}" stroke="#fff" stroke-opacity="${f2(Math.max(0, (b - 0.42) * 0.95))}" stroke-width="1.6"/>`)
+  }
+  const rim = `
+    <polygon points="${hexPoints(cx, cy, RIM.R0)}" fill="url(#${u('ti')})"/>
+    ${facets.join('')}
+    <polygon points="${hexPoints(cx, cy, RIM.R1)}" fill="none"/>
+    <polygon points="${hexPoints(cx, cy, (RIM.R1 + RIM.R2) / 2)}" fill="none" stroke="url(#${u('ti')})" stroke-width="${f2(apo(RIM.R1) - apo(RIM.R2))}" stroke-linejoin="miter"/>
+    ${hair.join('')}`
+
+  // ── instrument ticks (the Ignition ring, rendered in the bezel); large sizes only
+  const ticks = []
+  if (full) {
+    const Rt = RIM.R3 - 9
+    for (let i = 0; i < 6; i++) for (let j = 0; j < 10; j++) {
+      const t = j / 10
+      const [ax, ay] = hexV(cx, cy, Rt, i), [bx, by] = hexV(cx, cy, Rt, i + 1)
+      const x = ax + (bx - ax) * t, y = ay + (by - ay) * t
+      const nx = cx - x, ny = cy - y, m = Math.hypot(nx, ny)
+      // inward normal of the edge (not toward centre) so ticks stay perpendicular to the bezel
+      const ex = bx - ax, ey = by - ay, em = Math.hypot(ex, ey)
+      const inx = -ey / em, iny = ex / em
+      const sgn = (inx * nx + iny * ny) > 0 ? 1 : -1
+      const len = j === 0 ? 13 : 7
+      ticks.push(`M${f2(x)} ${f2(y)}l${f2(inx * sgn * len)} ${f2(iny * sgn * len)}`)
+    }
+  }
+  const tickSvg = ticks.length ? `<path d="${ticks.join('')}" stroke="${P.t3}" stroke-opacity=".5" stroke-width="1.8" stroke-linecap="butt" fill="none"/>` : ''
+
+  // ── plate (carbon, lit from above, warmed by the flame)
+  const plate = `
+    <polygon points="${hexPoints(cx, cy, RIM.R3)}" fill="url(#${u('plate')})"/>
+    <g clip-path="url(#${u('plateClip')})">
+      <rect x="0" y="0" width="512" height="512" fill="url(#${u('plateLight')})"/>
+      ${full ? `<rect x="0" y="0" width="512" height="512" fill="url(#${u('weave')})"/>` : ''}
+      <rect x="0" y="0" width="512" height="512" fill="url(#${u('bloom')})"/>
+      ${tickSvg}
+      <polygon points="${hexPoints(cx, cy, RIM.R3 + 2)}" fill="none" stroke="#000" stroke-opacity=".55" stroke-width="10" filter="url(#${u('blur8')})"/>
+    </g>
+    <polygon points="${hexPoints(cx, cy, RIM.R3)}" fill="none" stroke="${P.void}" stroke-opacity=".9" stroke-width="1.5"/>`
+
+  // ── the K
+  const kT = `translate(${K_T.x} ${K_T.y}) scale(${K_T.s})`
+  const k = `
+    <g filter="url(#${u('blur8')})" opacity=".7"><path transform="translate(${K_T.x} ${K_T.y + 9}) scale(${K_T.s})" d="${K_LOCAL.body}" fill="#000"/></g>
+    <path transform="${kT}" d="${K_LOCAL.body}" fill="url(#${u('ig')})"/>
+    <g clip-path="url(#${u('kClip')})"><rect x="0" y="${f2(K_T.y - 40)}" width="512" height="200" fill="url(#${u('sheen')})"/></g>
+    ${full ? `<path transform="${kT}" d="${K_LOCAL.body}" fill="none" stroke="url(#${u('edge')})" stroke-width="3.2" stroke-linejoin="round" clip-path="url(#${u('kClip')})"/>
+    <g clip-path="url(#${u('kClip')})"><rect x="0" y="${f2(K_T.y + 110 * K_T.s)}" width="512" height="200" fill="url(#${u('shade')})"/></g>
+    <path transform="${kT}" d="${K_LOCAL.core}" fill="url(#${u('core')})" filter="url(#${u('blur1')})"/>` : ''}`
+
+  const kGlow = glow
+    ? `<g filter="url(#${u('blur14')})" opacity=".85"><path transform="${kT}" d="${K_LOCAL.body}" fill="${P.i2}"/></g>`
+    : ''
+
+  const haloSvg = halo ? `<circle cx="${cx}" cy="${cy}" r="${RIM.R0 * 1.9}" fill="url(#${u('halo')})"/>` : ''
+  const body = `${tileSvg}${haloSvg}
+    <g transform="translate(${cx} ${cy}) scale(${scale}) translate(${-cx} ${-cy})">
+      ${shadow && full ? `<g filter="url(#${u('blur14')})" opacity=".75"><polygon transform="translate(0 14)" points="${hexPoints(cx, cy, RIM.R0 - 2)}" fill="#000"/></g>` : ''}
+      ${rim}${plate}${kGlow}${k}
+    </g>`
+  return { defs, body }
+}
+
+const svgDoc = (w, h, vb, inner) => `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="${vb}">${inner}</svg>`
+const iconSvg = (size, opts) => { const b = badge(opts); return svgDoc(size, size, '0 0 512 512', `<defs>${b.defs}</defs>${b.body}`) }
+
+// ───────────────────────────────────────────────────────────────────────────
+// 4 · typography — Barlow Condensed → outlines (no font at render time)
+// ───────────────────────────────────────────────────────────────────────────
+const FONT_DIR = join(ROOT, 'node_modules/@fontsource/barlow-condensed/files')
+const _fonts = {}
+function font(weight = 700) {
+  if (!_fonts[weight]) {
+    const b = readFileSync(join(FONT_DIR, `barlow-condensed-latin-${weight}-normal.woff`))
+    _fonts[weight] = opentype.parse(b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength))
+  }
+  return _fonts[weight]
+}
+const CAP = 700 // Barlow Condensed cap height (units of 1000)
+function flatten(path, steps = 10) {
+  const polys = []; let cur = null, px = 0, py = 0
+  for (const c of path.commands) {
+    if (c.type === 'M') { cur = [[c.x, c.y]]; polys.push(cur); px = c.x; py = c.y }
+    else if (c.type === 'L') { cur.push([c.x, c.y]); px = c.x; py = c.y }
+    else if (c.type === 'Q') { for (let i = 1; i <= steps; i++) { const t = i / steps, u = 1 - t; cur.push([u * u * px + 2 * u * t * c.x1 + t * t * c.x, u * u * py + 2 * u * t * c.y1 + t * t * c.y]) } px = c.x; py = c.y }
+    else if (c.type === 'C') { for (let i = 1; i <= steps; i++) { const t = i / steps, u = 1 - t; cur.push([u * u * u * px + 3 * u * u * t * c.x1 + 3 * u * t * t * c.x2 + t * t * t * c.x, u * u * u * py + 3 * u * u * t * c.y1 + 3 * u * t * t * c.y2 + t * t * t * c.y]) } px = c.x; py = c.y }
+  }
+  return polys
+}
+// right / left ink extent of a glyph at each sample row (font units, y up)
+function profile(glyph, rows) {
+  const polys = flatten(glyph.getPath(0, 0, 1000)).map((poly) => poly.map(([x, y]) => [x, -y])) // y up
+  const L = rows.map(() => Infinity), R = rows.map(() => -Infinity)
+  for (const poly of polys) for (let i = 0; i < poly.length; i++) {
+    const [x1, y1] = poly[i], [x2, y2] = poly[(i + 1) % poly.length]
+    rows.forEach((y, k) => {
+      if ((y1 <= y && y2 >= y) || (y2 <= y && y1 >= y)) {
+        const x = y1 === y2 ? Math.max(x1, x2) : x1 + ((y - y1) * (x2 - x1)) / (y2 - y1)
+        if (y1 === y2) { L[k] = Math.min(L[k], x1, x2); R[k] = Math.max(R[k], x1, x2) } else { L[k] = Math.min(L[k], x); R[k] = Math.max(R[k], x) }
+      }
+    })
+  }
+  return { L, R }
+}
+// Optical kerning: space every pair so the *clamped mean gap* between outlines equals `target` — an open mouth (K) is only
+// partly credited, straight-to-straight pairs get exactly the target.  Returns extra advance per pair, in font units.
+function opticalPairs(fnt, text, { target = 190, clamp = 260, lo = 20, hi = 680 } = {}) {
+  const rows = []; for (let y = lo; y <= hi; y += 10) rows.push(y)
+  const prof = [...text].map((ch) => profile(fnt.charToGlyph(ch), rows))
+  const out = []
+  for (let i = 0; i < text.length - 1; i++) {
+    const a = fnt.charToGlyph(text[i]), A = prof[i], B = prof[i + 1]
+    const mean = (d) => rows.reduce((s, _, k) => s + Math.min(clamp, B.L[k] + a.advanceWidth + d - A.R[k]), 0) / rows.length
+    let d0 = -400, d1 = 600
+    for (let it = 0; it < 40; it++) { const m = (d0 + d1) / 2; if (mean(m) < target) d0 = m; else d1 = m }
+    out.push((d0 + d1) / 2)
+  }
+  return out
+}
+const kernOf = (fnt, a, b) => { const v = fnt.getKerningValue(a, b); return Number.isFinite(v) ? v : 0 }
+// text → path data.  size = font-size in px (so cap height = size*0.7).  y = baseline.  Returns ink-tight metrics.
+function textOutline(text, { weight = 700, size = 100, tracking = 0, x = 0, y = 0, optical = null, kerning = true } = {}) {
+  const fnt = font(weight), k = size / 1000
+  const pairs = optical ? opticalPairs(fnt, text, optical) : null
+  let pen = 0, d = '', minX = Infinity, maxX = -Infinity
+  const glyphs = []
+  ;[...text].forEach((ch, i) => {
+    const g = fnt.charToGlyph(ch)
+    const gp = g.getPath(x + pen * k, y, size)
+    d += gp.toPathData(2)
+    const bb = g.getBoundingBox()
+    if (g.path.commands.length) { minX = Math.min(minX, pen + bb.x1); maxX = Math.max(maxX, pen + bb.x2) }
+    glyphs.push({ ch, x: pen * k, adv: g.advanceWidth * k })
+    if (i < text.length - 1) {
+      const nxt = fnt.charToGlyph(text[i + 1])
+      pen += g.advanceWidth + (pairs ? pairs[i] - 0 : (kerning ? kernOf(fnt, g, nxt) : 0) + tracking * 1000)
+      if (pairs) pen += tracking * 1000
+    }
+  })
+  return { d, x0: x + minX * k, x1: x + maxX * k, width: (maxX - minX) * k, glyphs, capH: CAP * k }
+}
+const shiftPath = (d, dx, dy) => d.replace(/([MLQCZ])([^MLQCZ]*)/g, (m, c, rest) => {
+  if (c === 'Z') return 'Z'
+  const n = (rest.match(/-?(?:\d+\.?\d*|\.\d+)(?:e[-+]?\d+)?/g) || []).map(Number)
+  return c + n.map((v, i) => f2(v + (i % 2 ? dy : dx))).join(' ')
+})
+
+// Wordmark: KIND, optically spaced, ink-tight, cap top at y=0, baseline y=700 (1 unit = 1/1000 em).
+const WORDMARK = (() => {
+  const o = textOutline('KIND', { weight: 700, size: 1000, y: CAP, optical: { target: 196, clamp: 250 } })
+  return { d: shiftPath(o.d, -o.x0, 0), w: Math.round(o.width), h: CAP }
+})()
+

@@ -1,0 +1,199 @@
+/* owner: wave-2: locker — shell, Patches, Medals (prefix .lck-) */
+@layer screen {
+  /* ── the page: quilted carbon, stitched in a diamond lattice, static ───────────────────────────── */
+  .lck {
+    --lck-q: var(--s-8);                                     /* lattice pitch */
+    --lck-w: calc(var(--lck-q) * .04);                       /* stitch width */
+    --lck-stitch: color-mix(in srgb, var(--void) 70%, transparent);
+    --lck-catch: color-mix(in srgb, var(--rim-hi) 15%, transparent);
+    --lck-puff: color-mix(in srgb, var(--rim-hi) 15%, transparent);
+    --lck-dock: calc(var(--dock-h) + var(--sab) + var(--s-8));
+    position: relative; isolation: isolate;
+    min-height: 100%;
+    padding: var(--s-4) var(--s-4) calc(var(--lck-dock) + var(--s-6));
+    margin-bottom: calc(var(--lck-dock) * -1);               /* the quilt runs on under the dock */
+  }
+  .lck::before {
+    content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+    background:
+      linear-gradient(180deg, var(--carbon-0), transparent calc(var(--lck-q) * 4)),
+      linear-gradient(0deg, var(--carbon-0), transparent calc(var(--lck-q) * 5)),
+      linear-gradient(45deg, transparent calc(50% - var(--lck-w) * 1.5), var(--lck-stitch) calc(50% - var(--lck-w) * .5), var(--lck-catch) calc(50% + var(--lck-w) * .5), transparent calc(50% + var(--lck-w) * 1.5)) 0 0 / var(--lck-q) var(--lck-q),
+      linear-gradient(-45deg, transparent calc(50% - var(--lck-w) * 1.5), var(--lck-stitch) calc(50% - var(--lck-w) * .5), var(--lck-catch) calc(50% + var(--lck-w) * .5), transparent calc(50% + var(--lck-w) * 1.5)) 0 0 / var(--lck-q) var(--lck-q),
+      radial-gradient(circle calc(var(--lck-q) * .46), var(--lck-puff), transparent) 0 calc(var(--lck-q) * -.5) / var(--lck-q) var(--lck-q),
+      radial-gradient(circle calc(var(--lck-q) * .46), var(--lck-puff), transparent) calc(var(--lck-q) * -.5) 0 / var(--lck-q) var(--lck-q),
+      var(--carbon-1);
+  }
+
+  /* ── title row + sticky segmented ──────────────────────────────────────────────────────────────── */
+  .lck-head { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--s-4); padding: var(--s-2) 0 var(--s-3); }
+  .lck-head__t { display: grid; gap: var(--s-1); min-width: 0; }
+  .lck-title { margin: 0; color: var(--ink); }
+  .lck-read { margin: 0; display: grid; gap: var(--s-1); text-align: right; font-family: var(--font-mono); letter-spacing: var(--track-mono); font-variant-numeric: tabular-nums slashed-zero; }
+  .lck-read > div { display: flex; justify-content: flex-end; gap: var(--s-2); align-items: baseline; }
+  .lck-read dt { font-size: var(--fs-2xs); color: var(--ink-3); text-transform: uppercase; letter-spacing: var(--track-label); }
+  .lck-read dd { margin: 0; font-size: var(--fs-xs); color: var(--ink); min-width: var(--s-12); }
+  .lck-bar {
+    position: sticky; top: 0; z-index: var(--z-content);
+    margin: 0 calc(var(--s-4) * -1); padding: var(--s-2) var(--s-4) var(--s-3);
+    background: linear-gradient(180deg, var(--carbon-0) 62%, transparent);
+  }
+  .lck-dot {
+    display: inline-block; width: var(--s-2); height: var(--s-2); margin-left: var(--s-1); border-radius: var(--r-full);
+    background: var(--ignite-flat); box-shadow: 0 0 var(--s-2) var(--ignite-glow); vertical-align: middle;
+  }
+  /* the Locker owns the page gutter; the Cards and Journal bodies were built to stand alone and would double it */
+  .lck .lcc, .lck .lcj { padding-inline: 0; }
+  .lck .lcj { --gutter: var(--s-4); }
+  .lck-body { animation: lck-in var(--t-slow) var(--ease-out) both; }
+  .lck-tab { display: grid; gap: var(--s-6); align-content: start; }
+  @keyframes lck-in { from { opacity: 0; transform: translateY(var(--s-2)); } to { opacity: 1; transform: none; } }
+  .lck-hint { margin: 0; color: var(--ink-3); font-size: var(--fs-sm); line-height: 1.45; text-align: center; text-wrap: balance; }
+
+  /* ── fragments ─────────────────────────────────────────────────────────────────────────────────── */
+  .lck-frag {
+    display: grid; grid-template-columns: 1fr auto; align-items: center; gap: var(--s-2) var(--s-4);
+    padding: var(--s-4); border-radius: var(--r-md);
+    background: var(--plate); box-shadow: var(--bevel), var(--shadow-1);
+  }
+  .lck-frag__main { display: grid; gap: var(--s-1); }
+  .lck-frag__n { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: var(--fs-2xl); line-height: 1; color: var(--ink-3); font-variant-numeric: lining-nums tabular-nums; }
+  .lck-frag__n b { color: var(--gold-2); font-weight: 700; }
+  .lck-frag__pips { grid-row: 1; grid-column: 2; display: flex; gap: var(--s-1); margin: 0; padding: 0; list-style: none; }
+  .lck-pip { position: relative; width: var(--s-6); aspect-ratio: .866; filter: drop-shadow(0 0 0 transparent); }
+  .lck-pip i { position: absolute; inset: 0; clip-path: var(--clip-hex); background: var(--carbon-4); box-shadow: inset 0 0 0 1px var(--line-2); }
+  .lck-pip[data-on] { filter: drop-shadow(0 0 var(--s-2) var(--gold-glow)); }
+  .lck-pip[data-on] i { background: var(--gold); animation: lck-pip var(--t-slow) var(--ease-out) both; animation-delay: calc(var(--i) * var(--t-instant)); }
+  @keyframes lck-pip { from { opacity: 0; transform: scale(.6); } to { opacity: 1; transform: none; } }
+  .lck-frag__note { grid-column: 1 / -1; margin: 0; font-size: var(--fs-sm); line-height: 1.45; color: var(--ink-3); text-wrap: pretty; }
+  .lck-frag__rare { color: var(--gold-2); font-weight: 600; }
+
+  /* ── shared bits ───────────────────────────────────────────────────────────────────────────────── */
+  .lck-cell { margin: 0; padding: 0; list-style: none; display: grid; min-width: 0;
+    animation: lck-pop var(--t-slow) var(--ease-out) both; animation-delay: calc(min(var(--i), 9) * var(--t-instant) / 2); }
+  @keyframes lck-pop { from { opacity: 0; transform: translateY(var(--s-3)) scale(.97); } to { opacity: 1; transform: none; } }
+  .lck-patch, .lck-medal {
+    appearance: none; border: 0; margin: 0; font: inherit; color: inherit; text-align: center; cursor: pointer;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+    transition: transform var(--spring-snap-ms) var(--spring-snap);
+  }
+  .lck-patch:active, .lck-medal:active { transform: scale(.97); transition-duration: var(--t-instant); transition-timing-function: var(--ease-out); }
+  .lck-meter { display: block; width: 100%; height: var(--s-1); border-radius: var(--r-full); background: var(--carbon-4); overflow: hidden; box-shadow: inset 0 1px 2px var(--void); }
+  .lck-meter i { display: block; height: 100%; border-radius: inherit; background: var(--tier, var(--stage)); transform: scaleX(var(--p, 0)); transform-origin: left; animation: lck-fill var(--t-slower) var(--ease-out) both; }
+  @keyframes lck-fill { from { transform: scaleX(0); } }
+
+  [data-lck-tier="bronze"] { --tier: color-mix(in oklab, var(--ignite-2) 56%, var(--ti-3)); }
+  [data-lck-tier="silver"] { --tier: var(--ti-2); }
+  [data-lck-tier="gold"]   { --tier: var(--gold-2); }
+  [data-lck-tier="ti"]     { --tier: var(--tele); }
+
+  /* ── patches ───────────────────────────────────────────────────────────────────────────────────── */
+  .lck-group { display: grid; gap: var(--s-3); }
+  .lck-group__head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-3); padding-bottom: var(--s-2); border-bottom: 1px solid var(--line-2); }
+  .lck-group__head > * { margin: 0; }
+  .lck-group__n { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--ink-2); font-variant-numeric: tabular-nums; letter-spacing: var(--track-mono); }
+  .lck-patches { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-2); margin: 0; padding: 0; list-style: none; }
+  .lck-patch {
+    position: relative; isolation: isolate; width: 100%;
+    display: grid; justify-items: center; align-content: start; gap: var(--s-1);
+    padding: var(--s-3) var(--s-2) var(--s-4); border-radius: var(--r-md); background: none;
+  }
+  .lck-patch::before {                                       /* the halo an earned patch throws on the leather */
+    content: ""; position: absolute; z-index: -1; left: 50%; top: var(--s-3); width: 100%; aspect-ratio: 1; transform: translateX(-50%);
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--stage-glow) 55%, transparent), transparent); opacity: 0;
+  }
+  .lck-patch[data-earned]::before { opacity: .55; }
+  .lck-patch__art { display: block; line-height: 0; filter: drop-shadow(0 var(--s-2) var(--s-3) color-mix(in srgb, var(--void) 80%, transparent)); }
+  .lck-patch:not([data-earned]) .lck-patch__art { filter: grayscale(1) brightness(.92) drop-shadow(0 var(--s-2) var(--s-3) color-mix(in srgb, var(--void) 80%, transparent)); }
+  .lck-patch__stage { font-family: var(--font-mono); font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--stage); margin-top: var(--s-1); }
+  .lck-patch:not([data-earned]) .lck-patch__stage { color: var(--ink-3); }
+  .lck-patch__name { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-lg); line-height: 1; letter-spacing: var(--track-label); text-transform: uppercase; color: var(--ink); text-wrap: balance; }
+  .lck-patch:not([data-earned]) .lck-patch__name { color: var(--ink-2); }
+  .lck-patch__meta { font-size: var(--fs-xs); line-height: 1.35; color: var(--ink-3); text-wrap: balance; }
+  .lck-patch__meta[data-on] { font-family: var(--font-mono); font-size: var(--fs-2xs); letter-spacing: var(--track-mono); text-transform: uppercase; color: var(--ink-2); }
+  .lck-patch .lck-meter { width: 62%; margin-top: var(--s-1); }
+
+  /* ── viewer sheets (patch + medal) ─────────────────────────────────────────────────────────────── */
+  .lck-view { display: grid; justify-items: center; gap: var(--s-3); padding: 0 var(--s-2) var(--s-6); text-align: center; }
+  .lck-view__art { margin-bottom: var(--s-2); }
+  .lck-view__art[data-earned] { filter: drop-shadow(0 var(--s-4) var(--s-8) var(--stage-glow, var(--gold-glow))); }
+  .lck-view__art:not([data-earned]) { filter: grayscale(1) brightness(.95); }
+  .lck-view__status { margin: 0; font-family: var(--font-mono); font-size: var(--fs-xs); letter-spacing: var(--track-mono); text-transform: uppercase; color: var(--ink-3); }
+  .lck-view__status[data-on] { color: var(--go); }
+  .lck-view__bar { width: min(100%, calc(var(--s-20) * 3)); }
+  .lck-view__title { margin: 0; font-family: var(--font-serif); font-weight: 500; font-size: var(--fs-xl); line-height: 1.2; color: var(--ink); text-wrap: balance; }
+  .lck-view__q { margin: 0; max-width: 32ch; font-family: var(--font-serif); font-style: italic; font-size: var(--fs-lg); line-height: 1.4; color: var(--ink-2); text-wrap: balance; }
+  .lck-view__ref { margin: 0; font-family: var(--font-mono); font-size: var(--fs-xs); letter-spacing: var(--track-mono); text-transform: uppercase; color: var(--tele); }
+
+  .lck-tilt { position: relative; transform-style: preserve-3d; transform: perspective(calc(var(--s-20) * 10)) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); touch-action: pan-y; }
+  .lck-tilt__sway { animation: lck-sway calc(var(--t-hero) * 7) var(--ease-io) infinite alternate; }
+  @keyframes lck-sway { from { transform: rotateY(-5deg) rotateX(2deg); } to { transform: rotateY(5deg) rotateX(-2deg); } }
+  .lck-tilt__glare {
+    position: absolute; inset: 6%; pointer-events: none; opacity: calc(var(--tilt-on, 0) * .9); mix-blend-mode: soft-light;
+    background: radial-gradient(circle at var(--gx, 50%) var(--gy, 30%), var(--rim-hi), transparent 58%);
+  }
+  .lck-tilt__glare[data-round] { border-radius: var(--r-full); }
+
+  /* ── medals ────────────────────────────────────────────────────────────────────────────────────── */
+  .lck-mhead { display: grid; gap: var(--s-4); padding: var(--s-4); border-radius: var(--r-md); background: var(--plate); box-shadow: var(--bevel), var(--shadow-1); }
+  .lck-mhead__top { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--s-3); }
+  .lck-mhead__n { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: var(--fs-3xl); line-height: .9; color: var(--ink-3); font-variant-numeric: lining-nums tabular-nums; }
+  .lck-mhead__n b { color: var(--ink); font-weight: 700; }
+  .lck-mhead__n span { font-size: var(--fs-xl); }
+  .lck-tiers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-3) var(--s-4); margin: 0; padding: 0; list-style: none; }
+  .lck-tiers li { display: grid; gap: var(--s-1); }
+  .lck-tiers__row { display: flex; align-items: center; gap: var(--s-2); font-family: var(--font-mono); font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--ink-2); }
+  .lck-tiers__row b { margin-left: auto; font-weight: 500; color: var(--ink); letter-spacing: var(--track-mono); font-variant-numeric: tabular-nums; }
+  .lck-tiers__dot { width: var(--s-2); height: var(--s-2); border-radius: var(--r-full); background: var(--tier); box-shadow: 0 0 var(--s-2) color-mix(in srgb, var(--tier) 60%, transparent); flex: none; }
+  .lck-filters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-2); margin-top: calc(var(--s-2) * -1); }
+  .lck-filters > .k-chip { width: 100%; justify-content: center; padding-inline: var(--s-2); }
+  .lck-filters__n { font-family: var(--font-mono); font-size: var(--fs-2xs); color: var(--ink-3); margin-left: var(--s-1); font-variant-numeric: tabular-nums; }
+  .lck-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-2); margin: 0; padding: 0; list-style: none; }
+  .lck-medal {
+    position: relative; isolation: isolate; width: 100%; min-height: calc(var(--s-20) * 2);
+    display: grid; justify-items: center; align-content: start; gap: var(--s-1);
+    padding: var(--s-3) var(--s-2) var(--s-3); border-radius: var(--r-md);
+    background: var(--carbon-1); box-shadow: inset 0 var(--s-1) var(--s-2) color-mix(in srgb, var(--void) 80%, transparent), inset 0 0 0 1px var(--line);
+  }
+  .lck-medal[data-earned] {                                  /* a raised, lit plate; the empty slots stay recessed */
+    background: radial-gradient(120% 70% at 50% 0%, color-mix(in srgb, var(--tier) 16%, transparent), transparent 70%), var(--plate);
+    box-shadow: var(--bevel), var(--shadow-1), inset 0 0 0 1px color-mix(in srgb, var(--tier) 22%, transparent);
+  }
+  .lck-medal__art { display: grid; place-items: center; height: calc(var(--s-20) + var(--s-1)); }
+  
+  .lck-medal__title { font-size: var(--fs-sm); font-weight: 600; line-height: 1.2; color: var(--ink); text-wrap: balance; letter-spacing: var(--track-tight); }
+  .lck-medal:not([data-earned]) .lck-medal__title { color: var(--ink-2); }
+  .lck-medal__desc { font-size: var(--fs-xs); line-height: 1.35; color: var(--ink-3); display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; text-wrap: pretty; }
+  .lck-medal__meta { font-family: var(--font-mono); font-size: var(--fs-2xs); letter-spacing: var(--track-mono); text-transform: uppercase; color: var(--ink-3); font-variant-numeric: tabular-nums; margin-top: auto; }
+  .lck-medal__meta[data-on] { color: var(--tier); }
+  .lck-new {
+    --lck-cut: var(--s-1);
+    position: absolute; top: var(--s-1); right: var(--s-1); z-index: 1; padding: 2px var(--s-2) 2px var(--s-2);
+    font-family: var(--font-display); font-weight: 700; font-size: var(--fs-2xs); letter-spacing: var(--track-label); text-transform: uppercase; line-height: 1.2;
+    color: var(--ink-on-ignite); background: var(--ignite);
+    clip-path: polygon(var(--lck-cut) 0, 100% 0, 100% calc(100% - var(--lck-cut)), calc(100% - var(--lck-cut)) 100%, 0 100%, 0 var(--lck-cut));
+    filter: drop-shadow(0 0 var(--s-2) var(--ignite-glow));
+  }
+  .lck-dial { position: relative; display: grid; place-items: center; width: calc(var(--s-20) - var(--s-3)); aspect-ratio: 1; line-height: 0; }
+  .lck-dial svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
+  .lck-dial > :not(svg) { filter: brightness(1.9) contrast(1.1); }          /* a die you can read, still plainly empty */
+  .lck-dial circle { fill: none; stroke-width: 3.5; }
+  .lck-dial__track { stroke: var(--line-3); }
+  .lck-dial__fill { stroke: var(--tier); stroke-linecap: round; stroke-dasharray: var(--p) 100; filter: drop-shadow(0 0 var(--s-1) color-mix(in srgb, var(--tier) 55%, transparent)); animation: lck-dial var(--t-hero) var(--ease-out) both; }
+  @keyframes lck-dial { from { stroke-dasharray: 0 100; } }
+
+  /* ── lite / reduced motion: the information stays, the movement goes ──────────────────────────── */
+  html[data-fx="lite"] .lck-body, html[data-fx="lite"] .lck-cell, html[data-fx="lite"] .lck-pip i, html[data-fx="lite"] .lck-meter i,
+  html[data-fx="lite"] .lck-dial__fill, html[data-fx="lite"] .lck-tilt__sway { animation: none; }
+  html[data-fx="lite"] .lck-body { animation: lck-fade var(--t-fast) linear both; }
+  html[data-fx="lite"] .lck-patch, html[data-fx="lite"] .lck-medal { transition: none; }
+  html[data-fx="lite"] .lck-tilt { transform: none; }
+  html[data-fx="lite"] .lck-tilt__glare { display: none; }
+  @keyframes lck-fade { from { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    .lck-body, .lck-cell, .lck-pip i, .lck-meter i, .lck-dial__fill, .lck-tilt__sway { animation: none; }
+    .lck-patch, .lck-medal { transition: none; }
+    .lck-tilt { transform: none; }
+    .lck-tilt__glare { display: none; }
+  }
+}

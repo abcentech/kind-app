@@ -1,0 +1,32 @@
+// locker-core interaction probe: medals tab (NEW → seen after 1.5s), filters, patch + medal sheets.  node playground/locker.flow.mjs [seed] [--shots]
+import { open } from '../tools/browser.mjs'
+const seed = process.argv[2] && !process.argv[2].startsWith('--') ? process.argv[2] : 'mid'
+const shots = process.argv.includes('--shots')
+const b = await open({ url: `http://localhost:5183/playground/locker.html?seed=${seed}&seg=medals&now=2026-08-12`, device: 'lowend', dpr: 2, state: null })
+const { page } = b
+const seenN = () => page.evaluate(() => JSON.parse(localStorage.getItem('kind-app-v4')).achSeen.length)
+const cnt = (s) => page.evaluate((s) => document.querySelectorAll(s).length, s)
+await page.waitForTimeout(500)
+console.log('t0 seen', await seenN(), 'new badges', await cnt('.lck-new'), 'seg dot', await cnt('.lck-dot'), 'ss key', await page.evaluate(() => sessionStorage.getItem('kind-locker-seg')))
+await page.waitForTimeout(1400)
+console.log('t1.9 seen', await seenN(), 'new badges still', await cnt('.lck-new'), 'seg dot', await cnt('.lck-dot'))
+console.log('header', await page.evaluate(() => document.querySelector('.lck-mhead').innerText.replace(/\n/g, ' | ')))
+console.log('grid', await cnt('.lck-medal'), 'earned', await cnt('.lck-medal[data-earned]'))
+await page.evaluate(() => document.querySelector('.shell-screen').scrollTo(0, 250))
+if (shots) console.log(await b.shot('locker-medals-a'))
+await page.click('.lck-filters button:nth-child(3)')
+await page.waitForTimeout(300)
+console.log('locked filter', await cnt('.lck-medal'), await page.evaluate(() => document.querySelector('.lck-medal:not([data-earned])')?.getAttribute('aria-label')))
+await page.click('.lck-filters button:nth-child(2)'); await page.waitForTimeout(200)
+console.log('earned filter', await cnt('.lck-medal'))
+await page.click('.lck-medal'); await page.waitForTimeout(900)
+console.log('sheet', await page.evaluate(() => document.querySelector('[role=dialog]')?.innerText.replace(/\n/g, ' | ')))
+if (shots) console.log(await b.shot('locker-medal-sheet'))
+await page.keyboard.press('Escape'); await page.waitForTimeout(700)
+// patches
+await page.click('.k-seg__opt >> text=Patches'); await page.waitForTimeout(600)
+await page.click('.lck-patch:not([data-earned])'); await page.waitForTimeout(900)
+console.log('patch sheet', await page.evaluate(() => document.querySelector('[role=dialog]')?.innerText.replace(/\n/g, ' | ')))
+if (shots) console.log(await b.shot('locker-patch-sheet'))
+console.log('errors:', b.errors.length ? b.errors : 'none')
+await b.close()

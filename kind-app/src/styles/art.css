@@ -1,0 +1,284 @@
+/* owner: art-scenes agent — Starfield, Flame, Rocket, Horizon, LaunchPad, OrbitScene, Earth, Comet.
+ *
+ * House rules for this file:
+ *   - the *base* style of every animated thing is its best still frame; animations only decorate it, so lite mode
+ *     (animation: none) and prefers-reduced-motion both land on a finished picture, never on a blank one.
+ *   - only transform / opacity are animated. SVG parts that scale from an edge use transform-box: fill-box.
+ *   - hex values below are illustration-internal shading (stars are not UI chrome); everything that is chrome uses tokens.
+ */
+@layer ui {
+
+  /* ═══ STARFIELD ═══════════════════════════════════════════════════════════════════════════════════════════════
+     Four composited layers for the whole sky: haze · far · mid · near(+spikes). Stars are radial-gradient dots
+     generated in Starfield.jsx; this file only places, tints and (full fx) moves them. */
+  .art-stars {
+    --st-a: #ffffff;                      /* near / brightest        */
+    --st-b: #e4ebff;
+    --st-c: #a9b6dc;
+    --st-d: #67739b;                      /* dust                    */
+    --st-w: #ffd7a6;                      /* warm star               */
+    --st-k: #a8d0ff;                      /* cool star               */
+    --st-bloom: rgba(176, 202, 255, .30);
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    contain: layout paint style;
+    isolation: isolate;
+  }
+  .art-stars[data-sized] { position: relative; inset: auto; display: block; }
+
+  .art-stars__l { position: absolute; inset: 0; display: block; }
+  /* parallax needs headroom so a moving layer never reveals its own edge */
+  .art-stars[data-parallax] .art-stars__l { inset: -160px 0; }
+
+  /* the galactic band: two soft iso-lines on the corner-to-corner diagonal (the stars cluster on the same one) */
+  .art-stars__haze {
+    position: absolute; inset: 0; display: block;
+    background:
+      linear-gradient(to bottom right, transparent 44.6%, rgba(2, 3, 10, .2) 46.4%, rgba(2, 3, 10, .08) 48%, transparent 50%),
+      radial-gradient(34% 12% at 22% 70%, rgba(150, 165, 240, .09), transparent 70%),
+      radial-gradient(40% 14% at 48% 44%, rgba(170, 180, 250, .12), transparent 70%),
+      radial-gradient(30% 10% at 76% 18%, rgba(255, 206, 160, .07), transparent 70%),
+      linear-gradient(to bottom right, transparent 24%, rgba(112, 126, 214, .05) 36%, rgba(150, 160, 235, .07) 46%, rgba(112, 126, 214, .045) 56%, transparent 68%),
+      linear-gradient(to bottom right, transparent 41%, rgba(255, 196, 150, .045) 46.5%, transparent 51%);
+  }
+
+  /* fades: stars thin out toward the horizon / the HUD, never end in a hard line */
+  .art-stars[data-fade='bottom']  { -webkit-mask-image: linear-gradient(to bottom, #000 52%, transparent 100%); mask-image: linear-gradient(to bottom, #000 52%, transparent 100%); }
+  .art-stars[data-fade='horizon'] { -webkit-mask-image: linear-gradient(to bottom, #000 22%, rgba(0,0,0,.55) 52%, transparent 76%); mask-image: linear-gradient(to bottom, #000 22%, rgba(0,0,0,.55) 52%, transparent 76%); }
+  .art-stars[data-fade='top']     { -webkit-mask-image: linear-gradient(to top, #000 52%, transparent 100%); mask-image: linear-gradient(to top, #000 52%, transparent 100%); }
+  .art-stars[data-fade='both']    { -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 22%, #000 78%, transparent 100%); mask-image: linear-gradient(to bottom, transparent 0, #000 22%, #000 78%, transparent 100%); }
+
+  /* twinkle: a dozen independent stars, opacity only, each on its own period so the pattern never repeats visibly */
+  .art-stars__tw { position: absolute; inset: 0; display: block; }
+  .art-stars__tw i {
+    position: absolute; display: block; border-radius: 50%;
+    background: var(--c); box-shadow: 0 0 5px 1px var(--c);
+    transform: translate(-50%, -50%);
+    opacity: .85;
+    animation: art-star-tw var(--t, 4s) var(--ease-io) var(--d, 0s) infinite alternate;
+  }
+  @keyframes art-star-tw { 0% { opacity: .18; } 38% { opacity: .95; } 100% { opacity: .42; } }
+
+  html:not([data-fx='lite']) .art-stars[data-parallax] .art-stars__l--far  { transform: translate3d(0, calc(var(--scroll, 0) * -26px), 0); }
+  html:not([data-fx='lite']) .art-stars[data-parallax] .art-stars__l--mid  { transform: translate3d(0, calc(var(--scroll, 0) * -64px), 0); }
+  html:not([data-fx='lite']) .art-stars[data-parallax] .art-stars__l--near { transform: translate3d(0, calc(var(--scroll, 0) * -128px), 0); }
+  html:not([data-fx='lite']) .art-stars[data-parallax] .art-stars__haze    { transform: translate3d(0, calc(var(--scroll, 0) * -12px), 0); }
+
+  /* shooting stars: a hairline with a bright head, one pass of ~1 s in a 20-odd-second cycle. Full fx only. */
+  .art-stars__met { position: absolute; inset: 0; display: block; overflow: hidden; }
+  .art-stars__met i {
+    position: absolute; display: block; left: var(--x); top: var(--y);
+    width: 96px; height: 1.4px; border-radius: 1px;
+    background: linear-gradient(90deg, transparent, rgba(190, 215, 255, .5) 70%, #fff);
+    transform-origin: 100% 50%; opacity: 0;
+    animation: art-met var(--t, 20s) linear var(--d, 0s) infinite;
+  }
+  @keyframes art-met {
+    0% { opacity: 0; transform: rotate(var(--a)) translateX(-60px); }
+    1.5% { opacity: 1; }
+    5.5% { opacity: 0; transform: rotate(var(--a)) translateX(150px); }
+    100% { opacity: 0; transform: rotate(var(--a)) translateX(150px); }
+  }
+  html[data-fx='lite'] .art-stars__met { display: none; }
+  html[data-fx='lite'] .art-stars__tw i { animation: none; opacity: .7; }
+  @media (prefers-reduced-motion: reduce) { .art-stars__tw i { animation: none; opacity: .7; } }
+
+
+  /* ═══ FLAME ═══════════════════════════════════════════════════════════════════════════════════════════════════
+     State is one spring on the whole plume group; the flicker lives on the layers inside it, each on its own
+     prime-ish period so the sum never visibly loops. Base style = the best still frame (lite lands here). */
+  .art-flame { display: block; flex: none; }
+  .art-fl {
+    transition: transform var(--spring-soft-ms) var(--spring-soft), opacity var(--t-slow) var(--ease-out);
+  }
+  .art-fl[data-mode='off']  { opacity: 0; transform: scale(.5, .04); }
+  .art-fl[data-mode='idle'] { opacity: .94; transform: scale(.56, .2); }
+  .art-fl[data-mode='burn'] { opacity: 1; transform: scale(1, 1); }
+
+  .art-fl__dg, .art-fl__sg { transition: opacity var(--t-base) var(--ease-out); }
+  .art-fl:not([data-mode='burn']) .art-fl__dg,
+  .art-fl:not([data-mode='burn']) .art-fl__sg { opacity: 0; }
+
+  .art-fl__o, .art-fl__t, .art-fl__b, .art-fl__c, .art-fl__j, .art-fl__bloom, .art-fl__d, .art-fl__s {
+    transform-box: fill-box;
+    transform-origin: 50% 0;
+  }
+  .art-fl__t--l { transform-origin: 100% 0; }
+  .art-fl__t--r { transform-origin: 0 0; }
+  .art-fl__d, .art-fl__s { transform-origin: 50% 50%; }
+
+  html:not([data-fx='lite']) .art-fl__o      { animation: art-fl-a .43s ease-in-out infinite; }
+  html:not([data-fx='lite']) .art-fl__b      { animation: art-fl-b .31s ease-in-out infinite; }
+  html:not([data-fx='lite']) .art-fl__c      { animation: art-fl-c .23s ease-in-out infinite; }
+  html:not([data-fx='lite']) .art-fl__t--l   { animation: art-fl-t .47s ease-in-out -.12s infinite; }
+  html:not([data-fx='lite']) .art-fl__t--r   { animation: art-fl-t .39s ease-in-out -.27s infinite reverse; }
+  html:not([data-fx='lite']) .art-fl__j      { animation: art-fl-j .19s ease-in-out var(--d, 0s) infinite alternate; }
+  html:not([data-fx='lite']) .art-fl__bloom  { animation: art-fl-bloom .61s ease-in-out infinite alternate; }
+  html:not([data-fx='lite']) .art-fl__d      { animation: art-fl-d .17s ease-in-out var(--d, 0s) infinite alternate; }
+  html:not([data-fx='lite']) .art-fl__s      { animation: art-fl-s var(--t, 1.2s) var(--ease-out) var(--d, 0s) infinite; }
+  .art-fl__s { opacity: 0; }
+
+  @keyframes art-fl-a { 0%, 100% { transform: scale(1, 1); } 22% { transform: scale(.95, 1.07); } 47% { transform: scale(1.05, .93); } 71% { transform: scale(.98, 1.05); } }
+  @keyframes art-fl-b { 0%, 100% { transform: scale(1, 1); } 28% { transform: scale(1.06, .94); } 55% { transform: scale(.93, 1.08); } 80% { transform: scale(1.03, .97); } }
+  @keyframes art-fl-c { 0%, 100% { transform: scale(1, 1); } 33% { transform: scale(.9, 1.1); } 66% { transform: scale(1.08, .92); } }
+  @keyframes art-fl-t { 0%, 100% { transform: scale(1, 1) skewX(0deg); } 30% { transform: scale(1.1, 1.1) skewX(-5deg); } 66% { transform: scale(.88, .9) skewX(4deg); } }
+  @keyframes art-fl-j { from { opacity: .72; transform: scaleY(.9); } to { opacity: 1; transform: scaleY(1.1); } }
+  @keyframes art-fl-bloom { from { opacity: .78; transform: scale(.97, .96); } to { opacity: 1; transform: scale(1.03, 1.04); } }
+  @keyframes art-fl-d { from { opacity: .52; transform: scale(.88, .9); } to { opacity: 1; transform: scale(1.05, 1.08); } }
+  @keyframes art-fl-s { 0% { opacity: 0; transform: translate(0, 0); } 14% { opacity: .95; } 100% { opacity: 0; transform: translate(var(--dx, 0), var(--dy, 40px)); } }
+
+  html[data-fx='lite'] .art-fl__s { display: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .art-fl__o, .art-fl__t, .art-fl__b, .art-fl__c, .art-fl__j, .art-fl__bloom, .art-fl__d { animation: none; }
+    .art-fl__s { display: none; }
+  }
+
+  /* ═══ ROCKET ══════════════════════════════════════════════════════════════════════════════════════════════════
+     The SVG box is the vehicle; the plume overflows below it. Flame state re-lights the airframe: the warm wash,
+     the warm rim, the bell mouths and the window glow all key off [data-flame]. */
+  .art-rk {
+    display: block; flex: none; overflow: visible;
+    transform: rotate(var(--tilt, 0deg));
+    transform-origin: 50% 50%;
+    transition: transform var(--spring-soft-ms) var(--spring-soft);
+    shape-rendering: geometricPrecision;
+  }
+  .art-rk__txt { font-family: var(--font-display); font-weight: 700; text-transform: uppercase; }
+  .art-rk__txt--big { font-weight: 600; }
+
+  .art-rk__lit, .art-rk__rimw, .art-rk__mouth, .art-rk__winglow, .art-rk__flood { transition: opacity var(--t-slow) var(--ease-out); }
+  .art-rk__flood { opacity: 0; }
+  [data-lit='flood'] .art-rk__flood { opacity: 1; }
+  [data-lit='flood'] .art-rk__rimw { opacity: .8; }
+  .art-rk__lit { opacity: 0; }
+  [data-flame='off']  .art-rk__lit   { opacity: 0; }
+  [data-flame='idle'] .art-rk__lit   { opacity: .34; }
+  [data-flame='burn'] .art-rk__lit   { opacity: 1; }
+  [data-flame='off']  .art-rk__rimw  { opacity: .3; }
+  [data-flame='idle'] .art-rk__rimw  { opacity: .62; }
+  [data-flame='off']  .art-rk__mouth { opacity: 0; }
+  [data-flame='idle'] .art-rk__mouth { opacity: .55; }
+  [data-flame='off']  .art-rk__winglow { opacity: .55; }
+
+  html:not([data-fx='lite']) [data-flame='burn'] .art-rk__lit   { animation: art-rk-lit .37s ease-in-out infinite alternate; }
+  html:not([data-fx='lite']) [data-flame='burn'] .art-rk__mouth { animation: art-rk-lit .23s ease-in-out infinite alternate; }
+  html:not([data-fx='lite']) .art-rk__winglow { animation: art-rk-win 5.2s ease-in-out infinite alternate; }
+  @keyframes art-rk-lit { from { opacity: .86; } to { opacity: 1; } }
+  @keyframes art-rk-win { from { opacity: .72; } to { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) {
+    .art-rk__lit, .art-rk__mouth, .art-rk__winglow { animation: none; }
+  }
+
+  /* ═══ HORIZON ═════════════════════════════════════════════════════════════════════════════════════════════════
+     Fills its positioned parent. The sky is drawn in SVG (pad) or CSS (limb, space); stars slot between sky and ground. */
+  .art-hz {
+    position: absolute; inset: 0; overflow: hidden; pointer-events: none;
+    contain: layout paint style; isolation: isolate;
+    background: #03040c;
+  }
+  .art-hz[data-v='pad']   { background: #04051a; }
+  .art-hz[data-v='limb']  { background: linear-gradient(180deg, #01020a 0%, #03071a 62%, #061236 100%); }
+  .art-hz[data-v='space'] { background: radial-gradient(120% 90% at 50% 40%, #060818 0%, #03040c 70%); }
+  .art-hz__svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  /* a lens vignette, because nothing photographed has flat corners */
+  .art-hz[data-v='pad']::after, .art-hz[data-v='limb']::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(120% 90% at 50% 62%, transparent 52%, rgba(2, 3, 10, .5) 100%);
+  }
+  .art-hz__neb {
+    position: absolute; inset: 0; display: block;
+    background:
+      radial-gradient(60% 38% at 16% 22%, rgba(92, 64, 200, .22), transparent 72%),
+      radial-gradient(54% 36% at 84% 72%, rgba(26, 128, 178, .15), transparent 74%),
+      radial-gradient(40% 28% at 62% 10%, rgba(200, 74, 128, .08), transparent 70%);
+  }
+  .art-hz__beacon { opacity: .95; }
+  .art-hz__aurora { opacity: .9; }
+  html:not([data-fx='lite']) .art-hz__aurora { animation: art-hz-aurora 7s ease-in-out infinite alternate; }
+  @keyframes art-hz-aurora { from { opacity: .62; } to { opacity: 1; } }
+  html:not([data-fx='lite']) .art-hz__beacon { animation: art-hz-blink 2.8s linear infinite; }
+  @keyframes art-hz-blink { 0%, 11% { opacity: 1; } 12%, 100% { opacity: .1; } }
+
+  /* ═══ LAUNCH PAD ══════════════════════════════════════════════════════════════════════════════════════════════
+     Wisps and ground cloud are decoration: in lite they freeze on a faint half-opacity frame. */
+  .art-lp__wisp, .art-lp__drift { transform-box: fill-box; transform-origin: 50% 50%; opacity: .34; }
+  .art-lp__drift { opacity: .5; }
+  html:not([data-fx='lite']) .art-lp__wisp  { opacity: 0; animation: art-lp-wisp var(--t, 6s) var(--ease-out) var(--d, 0s) infinite; }
+  html:not([data-fx='lite']) .art-lp__drift { animation: art-lp-drift var(--t, 14s) ease-in-out var(--d, 0s) infinite alternate; }
+  @keyframes art-lp-wisp {
+    0% { opacity: 0; transform: translate(0, 0) scale(.5); }
+    18% { opacity: .9; }
+    100% { opacity: 0; transform: translate(var(--dx, 20px), var(--dy, -20px)) scale(1.8); }
+  }
+  @keyframes art-lp-drift { from { opacity: .3; transform: translateX(-10px); } to { opacity: .62; transform: translateX(12px); } }
+
+  /* liftoff: the whole vehicle is one <g>, so the launch is one transform. A shiver on the pad, then it commits. */
+  .art-lp[data-liftoff] .art-lp__rocket { animation: art-lp-lift 6.4s both; }
+  @keyframes art-lp-lift {
+    0% { transform: translate(0, 0); }
+    4% { transform: translate(.9px, .3px); } 8% { transform: translate(-.9px, 0); } 12% { transform: translate(.7px, .3px); }
+    16% { transform: translate(0, 0); animation-timing-function: cubic-bezier(.62, 0, .96, .5); }
+    100% { transform: translate(0, -940px); }
+  }
+  .art-lp__flare { transform-box: fill-box; transform-origin: 50% 50%; opacity: .4; animation: art-lp-flare 6.4s var(--ease-out) both; }
+  @keyframes art-lp-flare { 0% { opacity: 0; transform: scale(.4); } 9% { opacity: 1; transform: scale(1); } 100% { opacity: .4; transform: scale(1.3); } }
+  .art-lp__puff { transform-box: fill-box; transform-origin: 50% 70%; opacity: .5; transform: translateX(calc(var(--dir, 1) * 70px)) scale(2); animation: art-lp-puff 5.6s var(--ease-out) var(--d, 0s) both; }
+  @keyframes art-lp-puff { from { opacity: 0; transform: translateX(0) scale(.3); } 28% { opacity: .95; } }
+
+  /* ═══ ORBIT SCENE ═════════════════════════════════════════════════════════════════════════════════════════════ */
+  .art-ob__rot { transform: rotate(var(--end, 4deg)); }
+  html:not([data-fx='lite']) .art-ob__rot[data-run] { animation: art-ob-run 3.6s var(--ease-out) both; }
+  html:not([data-fx='lite']) .art-ob__drift { animation: art-ob-drift 32s ease-in-out infinite alternate; }
+  @keyframes art-ob-run { from { transform: rotate(var(--from, -17deg)); } }
+  @keyframes art-ob-drift { from { transform: rotate(0deg); } to { transform: rotate(3deg); } }
+
+  /* ═══ COMET ═══════════════════════════════════════════════════════════════════════════════════════════════════ */
+  .art-cm { display: block; flex: none; overflow: visible; transform: rotate(var(--rot, -18deg)); }
+  html:not([data-fx='lite']) .art-cm__body { animation: art-cm-drift 7s ease-in-out infinite alternate; }
+  html:not([data-fx='lite']) .art-cm__st   { animation: art-cm-shim 2.4s ease-in-out infinite alternate; }
+  @keyframes art-cm-drift { from { transform: translate(-7px, 2px); } to { transform: translate(7px, -2px); } }
+  @keyframes art-cm-shim { from { opacity: .4; } to { opacity: 1; } }
+
+  /* ═══ EARTH ═══════════════════════════════════════════════════════════════════════════════════════════════════ */
+  .art-ea { display: block; flex: none; overflow: visible; }
+
+  /* nav light on the docking probe */
+  html:not([data-fx='lite']) .art-rk__nav { animation: art-hz-blink 2.8s linear infinite; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .art-hz__beacon, .art-hz__aurora, .art-rk__nav, .art-lp__wisp, .art-lp__drift, .art-ob__drift, .art-cm__body, .art-cm__st, .art-stars__met i { animation: none; }
+    .art-ob__rot[data-run] { animation: none; }
+  }
+
+  /* a marker that hovers: `translate` (not `transform`) so it never fights --tilt */
+  html:not([data-fx='lite']) .art-rk[data-float] { animation: art-rk-float 4.4s ease-in-out infinite alternate; }
+  @keyframes art-rk-float { from { translate: 0 0; } to { translate: 0 -3px; } }
+
+  /* ═══ ASCENT SKY ══════════════════════════════════════════════════════════════════════════════════════════════
+     Reads the inherited --scroll (0 at the pad → 1 in orbit). Opacity and transform only, so it is cheap enough
+     to follow a finger. In lite the stars stop twinkling but the sky still darkens: that is information, not effect. */
+  .art-asc { position: absolute; inset: 0; overflow: hidden; pointer-events: none; contain: layout paint style; isolation: isolate; background: #02030a; }
+  .art-asc > i { position: absolute; display: block; }
+  .art-asc__space {
+    inset: 0;
+    background:
+      radial-gradient(60% 34% at 18% 22%, rgba(92, 64, 200, .2), transparent 72%),
+      radial-gradient(52% 32% at 84% 66%, rgba(26, 128, 178, .13), transparent 74%),
+      linear-gradient(180deg, #02030a, #050818 70%, #060c22);
+  }
+  .art-asc__dusk {
+    inset: -8% 0 0;
+    background: linear-gradient(180deg, #04051a 0%, #0a0c30 26%, #1a1650 46%, #3a1f63 62%, #74295f 76%, #c4462f 90%, #ff8a3a 100%);
+    opacity: clamp(0, calc(1.3 - var(--scroll, 0) * 1.7), 1);
+    transform: translate3d(0, calc(var(--scroll, 0) * 26%), 0);
+  }
+  .art-asc__stars { opacity: clamp(.2, calc(.2 + var(--scroll, 0) * .95), 1); }
+  .art-asc__glow {
+    left: -10%; right: -10%; bottom: 0; height: 46%;
+    background: radial-gradient(90% 100% at 50% 100%, rgba(255, 150, 70, .5), rgba(255, 90, 40, .14) 46%, transparent 72%);
+    opacity: clamp(0, calc(1 - var(--scroll, 0) * 2.6), 1);
+    transform: translate3d(0, calc(var(--scroll, 0) * 60%), 0);
+  }
+}

@@ -1,0 +1,157 @@
+/* owner: fx agent — the canvas layer, the flash, and the helpers the fx hooks are designed to drive. */
+@layer fx {
+  /* ── canvas layer (FxLayer.jsx). Sized in px by the engine; hidden unless something is alive. ── */
+  .fx-layer {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: var(--z-fx);
+    pointer-events: none;
+    contain: layout paint style;
+  }
+  .fx-layer:not([data-live]) { display: none; }
+
+  /* ── full-screen additive wash. fx.flash() sets --fx-flash/--fx-core (colours), --fx-x/--fx-y (where the light is) and
+        --fx-r (reach), then animates opacity (WAAPI). Two layers: a white-hot core and a wide ignite bloom. ── */
+  .fx-flash {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-fx);
+    pointer-events: none;
+    opacity: 0;
+    mix-blend-mode: screen;
+    background: var(--fx-flash, var(--ignite-flat));
+    background:
+      radial-gradient(circle calc(var(--fx-r, 78vmax) * .22) at var(--fx-x, 50%) var(--fx-y, 64%),
+        var(--fx-core, var(--ignite-3)) 0%,
+        color-mix(in srgb, var(--fx-core, var(--ignite-3)) 38%, transparent) 42%,
+        transparent 100%),
+      radial-gradient(circle var(--fx-r, 78vmax) at var(--fx-x, 50%) var(--fx-y, 64%),
+        var(--fx-flash, var(--ignite-flat)) 0%,
+        color-mix(in srgb, var(--fx-flash, var(--ignite-flat)) 56%, transparent) 15%,
+        color-mix(in srgb, var(--fx-flash, var(--ignite-flat)) 18%, transparent) 40%,
+        transparent 76%);
+  }
+
+  /* ── tabular numerals: use on anything useCountUp drives so digits never jitter ── */
+  .fx-num {
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings: 'tnum' 1, 'lnum' 1;
+  }
+
+  /* ── pointer / gyro tilt (usePointerTilt writes --rx --ry --gx --gy --tilt-on on the element) ──
+     <div class="fx-tilt"> <…content…> <i class="fx-tilt__glare"></i> <i class="fx-tilt__sheen"></i> </div>   */
+  .fx-tilt {
+    position: relative;
+    /* --tilt-s lets a screen add its own press-scale without replacing the transform: .card:active { --tilt-s: .97 } */
+    transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) scale(var(--tilt-s, 1));
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .fx-tilt[data-tilting] { will-change: transform; }
+
+  /* the light itself, in two parts: a broad soft pool, and a tight specular that is additive, so a gold frame ignites where it lands */
+  .fx-tilt__glare {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    clip-path: inherit;
+    opacity: var(--tilt-on, 0);
+    background:
+      radial-gradient(18% 18% at var(--gx, 50%) var(--gy, 50%), color-mix(in srgb, var(--ti-1) 46%, transparent), transparent 100%),
+      radial-gradient(64% 64% at var(--gx, 50%) var(--gy, 50%), color-mix(in srgb, var(--ti-1) 16%, transparent), transparent 100%);
+    mix-blend-mode: plus-lighter;
+  }
+  /* the foil: two narrow anisotropic bands (a bright one and a faint echo that lags it, like a laminated hologram),
+     oversized so --gx/--gy slide them across both axes. Gold → titanium → a breath of telemetry cyan: never a rainbow. */
+  .fx-tilt__sheen {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    clip-path: inherit;
+    opacity: calc(var(--tilt-on, 0) * .95);
+    background-image:
+      linear-gradient(112deg,
+        transparent 42%,
+        color-mix(in srgb, var(--gold-2) 30%, transparent) 46%,
+        color-mix(in srgb, var(--gold-1) 52%, transparent) 48.6%,
+        color-mix(in srgb, var(--ti-1) 60%, transparent) 50.2%,
+        color-mix(in srgb, var(--tele) 26%, transparent) 52.4%,
+        transparent 56%),
+      linear-gradient(112deg,
+        transparent 61%,
+        color-mix(in srgb, var(--gold-1) 16%, transparent) 64%,
+        transparent 68%);
+    background-size: 260% 260%, 260% 260%;
+    background-position:
+      calc(100% - var(--gx, 50%)) calc(100% - var(--gy, 50%)),
+      calc(100% - var(--gx, 50%) * .82) calc(100% - var(--gy, 50%) * .82);
+    background-repeat: no-repeat;
+    mix-blend-mode: plus-lighter;
+  }
+
+  /* ── DOM-anchored one-shots, for things that own their own light (a Ring that closes, a card that is dealt).
+        Both play once when the element is mounted or the class is (re)applied, and cost nothing otherwise. ── */
+  /* <span class="fx-shock"> inside a positioned parent: a hairline ring that blooms out of its centre. --fx-shock-size, --fx-shock-color */
+  .fx-shock {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: var(--fx-shock-size, 100%);
+    aspect-ratio: 1;
+    border-radius: var(--r-full);
+    pointer-events: none;
+    opacity: 0;
+    box-shadow: inset 0 0 0 1px var(--fx-shock-color, var(--ignite-2)), 0 0 18px -2px var(--ignite-glow);
+    animation: fx-shock var(--t-hero) var(--ease-out) both;
+  }
+  @keyframes fx-shock {
+    0% { transform: scale(.55); opacity: .9; }
+    100% { transform: scale(1.75); opacity: 0; }
+  }
+  /* class="fx-sweep" on a hardware plate: one band of light crosses it, once. The plate's own clip-path / overflow shapes the band. */
+  .fx-sweep { position: relative; overflow: hidden; }
+  .fx-sweep::after {
+    content: '';
+    position: absolute;
+    inset: -20%;
+    pointer-events: none;
+    background: linear-gradient(105deg, transparent 42%, color-mix(in srgb, var(--ti-1) 34%, transparent) 50%, transparent 58%);
+    mix-blend-mode: plus-lighter;
+    transform: translateX(-110%);
+    animation: fx-sweep var(--t-hero) var(--ease-io) both;
+  }
+  @keyframes fx-sweep { to { transform: translateX(110%); } }
+
+  /* ── entrance for useInView(): <div class="fx-reveal" data-in={inView} style={stagger(i)}> ── */
+  .fx-reveal {
+    opacity: 0;
+    transform: translateY(var(--s-4));
+    transition: opacity var(--t-slow) var(--ease-out), transform var(--t-slower) var(--ease-out);
+  }
+  .fx-reveal[data-in="true"],
+  .fx-reveal[data-in=""] { opacity: 1; transform: none; }
+
+  /* ── lite: no canvas, no parallax, no loops; changes become a quick cross-fade ── */
+  html[data-fx="lite"] .fx-layer,
+  html[data-fx="lite"] .fx-flash,
+  html[data-fx="lite"] .fx-shock,
+  html[data-fx="lite"] .fx-sweep::after { display: none; }
+  html[data-fx="lite"] .fx-tilt { transform: none; }
+  html[data-fx="lite"] .fx-tilt__glare,
+  html[data-fx="lite"] .fx-tilt__sheen { display: none; }
+  html[data-fx="lite"] .fx-reveal { transform: none; transition: opacity var(--t-fast) linear; }
+
+  /* same, if JS never ran (an explicit data-fx="full" is the user's own override and wins) */
+  @media (prefers-reduced-motion: reduce) {
+    html:not([data-fx="full"]) .fx-layer,
+    html:not([data-fx="full"]) .fx-flash,
+    html:not([data-fx="full"]) .fx-shock,
+    html:not([data-fx="full"]) .fx-sweep::after { display: none; }
+    html:not([data-fx="full"]) .fx-tilt { transform: none; }
+    html:not([data-fx="full"]) .fx-reveal { transform: none; transition: opacity var(--t-fast) linear; }
+  }
+}

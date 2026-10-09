@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512"><defs>
+    <radialGradient id="b-tile" cx="50%" cy="26%" r="78%">
+      <stop offset="0" stop-color="#181c2a"/><stop offset=".5" stop-color="#0b0d15"/><stop offset="1" stop-color="#06070d"/>
+    </radialGradient>
+    <linearGradient id="b-ti" gradientUnits="userSpaceOnUse" x1="196" y1="56" x2="316" y2="456">
+      <stop offset="0" stop-color="#eef1f8"/><stop offset=".34" stop-color="#aeb5c6"/><stop offset=".62" stop-color="#343a4c"/><stop offset="1" stop-color="#aeb5c6"/>
+    </linearGradient>
+    <linearGradient id="b-plate" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#11141f"/><stop offset=".6" stop-color="#0b0d15"/><stop offset="1" stop-color="#06070d"/>
+    </linearGradient>
+    <radialGradient id="b-plateLight" gradientUnits="userSpaceOnUse" cx="256" cy="186" r="190">
+      <stop offset="0" stop-color="#232839" stop-opacity=".55"/><stop offset="1" stop-color="#232839" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="b-bloom" gradientUnits="userSpaceOnUse" cx="318" cy="180.64" r="130">
+      <stop offset="0" stop-color="#ff8a1c" stop-opacity=".26"/><stop offset=".55" stop-color="#ff4a0f" stop-opacity=".07"/><stop offset="1" stop-color="#ff4a0f" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="b-ig" gradientUnits="userSpaceOnUse" x1="190" y1="374.8" x2="336" y2="110.64">
+      <stop offset="0" stop-color="#ff4a0f"/><stop offset=".56" stop-color="#ff8a1c"/><stop offset="1" stop-color="#ffc43d"/>
+    </linearGradient>
+    <linearGradient id="b-sheen" gradientUnits="userSpaceOnUse" x1="0" y1="112" x2="0" y2="296">
+      <stop offset="0" stop-color="#fff" stop-opacity=".30"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="b-core" gradientUnits="userSpaceOnUse" x1="274" y1="239.6" x2="315.6" y2="139.76">
+      <stop offset="0" stop-color="#ffc43d" stop-opacity="0"/><stop offset=".45" stop-color="#ffc43d" stop-opacity=".55"/><stop offset="1" stop-color="#fbe6a8" stop-opacity=".95"/>
+    </linearGradient>
+    <linearGradient id="b-shade" gradientUnits="userSpaceOnUse" x1="0" y1="270.8" x2="0" y2="378.96">
+      <stop offset="0" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".10"/>
+    </linearGradient>
+    <linearGradient id="b-edge" gradientUnits="userSpaceOnUse" x1="0" y1="112" x2="0" y2="376">
+      <stop offset="0" stop-color="#fff" stop-opacity=".85"/><stop offset=".35" stop-color="#fff" stop-opacity=".25"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <clipPath id="b-plateClip"><polygon points="256,80.25 408.21,168.12 408.21,343.88 256,431.75 103.79,343.88 103.79,168.12"/></clipPath>
+    <clipPath id="b-kClip"><path transform="translate(170 146) scale(1.04)" d="M0 16 L16 0 L42 0 L42 82 C66 50 112 40 144 -34 C150 -4 182 42 156 76 C132 100 96 108 70 118 L134 220 L86 220 L42 156 L42 220 L0 220 Z"/></clipPath>
+    <filter id="b-blur8" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="8"/></filter>
+    <filter id="b-blur14" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="14"/></filter>
+    <filter id="b-blur1" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.6"/></filter>
+    <filter id="b-blur3" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3"/></filter>
+    <pattern id="b-weave" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="4" height="4" fill="#fff" fill-opacity=".026"/><rect x="4" width="4" height="4" fill="#000" fill-opacity=".13"/>
+      <rect y="4" width="4" height="4" fill="#000" fill-opacity=".09"/><rect x="4" y="4" width="4" height="4" fill="#fff" fill-opacity=".012"/>
+    </pattern></defs><rect width="512" height="512" rx="115" fill="url(#b-tile)"/><rect width="512" height="512" rx="115" fill="url(#b-weave)"/><rect x=".75" y=".75" width="510.5" height="510.5" rx="114.25" fill="none" stroke="rgba(238,241,248,0.1)" stroke-width="1.5"/>
+    <g transform="translate(256 256) scale(1) translate(-256 -256)">
+      <g filter="url(#b-blur14)" opacity=".75"><polygon transform="translate(0 14)" points="256,58 427.47,157 427.47,355 256,454 84.53,355 84.53,157" fill="#000"/></g>
+      
+    <polygon points="256,56 429.21,156 429.21,356 256,456 82.79,356 82.79,156" fill="url(#b-ti)"/>
+    <polygon points="256,56 429.21,156 423.21,159.46 256,62.93" fill="#cdd2df"/><polygon points="256,74.48 413.21,165.24 408.21,168.12 256,80.25" fill="#4a5164"/><polygon points="429.21,156 429.21,356 423.21,352.54 423.21,159.46" fill="#737a8e"/><polygon points="413.21,165.24 413.21,346.76 408.21,343.88 408.21,168.12" fill="#848b9e"/><polygon points="429.21,356 256,456 256,449.07 423.21,352.54" fill="#51586b"/><polygon points="413.21,346.76 256,437.52 256,431.75 408.21,343.88" fill="#cacfdc"/><polygon points="256,456 82.79,356 88.79,352.54 256,449.07" fill="#596074"/><polygon points="256,437.52 98.79,346.76 103.79,343.88 256,431.75" fill="#afb6c7"/><polygon points="82.79,356 82.79,156 88.79,159.46 88.79,352.54" fill="#a0a7b9"/><polygon points="98.79,346.76 98.79,165.24 103.79,168.12 103.79,343.88" fill="#5e657a"/><polygon points="82.79,156 256,56 256,62.93 88.79,159.46" fill="#eaedf5"/><polygon points="98.79,165.24 256,74.48 256,80.25 103.79,168.12" fill="#444a5d"/>
+    <polygon points="256,62.93 423.21,159.46 423.21,352.54 256,449.07 88.79,352.54 88.79,159.46" fill="none"/>
+    <polygon points="256,68.7 418.21,162.35 418.21,349.65 256,443.3 93.79,349.65 93.79,162.35" fill="none" stroke="url(#b-ti)" stroke-width="10" stroke-linejoin="miter"/>
+    <line x1="256" y1="56.6" x2="428.69" y2="156.3" stroke="#fff" stroke-opacity="0.41" stroke-width="1.6"/><line x1="428.69" y1="156.3" x2="428.69" y2="355.7" stroke="#fff" stroke-opacity="0" stroke-width="1.6"/><line x1="428.69" y1="355.7" x2="256" y2="455.4" stroke="#fff" stroke-opacity="0" stroke-width="1.6"/><line x1="256" y1="455.4" x2="83.31" y2="355.7" stroke="#fff" stroke-opacity="0" stroke-width="1.6"/><line x1="83.31" y1="355.7" x2="83.31" y2="156.3" stroke="#fff" stroke-opacity="0.2" stroke-width="1.6"/><line x1="83.31" y1="156.3" x2="256" y2="56.6" stroke="#fff" stroke-opacity="0.53" stroke-width="1.6"/>
+    <polygon points="256,80.25 408.21,168.12 408.21,343.88 256,431.75 103.79,343.88 103.79,168.12" fill="url(#b-plate)"/>
+    <g clip-path="url(#b-plateClip)">
+      <rect x="0" y="0" width="512" height="512" fill="url(#b-plateLight)"/>
+      <rect x="0" y="0" width="512" height="512" fill="url(#b-weave)"/>
+      <rect x="0" y="0" width="512" height="512" fill="url(#b-bloom)"/>
+      <path d="M256 89.25l-6.5 11.26M270.44 97.59l-3.5 6.06M284.88 105.92l-3.5 6.06M299.32 114.26l-3.5 6.06M313.76 122.6l-3.5 6.06M328.21 130.94l-3.5 6.06M342.65 139.27l-3.5 6.06M357.09 147.61l-3.5 6.06M371.53 155.95l-3.5 6.06M385.97 164.29l-3.5 6.06M400.41 172.62l-13 0M400.41 189.3l-7 0M400.41 205.97l-7 0M400.41 222.65l-7 0M400.41 239.32l-7 0M400.41 256l-7 0M400.41 272.68l-7 0M400.41 289.35l-7 0M400.41 306.03l-7 0M400.41 322.7l-7 0M400.41 339.38l-6.5 -11.26M385.97 347.71l-3.5 -6.06M371.53 356.05l-3.5 -6.06M357.09 364.39l-3.5 -6.06M342.65 372.73l-3.5 -6.06M328.21 381.06l-3.5 -6.06M313.76 389.4l-3.5 -6.06M299.32 397.74l-3.5 -6.06M284.88 406.08l-3.5 -6.06M270.44 414.41l-3.5 -6.06M256 422.75l6.5 -11.26M241.56 414.41l3.5 -6.06M227.12 406.08l3.5 -6.06M212.68 397.74l3.5 -6.06M198.24 389.4l3.5 -6.06M183.79 381.06l3.5 -6.06M169.35 372.73l3.5 -6.06M154.91 364.39l3.5 -6.06M140.47 356.05l3.5 -6.06M126.03 347.71l3.5 -6.06M111.59 339.38l13 0M111.59 322.7l7 0M111.59 306.03l7 0M111.59 289.35l7 0M111.59 272.68l7 0M111.59 256l7 0M111.59 239.32l7 0M111.59 222.65l7 0M111.59 205.97l7 0M111.59 189.3l7 0M111.59 172.62l6.5 11.26M126.03 164.29l3.5 6.06M140.47 155.95l3.5 6.06M154.91 147.61l3.5 6.06M169.35 139.27l3.5 6.06M183.79 130.94l3.5 6.06M198.24 122.6l3.5 6.06M212.68 114.26l3.5 6.06M227.12 105.92l3.5 6.06M241.56 97.59l3.5 6.06" stroke="#6a7186" stroke-opacity=".5" stroke-width="1.8" stroke-linecap="butt" fill="none"/>
+      <polygon points="256,78.25 409.94,167.12 409.94,344.88 256,433.75 102.06,344.88 102.06,167.12" fill="none" stroke="#000" stroke-opacity=".55" stroke-width="10" filter="url(#b-blur8)"/>
+    </g>
+    <polygon points="256,80.25 408.21,168.12 408.21,343.88 256,431.75 103.79,343.88 103.79,168.12" fill="none" stroke="#03040a" stroke-opacity=".9" stroke-width="1.5"/>
+    <g filter="url(#b-blur8)" opacity=".7"><path transform="translate(170 155) scale(1.04)" d="M0 16 L16 0 L42 0 L42 82 C66 50 112 40 144 -34 C150 -4 182 42 156 76 C132 100 96 108 70 118 L134 220 L86 220 L42 156 L42 220 L0 220 Z" fill="#000"/></g>
+    <path transform="translate(170 146) scale(1.04)" d="M0 16 L16 0 L42 0 L42 82 C66 50 112 40 144 -34 C150 -4 182 42 156 76 C132 100 96 108 70 118 L134 220 L86 220 L42 156 L42 220 L0 220 Z" fill="url(#b-ig)"/>
+    <g clip-path="url(#b-kClip)"><rect x="0" y="106" width="512" height="200" fill="url(#b-sheen)"/></g>
+    <path transform="translate(170 146) scale(1.04)" d="M0 16 L16 0 L42 0 L42 82 C66 50 112 40 144 -34 C150 -4 182 42 156 76 C132 100 96 108 70 118 L134 220 L86 220 L42 156 L42 220 L0 220 Z" fill="none" stroke="url(#b-edge)" stroke-width="3.2" stroke-linejoin="round" clip-path="url(#b-kClip)"/>
+    <g clip-path="url(#b-kClip)"><rect x="0" y="260.4" width="512" height="200" fill="url(#b-shade)"/></g>
+    <path transform="translate(170 146) scale(1.04)" d="M104 84 C126 80 148 64 144 44 C142 30 138 18 139 -2 C128 24 108 42 94 62 C90 72 94 86 104 84 Z" fill="url(#b-core)" filter="url(#b-blur1)"/>
+    </g></svg>

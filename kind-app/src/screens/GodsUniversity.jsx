@@ -1,10 +1,15 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import { apiConfigured, loggedIn, requestCode, verifyCode, fetchFamily, logout } from '../api.js'
 import { Icon } from '../icons.jsx'
+import { Button, Label, Panel, Skeleton, Stat, Tag, TextField } from '../ui/index.js'
 
-/** Parent sign-in over the goDs University records: attendance, minutes, reports. */
-export default function GodsUniversity() {
-  const [stage, setStage] = useState(loggedIn() ? 'family' : 'intro')
+/**
+ * Parent sign-in over the goDs University records: attendance, minutes, reports.
+ * v7 skin over the v6 flow: the stages (intro → email → code → family), the API calls and the demo mode are unchanged.
+ */
+// `configured` exists only so a playground can show the signed-out stages; the app never passes it.
+export default function GodsUniversity({ configured = apiConfigured() } = {}) {
+  const [stage, setStage] = useState(configured && loggedIn() ? 'family' : 'intro')
   const [email, setEmail] = useState('')
   const [code, setCode] = useState('')
   const [busy, setBusy] = useState(false)
@@ -34,88 +39,116 @@ export default function GodsUniversity() {
     setBusy(false)
   }
 
-  if (!apiConfigured())
+  if (!configured)
     return (
-      <div className="pad">
-        <p className="dek">Sign in here to see each child’s weekly attendance, invested minutes and teacher
-          reports, straight from the goDs University records. Being switched on shortly.</p>
-      </div>
+      <Panel tone="sunk" padded className="mei-gu mei-gu--demo">
+        <div className="mei-gu__top">
+          <Tag tone="tele" led>Switching on shortly</Tag>
+        </div>
+        <p className="mei-gu__dek">Sign in here to see each child’s weekly attendance, invested minutes and teacher
+          reports, straight from the goDs University records.</p>
+        <div className="mei-gu__ghost" aria-hidden="true">
+          <Stat size="sm" label="Present" value="—" />
+          <Stat size="sm" label="Invested" value="—" unit="min" />
+          <Stat size="sm" label="Attendance" value="—" unit="%" />
+        </div>
+      </Panel>
     )
 
   if (stage === 'family' && family)
     return (
-      <>
-        <div className="row">
-          <span className="row-m"><b>{family.parent.name || family.parent.email}</b><small>Signed in</small></span>
-          <button className="link" onClick={() => { logout(); setFamily(null); setStage('intro') }}>Sign out</button>
-        </div>
+      <div className="mei-gu">
+        <Panel pad="sm" className="mei-gu__who">
+          <span className="mei-gu__icon" aria-hidden="true"><Icon name="user" size={20} /></span>
+          <span className="mei-gu__who-t"><b>{family.parent.name || family.parent.email}</b><small>Signed in</small></span>
+          <Button variant="ghost" size="sm" onClick={() => { logout(); setFamily(null); setStage('intro') }}>Sign out</Button>
+        </Panel>
         {family.children.map((c) => <Child key={c.code} c={c} />)}
-      </>
+      </div>
     )
 
   return (
-    <div className="pad">
+    <Panel padded className="mei-gu" aria-busy={busy || (stage === 'family' && !family) || undefined}>
       {stage === 'intro' && (
-        <>
-          <p className="dek">See each child’s weekly attendance, invested minutes and teacher reports.</p>
-          <button className="btn quiet" onClick={() => setStage('email')}>Parent sign in</button>
-        </>
+        <div className="mei-gu__stack">
+          <Label mono tone="tele" dot>Parent access</Label>
+          <p className="mei-gu__dek">See each child’s weekly attendance, invested minutes and teacher reports.</p>
+          <Button variant="secondary" icon="user" onClick={() => setStage('email')}>Parent sign in</Button>
+        </div>
       )}
       {stage === 'email' && (
-        <form className="inline-form" onSubmit={run(() => requestCode(email.trim()), 'code')}>
-          <input className="field" type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-            placeholder="your@email.com" autoFocus />
-          <button className="link" type="submit" disabled={busy}>{busy ? '…' : 'Send code'}</button>
+        <form className="mei-gu__stack" onSubmit={run(() => requestCode(email.trim()), 'code')}>
+          <TextField label="Parent email" type="email" required value={email} onChange={setEmail} icon="mail"
+            placeholder="your@email.com" autoComplete="email" enterKeyHint="send" autoFocus />
+          <Button type="submit" full loading={busy} iconRight="arrowRight">Send code</Button>
         </form>
       )}
       {stage === 'code' && (
-        <>
-          <p className="dek">We emailed a six-digit code to {email}.</p>
-          <form className="inline-form" style={{ marginTop: 10 }} onSubmit={run(() => verifyCode(email.trim(), code.trim()), 'family')}>
-            <input className="field" inputMode="numeric" pattern="[0-9]{6}" required value={code}
-              onChange={(e) => setCode(e.target.value)} placeholder="123456" autoFocus />
-            <button className="link" type="submit" disabled={busy}>{busy ? '…' : 'Sign in'}</button>
-          </form>
-        </>
+        <form className="mei-gu__stack" onSubmit={run(() => verifyCode(email.trim(), code.trim()), 'family')}>
+          <p className="mei-gu__dek">We emailed a six-digit code to <b>{email}</b>.</p>
+          <TextField label="Six-digit code" inputMode="numeric" pattern="[0-9]{6}" required value={code} onChange={setCode} icon="key"
+            placeholder="123456" autoComplete="one-time-code" enterKeyHint="go" className="mei-gu__code" autoFocus />
+          <Button type="submit" full loading={busy} iconRight="check">Sign in</Button>
+        </form>
       )}
-      {stage === 'family' && !family && <p className="dek">Loading your family…</p>}
-      {error && <p className="dek" style={{ color: '#e0523f' }}>{error}</p>}
-    </div>
+      {stage === 'family' && !family && (
+        <div className="mei-gu__stack" role="status">
+          <p className="mei-gu__dek">Loading your family…</p>
+          <Skeleton h={56} r="var(--r-sm)" />
+        </div>
+      )}
+      {error && <p className="mei-gu__err" role="alert"><Icon name="warning" size={16} /><span>{error}</span></p>}
+    </Panel>
   )
 }
 
-function Child({ c }) {
+export function Child({ c }) {
   const [open, setOpen] = useState(false)
+  const id = useId()
   const last = c.reports[c.reports.length - 1]
+  const rate = c.summary.rate
+  const present = c.attendance.filter((a) => a.attendance).length
   return (
-    <>
-      <button className="row inset" onClick={() => setOpen(!open)}>
-        <span className="avatar-lg" style={{ width: 30, height: 30, fontSize: 14 }}>{(c.name || '?')[0]}</span>
-        <span className="row-m"><b>{c.name}</b><small>{c.pathway}{c.kin_no ? ' · ' + c.kin_no : ''}</small></span>
-        <span className="row-a">{c.summary.rate == null ? '—' : c.summary.rate + '%'}<Icon.chevron /></span>
+    <Panel className="mei-gu__child" data-open={open ? '' : undefined}>
+      <button type="button" className="mei-gu__head" aria-expanded={open} aria-controls={id} onClick={() => setOpen(!open)}>
+        <span className="mei-gu__av" aria-hidden="true">{(c.name || '?')[0]}</span>
+        <span className="mei-gu__who-t"><b>{c.name}</b><small>{c.pathway}{c.kin_no ? ' · ' + c.kin_no : ''}</small></span>
+        <span className="mei-gu__rate">{rate == null ? '—' : <>{rate}<i>%</i></>}</span>
+        <Icon name="chevronDown" size={16} className="mei-gu__chev" />
       </button>
-      <div className="strip" aria-label="recent attendance">
-        {c.attendance.map((a, i) => (
-          <i key={i} className={a.attendance ? 'in' : ''}
-            title={`${a.week}: ${a.attendance ? 'present' : 'absent'} · ${a.invested_minutes} min`} />
-        ))}
+      <div className="mei-gu__body">
+        <div className="mei-gu__strip" role="img" aria-label={`Recent attendance: present ${present} of ${c.attendance.length} weeks`}>
+          {c.attendance.map((a, i) => (
+            <i key={i} data-in={a.attendance ? '' : undefined}
+              title={`${a.week}: ${a.attendance ? 'present' : 'absent'} · ${a.invested_minutes} min`} />
+          ))}
+        </div>
       </div>
       {open && (
-        <div className="pad">
-          <div className="figures">
-            <div><b>{c.summary.present}/{c.summary.weeks}</b><span>weeks present</span></div>
-            <div><b>{c.summary.minutes}</b><span>invested min</span></div>
-            <div><b>{c.summary.rate ?? '—'}%</b><span>attendance</span></div>
+        <div className="mei-gu__more" id={id}>
+          <div className="mei-gu__figs">
+            <Stat size="sm" label="Present" value={`${c.summary.present}/${c.summary.weeks}`} />
+            <Stat size="sm" label="Invested" value={c.summary.minutes} unit="min" />
+            <Stat size="sm" label="Attendance" value={rate ?? '—'} unit={rate == null ? undefined : '%'} />
           </div>
-          {last && (
-            <div style={{ marginTop: 14 }}>
-              {last.celebration && <p className="dek">Celebrate — {last.celebration}</p>}
-              {last.parent_action && <p className="dek">Your part this week — {last.parent_action}</p>}
-              {last.growth_area && <p className="dek">Growing in — {last.growth_area}</p>}
-            </div>
+          {last && (last.celebration || last.parent_action || last.growth_area) && (
+            <dl className="mei-gu__notes">
+              {last.celebration && <Note icon="sparkle" tone="go" k="Celebrate" v={last.celebration} />}
+              {last.parent_action && <Note icon="target" tone="tele" k="Your part this week" v={last.parent_action} />}
+              {last.growth_area && <Note icon="arrowUp" tone="neutral" k="Growing in" v={last.growth_area} />}
+            </dl>
           )}
         </div>
       )}
-    </>
+    </Panel>
+  )
+}
+
+function Note({ icon, tone, k, v }) {
+  return (
+    <div className="mei-gu__note" data-tone={tone}>
+      <dt><Icon name={icon} size={16} />{k}</dt>
+      <dd>{v}</dd>
+    </div>
   )
 }

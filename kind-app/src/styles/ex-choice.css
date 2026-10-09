@@ -1,0 +1,293 @@
+/* owner: ex-choice (prefix .exc-) — answer plates, Choice, TrueFalse.
+   A plate is a machined carbon slab: a 1px rim (the bezel colour is the state), a woven-carbon fill, a top-lit sheen and a keycap.
+   The silhouette is drawn by clipped children; the glow is a filter on the unclipped root (clip-path would eat a box-shadow). */
+@layer screen {
+
+/* ── groups ───────────────────────────────────────────────────────────── */
+.exc-group { display: flex; flex-direction: column; gap: var(--s-3); min-width: 0; margin: 0; padding: var(--s-1) 0 var(--s-2); border: 0; }
+
+/* ── the plate ────────────────────────────────────────────────────────── */
+.exc-plate {
+  --ring: transparent;                      /* the global outline is a rectangle; the chamfered ring below replaces it */
+  --exc-fs: calc(var(--fs-base) * var(--read-scale, 1));
+  --exc-lh: calc(var(--exc-fs) * 1.4);
+  --exc-cap: calc(var(--s-6) + var(--s-1));  /* keycap and lamp, 28 */
+  --exc-cut: var(--cut);
+  --exc-h: calc(var(--tap) + var(--s-2));    /* 56 */
+  --exc-rw: 1px;                             /* rim width */
+  --exc-hv: 0; --exc-pr: 0; --exc-fc: 0; --exc-up: 0; --exc-lit: 0;   /* hover, press, focus, lift, lit: 0 → 1 */
+  --exc-hi: var(--ink);                      /* the light the sheen is cast in */
+  --exc-low: var(--void);
+  --exc-glow: var(--void);
+  --exc-glow-a: 64%;
+  --exc-rim: linear-gradient(180deg,
+    color-mix(in srgb, var(--ti-2) calc(40% + 22% * var(--exc-hv)), var(--carbon-4)) 0%,
+    var(--carbon-4) 44%,
+    color-mix(in srgb, var(--ti-3) 24%, var(--carbon-3)) 100%);
+  --exc-fill: var(--plate);
+  --exc-filter:
+    drop-shadow(0 1px 0 color-mix(in srgb, var(--void) 62%, transparent))
+    drop-shadow(0 calc(var(--s-2) - var(--s-1) * var(--exc-pr)) var(--s-4) color-mix(in srgb, var(--exc-glow) var(--exc-glow-a), transparent))
+    drop-shadow(0 0 var(--s-2) color-mix(in srgb, var(--exc-glow) calc(var(--exc-lit) * 38%), transparent));
+
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex: none;
+  width: 100%;
+  min-width: 0;
+  min-height: var(--exc-h);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  text-align: start;
+  text-transform: none;
+  letter-spacing: normal;
+  -webkit-appearance: none;
+  appearance: none;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+  cursor: pointer;
+  outline: 0;
+  filter: var(--exc-filter);
+  translate: 0 calc(var(--s-1) * (var(--exc-pr) * .5 - var(--exc-up) * .75 - var(--exc-hv) * .25));
+  scale: calc(1 - var(--exc-pr) * .03);
+  transition: translate var(--spring-bounce-ms) var(--spring-bounce), scale var(--spring-snap-ms) var(--spring-snap), filter var(--t-base) var(--ease-out), opacity var(--t-base) var(--ease-out);
+  animation: exc-in var(--t-slow) var(--ease-out) backwards;
+  animation-delay: var(--exc-d, 0ms);
+}
+
+/* silhouette: --c is the chamfer of whichever layer is painted (inner layers are inset by the rim, so cut a touch less) */
+.exc-plate__face, .exc-plate__fill, .exc-plate__sheen, .exc-plate__glint {
+  clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c));
+}
+.exc-plate__face  { --c: var(--exc-cut); position: absolute; inset: 0; z-index: 1; overflow: hidden; background: var(--exc-rim); pointer-events: none; transition: background var(--t-base) var(--ease-out); }
+.exc-plate__fill  { --c: calc(var(--exc-cut) - var(--exc-rw) * .586); position: absolute; inset: var(--exc-rw); background: var(--exc-fill);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--rim-hi) 52%, transparent), inset 0 -1px 0 color-mix(in srgb, var(--void) 50%, transparent);
+  filter: brightness(calc(1 + var(--exc-hv) * .07 - var(--exc-pr) * .06)); transition: filter var(--t-fast) var(--ease-out); }
+/* woven carbon: two crossed hairline weaves, barely there */
+.exc-plate__fill::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background:
+    repeating-linear-gradient(45deg, color-mix(in srgb, var(--ink) 2.6%, transparent) 0 calc(var(--s-1) / 4), transparent calc(var(--s-1) / 4) calc(var(--s-1) * .75)),
+    repeating-linear-gradient(-45deg, color-mix(in srgb, var(--void) 22%, transparent) 0 calc(var(--s-1) / 4), transparent calc(var(--s-1) / 4) calc(var(--s-1) * .75)); }
+/* one continuous light: top-lit falloff plus a broad reflection on the right third */
+.exc-plate__sheen { --c: calc(var(--exc-cut) - var(--exc-rw) * .586); position: absolute; inset: var(--exc-rw); pointer-events: none;
+  opacity: calc(1 - var(--exc-pr) * .5);
+  background:
+    linear-gradient(105deg, transparent 56%, color-mix(in srgb, var(--exc-hi) 5%, transparent) 68%, transparent 82%),
+    linear-gradient(180deg, color-mix(in srgb, var(--exc-hi) 9%, transparent) 0%, transparent 46%);
+  transition: opacity var(--t-fast) var(--ease-out); }
+/* the sweep that crosses a plate once when it is chosen or revealed */
+.exc-plate__glint { --c: calc(var(--exc-cut) - var(--exc-rw) * .586); position: absolute; inset: var(--exc-rw); overflow: hidden; pointer-events: none; opacity: 0; }
+.exc-plate__glint::before { content: ""; position: absolute; inset: 0; translate: -110% 0;
+  background: linear-gradient(104deg, transparent 38%, color-mix(in srgb, var(--exc-hi) 34%, transparent) 50%, transparent 62%); }
+
+/* focus: a 2px --tele bezel 2px off the plate, following the chamfer (a polygon with a zero-width slit, so the gap stays truly clear) */
+.exc-plate__ring {
+  --rg: calc(var(--s-1) / 2);
+  --rw: var(--ring-w, calc(var(--s-1) / 2));
+  --co: calc(var(--exc-cut) + (var(--rg) + var(--rw)) * .586);
+  --ci: calc(var(--exc-cut) + var(--rg) * .586);
+  position: absolute; inset: calc((var(--rg) + var(--rw)) * -1); z-index: 0; pointer-events: none;
+  background: var(--tele);
+  opacity: var(--exc-fc);
+  transition: opacity var(--t-fast) var(--ease-out);
+  clip-path: polygon(
+    var(--co) 0, 100% 0, 100% calc(100% - var(--co)), calc(100% - var(--co)) 100%, 0 100%, 0 var(--co), var(--co) 0,
+    calc(var(--rw) + var(--ci)) var(--rw),
+    var(--rw) calc(var(--rw) + var(--ci)), var(--rw) calc(100% - var(--rw)),
+    calc(100% - var(--rw) - var(--ci)) calc(100% - var(--rw)), calc(100% - var(--rw)) calc(100% - var(--rw) - var(--ci)),
+    calc(100% - var(--rw)) var(--rw), calc(var(--rw) + var(--ci)) var(--rw));
+}
+
+/* ── content ──────────────────────────────────────────────────────────── */
+.exc-plate__in {
+  position: relative; z-index: 2; flex: 1; min-width: 0; min-height: var(--exc-h);
+  display: grid; grid-template-columns: var(--exc-cap) minmax(0, 1fr); align-items: start; align-content: center; column-gap: var(--s-3);
+  padding: var(--s-3) var(--s-4) var(--s-3) var(--s-3);
+  font-size: var(--exc-fs); line-height: var(--exc-lh);
+}
+.exc-plate__body {
+  min-width: 0; color: var(--ink);
+  font-family: var(--font-ui); font-size: var(--exc-fs); font-weight: 500; line-height: var(--exc-lh);
+  text-wrap: pretty; overflow-wrap: anywhere; hyphens: manual;     /* very long names break instead of overflowing */
+  transition: color var(--t-base) var(--ease-out);
+}
+/* keycap and lamp share one cell; the lamp replaces the keycap when the plate is graded */
+.exc-plate__lead { display: grid; place-items: center; width: var(--exc-cap); height: var(--exc-cap); margin-block: calc((var(--exc-lh) - var(--exc-cap)) / 2); }
+.exc-plate__lead > * { grid-area: 1 / 1; }
+.exc-plate .k-kbd {
+  --exc-key: 0;                                       /* 1 once the key is armed (chosen) */
+  width: var(--exc-cap); height: var(--exc-cap); min-width: 0; padding: 0;
+  border-radius: var(--r-xs);
+  font-size: var(--fs-sm); font-weight: 600;
+  translate: 0 calc(var(--exc-key) * var(--s-1) / 4);
+  transition: scale var(--t-base) var(--ease-out), opacity var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out);
+}
+.exc-plate__led {
+  --exc-lamp: var(--go);
+  display: grid; place-items: center; width: var(--exc-cap); height: var(--exc-cap);
+  border-radius: var(--r-full); color: var(--ink-on-ignite);
+  background: radial-gradient(circle at 50% 28%, color-mix(in srgb, var(--exc-lamp) 55%, var(--ink)) 0%, var(--exc-lamp) 46%, color-mix(in srgb, var(--exc-lamp) 58%, var(--void)) 100%);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--ink) 55%, transparent), 0 0 0 1px color-mix(in srgb, var(--exc-lamp) 60%, var(--void)), 0 0 var(--s-4) calc(var(--s-1) * -.5) var(--exc-lamp);
+  opacity: 0; scale: .4;
+  transition: scale var(--t-fast) var(--ease-in), opacity var(--t-fast) var(--ease-in);
+}
+.exc-plate__led[data-kind="close"] { --exc-lamp: var(--nogo); }
+
+/* ── states ───────────────────────────────────────────────────────────── */
+/* chosen: ignition rim, a lift, a sweep of light, the keycap armed */
+.exc-plate[data-state="selected"] {
+  --exc-up: 1; --exc-lit: 1;
+  --exc-hi: color-mix(in srgb, var(--ignite-3) 68%, var(--ink));
+  --exc-glow: var(--ignite-glow); --exc-glow-a: 62%;
+  --exc-rim: linear-gradient(180deg,
+    color-mix(in srgb, var(--ignite-3) 38%, var(--ink)) 0%, var(--ignite-3) 14%, var(--ignite-2) 46%, color-mix(in srgb, var(--ignite-1) 58%, var(--void)) 100%);
+  --exc-fill: linear-gradient(180deg, color-mix(in srgb, var(--ignite-flat) 9%, var(--carbon-3)), color-mix(in srgb, var(--ignite-flat) 3%, var(--carbon-2)));
+}
+.exc-plate[data-state="selected"] .exc-plate__glint { opacity: 1; }
+.exc-plate[data-state="selected"] .exc-plate__glint::before { animation: exc-glint var(--t-slower) var(--ease-out) both; }
+.exc-plate[data-state="selected"] .k-kbd {
+  --exc-key: 1;
+  background: var(--ignite); color: var(--ink-on-ignite);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--ignite-3) 55%, var(--ink)), 0 0 var(--s-3) calc(var(--s-1) * -.5) var(--ignite-glow);
+}
+
+/* graded: go and no-go. The lamp replaces the keycap (icon + colour + shape change, never colour alone) */
+.exc-plate:is([data-state="right"], [data-state="wrong"]) .k-kbd { opacity: 0; scale: .6; }
+.exc-plate:is([data-state="right"], [data-state="wrong"]) .exc-plate__led { opacity: 1; scale: 1; transition: scale var(--spring-bounce-ms) var(--spring-bounce), opacity var(--t-fast) var(--ease-out); }
+.exc-plate[data-state="right"] {
+  --exc-up: 1; --exc-lit: 1;
+  --exc-hi: color-mix(in srgb, var(--go) 38%, var(--ink));
+  --exc-glow: var(--go-glow); --exc-glow-a: 66%;
+  --exc-rim: linear-gradient(180deg, color-mix(in srgb, var(--go) 40%, var(--ink)) 0%, var(--go) 30%, color-mix(in srgb, var(--go) 52%, var(--void)) 100%);
+  --exc-fill: linear-gradient(180deg, color-mix(in srgb, var(--go) 16%, var(--carbon-2)), color-mix(in srgb, var(--go) 7%, var(--carbon-1)));
+}
+.exc-plate[data-state="right"] .exc-plate__glint { opacity: 1; }
+.exc-plate[data-state="right"] .exc-plate__glint::before { animation: exc-glint-go var(--t-slower) var(--ease-out) both; }
+.exc-plate[data-state="wrong"] {
+  --exc-lit: 1;
+  --exc-hi: color-mix(in srgb, var(--nogo) 55%, var(--ink));
+  --exc-glow: var(--nogo-glow); --exc-glow-a: 58%;
+  --exc-rim: linear-gradient(180deg, color-mix(in srgb, var(--nogo) 78%, var(--ink)) 0%, var(--nogo) 30%, color-mix(in srgb, var(--nogo) 50%, var(--void)) 100%);
+  --exc-fill: linear-gradient(180deg, color-mix(in srgb, var(--nogo) 14%, var(--carbon-2)), color-mix(in srgb, var(--nogo) 6%, var(--carbon-1)));
+  animation: exc-thud var(--t-slow) var(--ease-out);          /* a soft double thud, never a buzzer */
+}
+.exc-plate[data-state="dim"] { opacity: .74; --exc-glow-a: 30%; }
+.exc-plate[data-state="dim"] .exc-plate__body { color: var(--ink-2); }
+.exc-plate[data-state="dim"] .k-kbd { opacity: .6; }
+
+/* graded plates do not press; the pointer just reads */
+.exc-plate[data-frozen] { cursor: default; }
+
+/* hover (fine pointers only) and press */
+@media (hover: hover) {
+  .exc-plate:is([data-state="rest"], [data-state="selected"]):not([data-frozen]):hover { --exc-hv: 1; }
+}
+.exc-plate:focus-visible { --exc-fc: 1; }
+.exc-plate[data-pressed]:not([data-frozen]) {
+  --exc-pr: 1;
+  transition: translate var(--t-instant) var(--ease-out), scale var(--t-instant) var(--ease-out), filter var(--t-instant) var(--ease-out), opacity var(--t-base) var(--ease-out);
+}
+
+/* ── the True / False tile ────────────────────────────────────────────── */
+.exc-plate[data-layout="tile"] { --exc-h: calc(var(--s-16) * 2 + var(--s-2)); flex-direction: column; }
+.exc-plate[data-tone="go"]   { --exc-tone: var(--go); }
+.exc-plate[data-tone="nogo"] { --exc-tone: var(--nogo); }
+.exc-plate[data-tone][data-state="rest"] {
+  --exc-rim: linear-gradient(180deg,
+    color-mix(in srgb, var(--exc-tone) calc(44% + 22% * var(--exc-hv)), var(--ti-2)) 0%,
+    color-mix(in srgb, var(--exc-tone) 22%, var(--carbon-4)) 46%,
+    color-mix(in srgb, var(--exc-tone) 14%, var(--carbon-3)) 100%);
+}
+.exc-plate[data-state="right"] { --exc-tone: var(--go); }
+.exc-plate[data-state="wrong"] { --exc-tone: var(--nogo); }
+.exc-plate[data-layout="tile"] .exc-plate__in {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--s-2);
+  padding: calc(var(--exc-cap) + var(--s-3)) var(--s-3) var(--s-4); text-align: center;
+}
+.exc-plate__top { position: absolute; z-index: 1; inset: var(--s-3) var(--s-3) auto; display: flex; align-items: center; justify-content: space-between; pointer-events: none; }
+.exc-plate__glyph {
+  display: grid; place-items: center; flex: none; width: var(--tap); height: var(--tap); border-radius: var(--r-full);
+  color: var(--exc-tone, var(--ink-2));
+  background: radial-gradient(circle at 50% 26%, color-mix(in srgb, var(--exc-tone, var(--ink)) 22%, var(--carbon-2)), color-mix(in srgb, var(--exc-tone, var(--ink)) 6%, var(--carbon-1)) 74%);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--rim-hi) 60%, transparent), inset 0 0 0 1px color-mix(in srgb, var(--exc-tone, var(--ink)) 40%, transparent), 0 0 var(--s-4) calc(var(--s-1) * -1.5) color-mix(in srgb, var(--exc-tone, var(--ink)) 70%, transparent);
+  transition: color var(--t-base) var(--ease-out);
+}
+.exc-plate[data-layout="tile"] .exc-plate__body {
+  font-family: var(--font-display); font-weight: 700; font-size: calc(var(--fs-xl) * var(--read-scale, 1)); line-height: 1; letter-spacing: var(--track-label); text-transform: uppercase;
+  margin-right: calc(var(--track-label) * -1);
+}
+.exc-plate[data-layout="tile"][data-state="dim"] .exc-plate__glyph { opacity: .7; }
+
+/* ── the statement ────────────────────────────────────────────────────── */
+.exc-tf { display: flex; flex-direction: column; gap: var(--s-6); min-width: 0; }
+.exc-tf__quote { position: relative; margin: 0; padding: var(--s-8) var(--s-1) 0; }
+.exc-tf__mark {
+  position: absolute; top: 0; left: calc(var(--s-1) * -1); pointer-events: none; user-select: none;
+  font-family: var(--font-serif); font-size: var(--fs-5xl); font-weight: 400; line-height: 1;
+  color: color-mix(in srgb, var(--ink) 16%, transparent);
+}
+.exc-tf__text {
+  --exc-q: var(--fs-xl);
+  position: relative; margin: 0;
+  color: var(--ink); font-family: var(--font-serif); font-weight: 400;
+  font-size: calc(var(--exc-q) * var(--read-scale, 1)); line-height: 1.32;
+  text-wrap: balance; overflow-wrap: anywhere; hanging-punctuation: first;
+}
+.exc-tf__text::after { content: "\201D"; content: "\201D" / ""; color: color-mix(in srgb, var(--ink) 34%, transparent); }
+.exc-tf__quote[data-size="m"] .exc-tf__text { --exc-q: calc(var(--fs-lg) * 1.1); }
+.exc-tf__quote[data-size="l"] .exc-tf__text { --exc-q: var(--fs-lg); }
+.exc-tf__plates { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-3); }
+
+/* ── motion ───────────────────────────────────────────────────────────── */
+@keyframes exc-in { from { opacity: 0; translate: 0 var(--s-3); } }
+@keyframes exc-glint { from { translate: -110% 0; } to { translate: 110% 0; } }
+@keyframes exc-glint-go { from { translate: -110% 0; } to { translate: 110% 0; } }
+/* a lifted plate drops, rebounds twice and settles: weight, not a shake */
+@keyframes exc-thud {
+  0%   { translate: 0 calc(var(--s-1) * -.75); }
+  22%  { translate: 0 calc(var(--s-1) * .75); }
+  44%  { translate: 0 calc(var(--s-1) * -.25); }
+  64%  { translate: 0 calc(var(--s-1) * .35); }
+  100% { translate: 0 0; }
+}
+
+/* ── small screens: option text steps down a size so four long answers stay on one scroll ───────── */
+@media (max-height: 700px) {
+  .exc-plate { --exc-fs: calc(var(--fs-md) * var(--read-scale, 1)); }
+  .exc-group { gap: var(--s-2); }
+  .exc-tf { gap: var(--s-4); }
+  .exc-tf__quote { padding-top: var(--s-6); }
+  .exc-tf__mark { font-size: var(--fs-4xl); }
+  .exc-plate[data-layout="tile"] { --exc-h: calc(var(--s-16) * 2); }
+  .exc-plate[data-layout="tile"] .exc-plate__in { padding-top: calc(var(--exc-cap) + var(--s-2)); padding-bottom: var(--s-3); }
+}
+@media (max-width: 380px) {
+  .exc-plate__in { column-gap: var(--s-2); padding-right: var(--s-3); }
+}
+
+/* ── Lite: no glow filters, no weave, no sweep; the rim, lift and lamp carry the state ───────────── */
+html[data-fx="lite"] .exc-plate { filter: none; animation: none; }
+html[data-fx="lite"] .exc-plate__fill::after, html[data-fx="lite"] .exc-plate__glint { display: none; }
+html[data-fx="lite"] .exc-plate[data-state="wrong"] { animation: none; }
+
+/* ── Windows High Contrast: system colours, a real border on the silhouette ───────────────────── */
+@media (forced-colors: active) {
+  .exc-plate { filter: none; }
+  .exc-plate__face { background: ButtonText; }
+  .exc-plate__fill { background: Canvas; box-shadow: none; }
+  .exc-plate__fill::after, .exc-plate__sheen, .exc-plate__glint { display: none; }
+  .exc-plate[data-state="selected"] .exc-plate__face { background: Highlight; }
+  .exc-plate[data-state="selected"] .exc-plate__body { text-decoration: underline; }
+  .exc-plate__ring { background: Highlight; }
+  .exc-plate__led, .exc-plate__glyph { background: Canvas; color: CanvasText; box-shadow: inset 0 0 0 2px ButtonText; }
+}
+}

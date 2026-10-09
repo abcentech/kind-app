@@ -1,0 +1,110 @@
+/* owner: wave-2: me-core — the Me tab: composer, Pilot card, Missions, Family, Links, About, Developer. Prefix .me- */
+@layer screen {
+  .me {
+    display: flex; flex-direction: column; gap: var(--s-8);
+    padding: var(--s-2) var(--gutter) var(--s-4);
+    min-width: 0;
+  }
+  .me-title {
+    margin: 0; color: var(--ink-3);
+    font: 500 var(--fs-xs)/1 var(--font-mono); letter-spacing: var(--track-mono); text-transform: uppercase;
+  }
+  .me-title + .me-pilot { margin-top: calc(var(--s-4) * -1); }   /* the callsign sits on the card, not floating above a gap */
+  #me-gu-h { text-transform: none; }   /* brand casing: goDs University */
+  .me-sec { display: flex; flex-direction: column; gap: var(--s-3); min-width: 0; }
+  .me-h { margin: 0; padding: 0 var(--s-4); }   /* same inset as the grouped-row titles (.k-rowgroup__title) */
+  .me-help { margin: calc(var(--s-1) * -1) 0 var(--s-1); padding: 0 var(--s-4); color: var(--ink-3); font-size: var(--fs-sm); line-height: 1.45; text-wrap: pretty; }
+
+  /* ── Pilot ─────────────────────────────────────────────────────────── */
+  .me-pilot__card { display: flex; flex-direction: column; gap: var(--s-4); }
+  .me-pilot__top { display: flex; align-items: center; gap: var(--s-4); min-width: 0; }
+  .me-pilot__top > .k-hex { flex: none; }
+  .me-pilot__initial {
+    font: 600 var(--fs-2xl)/1 var(--font-ui); letter-spacing: var(--track-tight); color: var(--ink);
+  }
+  .me-pilot__id { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--s-1); }
+  .me-pilot__name {
+    display: inline-flex; align-items: flex-start; gap: var(--s-2); max-width: 100%; min-height: var(--tap);
+    padding: var(--s-1) 0; margin: calc(var(--s-1) * -1) 0; background: none; border: 0; text-align: left; cursor: pointer;
+    color: var(--ink); font: 600 var(--fs-xl)/1.25 var(--font-ui); letter-spacing: var(--track-tight);
+    border-radius: var(--r-xs);
+  }
+  .me-pilot__name > span { min-width: 0; overflow-wrap: anywhere; text-wrap: balance; }
+  .me-pilot__name > .k-icon { flex: none; margin-top: .45em; color: var(--ink-3); transition: color var(--t-base) var(--ease-out); }
+  .me-pilot__name:hover > .k-icon { color: var(--tele); }
+  .me-pilot__role, .me-pilot__since {
+    margin: 0; color: var(--ink-3); font: 500 var(--fs-2xs)/1.4 var(--font-mono); letter-spacing: var(--track-mono); text-transform: uppercase;
+    overflow-wrap: anywhere;
+  }
+  .me-pilot__role { color: var(--ink-2); }
+  .me-pilot__since:empty { display: none; }
+
+  .me-pilot__rank {
+    display: flex; align-items: center; gap: var(--s-4);
+    padding-top: var(--s-4); border-top: var(--hair) solid var(--line-2);
+  }
+  .me-pilot__rank > svg, .me-pilot__rank > .art-rank { flex: none; }
+  .me-pilot__rankbody { min-width: 0; display: flex; flex-direction: column; gap: var(--s-1); }
+  .me-pilot__eyebrow { margin: 0; color: var(--ink-3); font: 500 var(--fs-2xs)/1 var(--font-mono); letter-spacing: var(--track-mono); text-transform: uppercase; }
+  .me-pilot__rankname { margin: 0; font: 600 var(--fs-3xl)/.95 var(--font-display); letter-spacing: var(--track-label); text-transform: uppercase; }
+  .me-pilot__xp { margin: 0; color: var(--tele); font: 600 var(--fs-lg)/1 var(--font-display); font-variant-numeric: tabular-nums; }
+  .me-pilot__xp span { color: var(--ink-3); font: 500 var(--fs-xs)/1 var(--font-mono); letter-spacing: var(--track-mono); }
+  .me-pilot__next { margin: calc(var(--s-1) * -1) 0 0; color: var(--ink-2); font: 500 var(--fs-xs)/1.4 var(--font-mono); letter-spacing: var(--track-mono); }
+
+  .me-insts {
+    list-style: none; margin: 0; padding: var(--s-4) 0 0; border-top: var(--hair) solid var(--line-2);
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s-1);
+  }
+  .me-inst { display: flex; flex-direction: column; align-items: center; gap: var(--s-2); min-width: 0; }
+  /* the dial reads as a ring-and-number at this size: the needle would sit on the numerals (Gauge skips its tween when needle={false}, so hide it here) */
+  .me-inst :is(.k-gauge-needle, .k-gauge-shadow, .k-gauge-hub-shadow, .k-gauge-hub, .k-gauge-hub-cap, .k-gauge-jewel) { display: none; }
+  .me-inst__label {
+    color: var(--ink-3); font: 500 var(--fs-2xs)/1.2 var(--font-mono); letter-spacing: var(--track-mono); text-transform: uppercase; text-align: center;
+  }
+
+  /* ── Missions ──────────────────────────────────────────────────────── */
+  .me-list, .me-kids { list-style: none; margin: 0; padding: 0; }
+  .me-list { display: flex; flex-direction: column; gap: var(--s-3); }
+  .me-mission { display: flex; align-items: center; gap: var(--s-4); width: 100%; min-height: calc(var(--tap) + var(--s-8)); text-align: left; color: var(--ink); }
+  .me-mission > .art-patch, .me-mission > svg { flex: none; }
+  .me-mission__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--s-1); }
+  .me-mission__title { font: 600 var(--fs-base)/1.2 var(--font-ui); letter-spacing: var(--track-tight); overflow-wrap: anywhere; }
+  .me-mission__meta, .me-mission__count {
+    color: var(--ink-3); font: 500 var(--fs-2xs)/1.3 var(--font-mono); letter-spacing: var(--track-mono); text-transform: uppercase;
+  }
+  .me-mission__prog { display: block; height: 3px; margin: var(--s-1) 0; border-radius: var(--r-full); background: var(--carbon-4); overflow: hidden; }
+  .me-mission__prog > i { display: block; height: 100%; width: 100%; transform-origin: left; background: var(--tele); border-radius: inherit; }
+  .me-mission__side { flex: none; min-inline-size: 5.5rem; display: flex; flex-direction: column; align-items: flex-end; gap: var(--s-2); }
+  .me-mission__on { display: inline-flex; align-items: center; gap: var(--s-1); color: var(--tele); font: 500 var(--fs-2xs)/1 var(--font-mono); letter-spacing: var(--track-mono); text-transform: uppercase; }
+
+  /* ── Family ────────────────────────────────────────────────────────── */
+  .me-kids { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+  .me-kids .k-chip { min-height: var(--tap); }
+  .me-kids .k-chip__text { font: 500 var(--fs-md)/1.2 var(--font-ui); letter-spacing: normal; text-transform: none; }
+  .me-addkid { display: flex; align-items: flex-end; gap: var(--s-3); }
+  .me-addkid > .k-field { flex: 1; min-width: 0; }
+  .me-addkid > .k-btn { flex: none; }
+
+  /* ── About ─────────────────────────────────────────────────────────── */
+  .me-privacy {
+    display: flex; flex-direction: column; gap: var(--s-2);
+    padding: var(--s-5); border-radius: var(--r-md); background: var(--plate); box-shadow: var(--bevel), var(--shadow-1);
+    border-inline-start: 2px solid var(--go);
+  }
+  .me-privacy p { margin: 0; }
+  .me-privacy__line { font: 600 var(--fs-xl)/1.15 var(--font-serif); letter-spacing: var(--track-tight); color: var(--ink); text-wrap: balance; }
+  .me-privacy__detail { color: var(--ink-2); font-size: var(--fs-md); line-height: 1.5; text-wrap: pretty; }
+  .me-privacy__warn { color: var(--ink-3); font: 500 var(--fs-xs)/1.5 var(--font-mono); letter-spacing: var(--track-mono); }
+  .me-gloss { display: flex; flex-direction: column; margin: 0; padding: 0 0 var(--s-4); }
+  .me-gloss__item { padding: var(--s-4) 0; }
+  .me-gloss__item + .me-gloss__item { border-top: var(--hair) solid var(--line-2); }
+  .me-gloss dt { margin: 0 0 var(--s-1); color: var(--ink); font: 600 var(--fs-lg)/1.1 var(--font-display); letter-spacing: var(--track-label); text-transform: uppercase; }
+  .me-gloss dd { margin: 0; color: var(--ink-2); font-size: var(--fs-md); line-height: 1.5; text-wrap: pretty; }
+
+  /* ── Developer ─────────────────────────────────────────────────────── */
+  .me-dev__clock { display: flex; flex-direction: column; gap: var(--s-3); }
+  .me-dev__btns { display: flex; gap: var(--s-3); flex-wrap: wrap; }
+  .me-fps { color: var(--go); font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+  @media (min-width: 720px) { .me { padding-inline: var(--s-6); } }
+}

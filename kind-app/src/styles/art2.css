@@ -1,0 +1,87 @@
+/* owner: art-emblems agent — collectibles: patch, insignia, medal, code card, chest, trophy, shield, flame mark.
+   Everything here is motion + light that SVG attributes cannot express (flicker, glints, foil that follows --gx/--gy).
+   Lite (html[data-fx="lite"]) and reduced-motion: every animation off, every blend/blur layer dropped, state still readable. */
+@layer ui {
+  .art-flamemark, .art-patch, .art-rank, .art-medal, .art-codecard, .art-chest, .art-trophy, .art-shieldmark { display: block; flex: none; overflow: visible; }
+
+  /* ───────── FlameMark ───────── */
+  .art-flamemark__l1, .art-flamemark__l2, .art-flamemark__l3, .art-flamemark__core, .art-flamemark__t1, .art-flamemark__t2 {
+    transform-box: fill-box; transform-origin: 50% 100%;
+  }
+  .art-flamemark.is-lit .art-flamemark__l1 { animation: art2-flick-a 1.7s ease-in-out var(--fm-d, 0s) infinite alternate; }
+  .art-flamemark.is-lit .art-flamemark__l2 { animation: art2-flick-b 1.15s ease-in-out var(--fm-d, 0s) infinite alternate; }
+  .art-flamemark.is-lit .art-flamemark__l3 { animation: art2-flick-a 0.85s ease-in-out var(--fm-d, 0s) infinite alternate; }
+  .art-flamemark.is-lit .art-flamemark__core { animation: art2-flick-b 0.6s ease-in-out var(--fm-d, 0s) infinite alternate; }
+  .art-flamemark.is-lit .art-flamemark__t1 { animation: art2-flick-b 1.3s ease-in-out var(--fm-d, 0s) infinite alternate; }
+  .art-flamemark.is-lit .art-flamemark__t2 { animation: art2-flick-a 1.45s ease-in-out var(--fm-d, 0s) infinite alternate; }
+  .art-flamemark.is-lit .art-flamemark__halo { animation: art2-breathe 2.4s ease-in-out var(--fm-d, 0s) infinite alternate; transform-box: fill-box; transform-origin: 50% 60%; }
+  .art-flamemark.is-lit .art-flamemark__ring { animation: art2-spin 24s linear infinite; transform-box: fill-box; transform-origin: 50% 50%; }
+  .art-flamemark__spark { transform-box: fill-box; transform-origin: 50% 100%; animation: art2-rise 2.2s ease-out calc(var(--i) * -0.55s) infinite; opacity: 0; }
+  @keyframes art2-flick-a { 0% { transform: scale(1, 1) skewX(0deg); } 50% { transform: scale(.965, 1.045) skewX(1.8deg); } 100% { transform: scale(1.025, .975) skewX(-1.6deg); } }
+  @keyframes art2-flick-b { 0% { transform: scale(1, 1.02) skewX(-1.2deg); } 50% { transform: scale(1.03, .97) skewX(1.4deg); } 100% { transform: scale(.97, 1.05) skewX(0deg); } }
+  @keyframes art2-breathe { from { opacity: .72; transform: scale(.96); } to { opacity: 1; transform: scale(1.04); } }
+  @keyframes art2-spin { to { transform: rotate(360deg); } }
+  @keyframes art2-rise { 0% { opacity: 0; transform: translateY(6px) scale(1); } 18% { opacity: .95; } 100% { opacity: 0; transform: translateY(-22px) scale(.3); } }
+
+  /* ───────── MissionPatch: one glint, once, on mount ───────── */
+  .art-patch__sweep { animation: art2-sweep 1.5s var(--ease-io) .35s 1 both; }
+  @keyframes art2-sweep { from { transform: translateX(0); } to { transform: translateX(330px); } }
+
+  /* ───────── CodeCardArt ─────────
+     The plate is an <svg>; everything that reacts to light is a sibling layer, so tilting repaints nothing in the plate.
+     --gx --gy (%) and --tilt-on (0..1) arrive from usePointerTilt on any ancestor; with no tilt the card rests in a flattering light. */
+  .art-codecard { position: relative; display: block; overflow: hidden; isolation: isolate; background: var(--carbon-1); content-visibility: auto;
+    clip-path: polygon(8.667% 0, 100% 0, 100% 93.81%, 91.333% 100%, 0 100%, 0 6.19%); }
+  .art-codecard__plate { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .art-codecard__glare { position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(circle at var(--gx, 28%) var(--gy, 18%), var(--rim-hi), transparent 58%);
+    opacity: calc(.38 + var(--tilt-on, 0) * .62); }
+  .art-codecard__edge { position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 var(--hair) 0 var(--rim-hi), inset 0 calc(var(--hair) * -1) 0 var(--rim-lo); }
+  .art-codecard__foil { position: absolute; inset: 0; overflow: hidden; pointer-events: none;
+    -webkit-mask: var(--cc-mask) center / 100% 100% no-repeat; mask: var(--cc-mask) center / 100% 100% no-repeat;
+    opacity: calc(.82 + var(--tilt-on, 0) * .18); }
+  .art-codecard__sheen { position: absolute; inset: -60%;
+    background:
+      linear-gradient(112deg, transparent 40%, color-mix(in srgb, var(--tele) 30%, transparent) 46%, transparent 50%, color-mix(in srgb, var(--ignite-2) 34%, transparent) 55%, transparent 61%),
+      conic-gradient(from 150deg at 50% 50%, var(--gold-3) 0deg, var(--gold-1) 34deg, var(--ink) 58deg, var(--gold-2) 84deg, var(--gold-3) 130deg, var(--gold-1) 196deg, var(--gold-2) 244deg, var(--gold-3) 300deg, var(--gold-1) 338deg, var(--gold-3) 360deg);
+    transform: translate(calc((50% - var(--gx, 50%)) * .34), calc((50% - var(--gy, 50%)) * .34)); }
+
+  /* ───────── Medal: one glint, once ───────── */
+  .art-medal__sweep { animation: art2-msweep 1.3s var(--ease-io) .5s 1 both; }
+  @keyframes art2-msweep { from { transform: translateX(0); } to { transform: translateX(120px); } }
+
+  /* ───────── Chest: the strip breathes, motes drift up out of an open crate ───────── */
+  .art-chest__strip { animation: art2-strip 2.8s var(--ease-io) infinite alternate; }
+  .art-chest__mote { transform-box: fill-box; transform-origin: 50% 50%; animation: art2-mote 3.2s ease-out calc(var(--i) * -0.55s) infinite; opacity: 0; }
+  .art-chest__light { transform-box: fill-box; }
+  @keyframes art2-strip { from { opacity: .72; } to { opacity: 1; } }
+  @keyframes art2-mote { 0% { opacity: 0; transform: translateY(10px) scale(.4); } 25% { opacity: 1; } 100% { opacity: 0; transform: translateY(-26px) scale(1); } }
+
+  /* ───────── ShieldEmblem: active = two field rings pulse out of the plate ───────── */
+  .art-shieldmark__ring { transform-box: fill-box; transform-origin: 50% 50%; animation: art2-aura 2.6s var(--ease-out) infinite; opacity: 0; }
+  .art-shieldmark__ring.is-b { animation-delay: 1.3s; }
+  @keyframes art2-aura { 0% { opacity: .85; transform: scale(1); } 100% { opacity: 0; transform: scale(1.32); } }
+
+  /* ───────── Trophy: a single glint that comes and goes ───────── */
+  .art-trophy__glint { transform-box: fill-box; transform-origin: 50% 50%; animation: art2-twinkle 3.6s ease-in-out 1s infinite; opacity: 0; }
+  @keyframes art2-twinkle { 0%, 70%, 100% { opacity: 0; transform: scale(.3) rotate(0deg); } 80% { opacity: 1; transform: scale(1) rotate(45deg); } 90% { opacity: 0; transform: scale(.6) rotate(90deg); } }
+
+  /* ───────── lite / reduced motion: freeze everything, drop the layers that only exist to move ───────── */
+  html[data-fx='lite'] .art-patch__sweep, html[data-fx='lite'] .art-medal__sweep { display: none; }
+  html[data-fx='lite'] .art-codecard__sheen { transform: none; }
+  html[data-fx='lite'] .art-codecard__glare { display: none; }
+  html[data-fx='lite'] .art-chest__strip, html[data-fx='lite'] .art-trophy__glint, html[data-fx='lite'] .art-shieldmark__ring { animation: none; }
+  html[data-fx='lite'] .art-chest__mote, html[data-fx='lite'] .art-trophy__glint { display: none; }
+  html[data-fx='lite'] .art-shieldmark__ring.is-b { display: none; }
+  html[data-fx='lite'] .art-shieldmark__ring { opacity: .5; }
+  html[data-fx='lite'] .art-flamemark *, html[data-fx='lite'] .art-flamemark { animation: none; }
+  html[data-fx='lite'] .art-flamemark__spark { opacity: .85; }
+  @media (prefers-reduced-motion: reduce) {
+    .art-patch__sweep, .art-medal__sweep { display: none; }
+    .art-chest__strip, .art-trophy__glint, .art-shieldmark__ring { animation: none; }
+    .art-chest__mote, .art-trophy__glint, .art-shieldmark__ring.is-b { display: none; }
+    .art-shieldmark__ring { opacity: .5; }
+    .art-flamemark *, .art-flamemark { animation: none; }
+    .art-flamemark__spark { opacity: .85; }
+  }
+}

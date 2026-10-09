@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en" data-fx="full">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#06070d" />
+    <title>KIND v7 · Complete / reward beats</title>
+    <link rel="icon" href="data:," />
+    <script>/* motion.js reads data-fx once at load: set it before any module runs so JS and CSS agree */ if (/[?&]fx=lite/.test(location.search)) document.documentElement.setAttribute("data-fx", "lite")</script>
+    <style>
+      /* playground chrome only: a stand-in for complete-shell's Stage (starfield, limb, persistent top bar with Skip) */
+      .pg-stage { position: absolute; inset: 0; display: flex; flex-direction: column; min-height: 0; background: var(--carbon-0); overflow: hidden; }
+      .pg-sky { position: absolute; inset: 0; pointer-events: none; }
+      .pg-bar { position: relative; z-index: 2; flex: none; display: flex; align-items: center; justify-content: space-between; height: 56px; padding: 0 var(--s-5); font: 500 11px/1 var(--font-mono); letter-spacing: var(--track-mono); color: var(--ink-3); text-transform: uppercase; }
+      .pg-bar button { all: unset; cursor: pointer; padding: 10px 6px; color: var(--ink-2); }
+      .pg-bar button:focus-visible { outline: 2px solid var(--tele); }
+      .pg-body { position: relative; z-index: 1; flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; }
+      .pg-log { position: absolute; z-index: 3; left: var(--s-5); bottom: 4px; font: 500 10px/1 var(--font-mono); color: var(--ink-4); pointer-events: none; }
+      .pg-nav { position: fixed; z-index: 99; top: 8px; left: 8px; display: none; flex-wrap: wrap; gap: 4px; max-width: 220px; font: 500 11px/1.4 var(--font-mono); }
+      .pg-nav a { color: var(--ink-3); text-decoration: none; padding: 2px 6px; border: 1px solid var(--line); }
+      .pg-nav a[aria-current] { color: var(--ink); border-color: var(--tele); }
+      @media (min-width: 760px) { .pg-nav { display: flex; } }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="./complete-reward.jsx"></script>
+  </body>
+</html>
