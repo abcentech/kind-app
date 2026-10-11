@@ -12,9 +12,15 @@ try {
   if (q === 'live' || q === '') sessionStorage.removeItem(KEY)
   else if (q) {
     const t = new Date(q.length <= 10 ? q + 'T09:00:00' : q).getTime()
-    if (!Number.isNaN(t)) sessionStorage.setItem(KEY, String(t - Date.now()))
+    if (!Number.isNaN(t)) {
+      // Time travel is a demo tool: it must never stick to a tab. Only dev builds keep it across reloads;
+      // in production it lasts for this page load (in-app navigation keeps it, a reload goes back to today).
+      offset = t - Date.now(); simulated = true
+      if (import.meta.env.DEV) sessionStorage.setItem(KEY, String(offset))
+      else sessionStorage.removeItem(KEY)
+    }
   }
-  const saved = sessionStorage.getItem(KEY)
+  const saved = import.meta.env.DEV ? sessionStorage.getItem(KEY) : null
   if (saved != null) { offset = Number(saved) || 0; simulated = offset !== 0 }
 } catch { /* private mode: run on the real clock */ }
 

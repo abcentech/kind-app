@@ -836,7 +836,7 @@ t('launchBarContext: every state copy.launchBarCopy knows, reached for the right
   const w2 = ctx(S.snapshot(), A(13, 5, 30)); assert.equal(w2.state, 'waiting'); assert.equal(w2.countdown, 30 * 6e4) // before 06:00 the new day is still locked
   // selah (Aug 9) after a done Saturday: the streak rests, nothing is at risk
   begin('2026-08-08T19:00'); quiet(AUG, [8]); playOn('2026-08-08', AUG, 8)
-  const se = ctx(S.snapshot(), A(9, 21)); assert.equal(se.state, 'selah'); assert.equal(se.kind, 'selah')
+  const se = ctx(S.snapshot(), A(9, 21)); assert.equal(se.state, 'selah'); assert.equal(se.kind, 'game') // a Sunday Selah is a Game Day (still Selah grace)
   // missed: a shield covered yesterday / the streak ended
   begin('2026-10-02T09:00'); quiet(AUG, range(1, 9))
   for (let i = 1; i <= 7; i++) playOn(OCT(1 + i), AUG, i)
@@ -986,6 +986,7 @@ t('every medal can be earned: a thorough player sweeps the board (and we say wha
     doOne(n % 3 === 0 ? '07:15' : '12:05')
     day = addDays(day, 1)
   }
+  for (const d of [2, 9, 16, 23]) for (const g of L.GAME_IDS) S.recordGame(AUG, d, g, { score: 10, stars: 3 }) // four Game Days (August's Sunday Selahs)
   const st = S.snapshot()
   const missing = S.ACHIEVEMENTS.filter((a) => !st.achievements[a.id]).map((a) => a.id)
   note(`sweep: ${S.ACHIEVEMENTS.length - missing.length}/${S.ACHIEVEMENTS.length} medals · streak ${st.streak} best ${st.best} · xp ${st.xp} · rank ${S.rankFor(st.xp).name} · fragments ${st.fragments} · shields used ${st.stats.shieldsUsed}`)
@@ -1373,6 +1374,53 @@ if (YEAR && guides().length) {
     }
     const slots = guides().flatMap((x) => x.calendar.filter((d) => d.episode).flatMap((d) => L.guideChecks(x, d.day).filter((e) => e.type === 'choice').map((e) => e.answer)))
     if (slots.length > 20) assert.ok(new Set(slots).size >= 3, 'the right answer is not always in one slot')
+  })
+  if (OCT) t('guide: game day, guide Sundays are Game Days; game data comes from the week', () => {
+    for (const x of guides()) for (const d of x.calendar) {
+      const sun = new Date(x.year, x.monthNum - 1, d.day).getDay() === 0
+      assert.equal(L.isGameDay(x, d.day), sun && d.type !== 'intro' && d.type !== 'celebration', `${x.id} day ${d.day}`)
+    }
+    assert.ok(L.isGameDay(OCT, 11) && !L.isGameDay(OCT, 10))
+    const g = L.gameDataFor(OCT, 11)
+    assert.ok(g.words.length >= 4 && g.facts.length >= 4, 'words and facts')
+    for (const f of g.facts) { assert.equal(f.options.length, 4); assert.ok(f.answer >= 0 && f.answer < 4); assert.equal(new Set(f.options).size, 4) }
+    assert.deepEqual(L.gameDataFor(OCT, 11), g, 'deterministic')
+    assert.equal(L.dayState(OCT, 11, S.snapshot()).game, true)
+  })
+  if (OCT) t('guide: game day, an unplayed Sunday is Selah grace; a played-out one grants XP once and keeps the streak', () => {
+    begin('2026-10-10T19:00')
+    S.finishDay(OCT.id, 10, 30, { right: 3, asked: 3 })
+    assert.equal(S.graceKind('2026-10-11'), 'selah')
+    // skip Sunday entirely: Monday the streak is still alive, the Sunday saved as Selah
+    begin('2026-10-10T19:00'); S.finishDay(OCT.id, 10, 30, { right: 3, asked: 3 })
+    const s0 = S.snapshot().streak
+    clock('2026-10-12T19:00'); S.settleStreak()
+    assert.equal(S.snapshot().streak, s0); assert.equal(S.snapshot().saves['2026-10-11'], 'selah')
+    // play it: two games pay per-game XP, the third completes the day (bonus once, streak +1)
+    begin('2026-10-10T19:00'); S.finishDay(OCT.id, 10, 30, { right: 3, asked: 3 })
+    clock('2026-10-11T15:00')
+    const xp0 = S.snapshot().xp, st0 = S.snapshot().streak
+    const a = S.recordGame(OCT.id, 11, 'orbit', { score: 900, stars: 2 })
+    assert.equal(a.xp, S.XP.gamePlay + 2); assert.equal(a.complete, null)
+    assert.equal(S.recordGame(OCT.id, 11, 'orbit', { score: 500, stars: 1 }).xp, 0, 'a replay pays nothing')
+    assert.equal(S.gameStats(S.snapshot(), 'orbit').best, 900)
+    S.recordGame(OCT.id, 11, 'blitz', { score: 10, stars: 1 })
+    const c = S.recordGame(OCT.id, 11, 'match', { score: 10, stars: 3 })
+    assert.ok(c.complete, 'third game completes Game Day')
+    assert.equal(S.snapshot().streak, st0 + 1)
+    assert.ok(S.isDayDone(S.snapshot(), OCT.id, 11))
+    assert.ok(S.gameDayFor(S.snapshot(), OCT.id, 11).complete)
+    assert.ok(S.snapshot().achievements['game-day'])
+    const xp1 = S.snapshot().xp
+    assert.ok(xp1 - xp0 >= S.XP.gameDay + 3 * S.XP.gamePlay)
+    for (const g of ['orbit', 'blitz', 'match']) assert.equal(S.recordGame(OCT.id, 11, g, { score: 1, stars: 0 }).complete, null)
+    assert.equal(S.snapshot().xp, xp1, 'Game Day pays once per Sunday')
+    assert.equal(S.recordGame(OCT.id, 10, 'orbit', { score: 1 }), null, 'a weekday is not a Game Day')
+    // migration-safe: junk is dropped, records survive a round trip
+    const m = S.migrate({ ...S.snapshot(), games: { orbit: { best: '12', plays: 2 }, nope: {} }, gameDays: { 'x:1': { played: ['orbit', 'orbit', 'zz'] }, bad: 1 } })
+    assert.deepEqual(Object.keys(m.games), ['orbit']); assert.equal(m.games.orbit.best, 12)
+    assert.deepEqual(m.gameDays['x:1'].played, ['orbit']); assert.ok(!('bad' in m.gameDays))
+    assert.deepEqual(S.migrate({ v: 5 }).games, {})
   })
   if (SEP) t('guide: finishing a September day pays XP and deals its code card line', () => {
     begin('2026-10-09T19:00')

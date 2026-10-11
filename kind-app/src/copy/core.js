@@ -368,6 +368,12 @@ export const BAR = {
     'Look back, then look up.', 'Rest and review. Skipping Selah will not break your streak.', 'Look back over the week, then say the code together.',
     'A lighter day. Rest and review.', 'No new episode today. Review and rest.', 'Selah: pause and think on it.',
   ],
+  // Sundays: Game Day (kind 'game'). Still a rest day for the streak, so the line never threatens it.
+  game: [
+    'Three games, one week of lessons. Play each once to clear the day.', 'Sunday is Game Day. Beat your best.',
+    'Play the week back. Skipping it will not break your streak.', 'Orbit Run, Quiz Blitz, Signal Match. Play all three.',
+    'Game Day: the week in three quick games.', 'Fly, answer, match. Bring the family.',
+  ],
   finale: ['The last day. Finish what you started.', 'Final launch. Make it count.', 'One more launch to orbit.', 'The last day of the mission. Finish well.'],
   intro: ['The mission starts here.', 'Begin at the beginning.', 'Day 1 sets the course for everything after.', 'The briefing comes first. Begin here.'],
   catchUp: [
@@ -411,7 +417,14 @@ export function launchBarCopy(ctx = {}) {
   const named = (verb) => `${verb} ${dayLabel}${title ? ': ' + title : ''}`
   const o = { state, eyebrow: '', title, meta: mins ? minsLabel(mins) : '', sub: '', note: '', readout: '', cta: 'Launch', ctaAria: '', tone: 'ignite', disabled: false }
 
-  if (state === 'ready' || state === 'first') {
+  if (kind === 'game' && (state === 'ready' || state === 'first' || state === 'selah')) {
+    o.eyebrow = `${dayLabel} · Game Day`
+    o.title = 'Game Day'
+    o.meta = ''
+    o.sub = choose(BAR.game, sd, { mins }).text
+    o.cta = 'Play'
+    o.ctaAria = `Play ${dayLabel}: Game Day`
+  } else if (state === 'ready' || state === 'first') {
     const finale = kind === 'celebration', intro = kind === 'intro', selah = kind === 'selah'
     const pool = state === 'first' ? BAR.first : finale ? BAR.finale : intro ? BAR.intro : selah ? BAR.selah : ctx.role === 'parent' ? BAR.readyParent : BAR.ready
     const eye = state === 'first' ? 'First launch' : finale ? 'Final launch' : intro ? 'Series launch' : selah ? 'Selah' : pick(BAR.readyEyebrow, sd)
@@ -807,7 +820,7 @@ export const labels = {
   tabs: { learn: 'Learn', objectives: 'Objectives', shorts: 'Shorts', locker: 'Locker', me: 'Me' },
   hud: { streak: 'Streak', xp: 'XP', shields: 'Shields' },
   stats: { xp: 'XP', accuracy: 'Accuracy', streak: 'Streak', time: 'Time', answers: 'Answers', cards: 'Cards', rank: 'Rank' },
-  learn: { title: 'Learn', ascent: 'The Ascent', today: 'Today', done: 'Done', locked: 'Locked', stage: 'Stage', mission: 'Mission', pad: 'Launch pad', orbit: 'In orbit', selah: 'Selah', finale: 'Final launch', intro: 'Series launch' },
+  learn: { title: 'Learn', ascent: 'The Ascent', today: 'Today', done: 'Done', locked: 'Locked', stage: 'Stage', mission: 'Mission', pad: 'Launch pad', orbit: 'In orbit', selah: 'Selah', game: 'Game Day', finale: 'Final launch', intro: 'Series launch' },
   objectives: { title: 'Objectives', today: 'Today', month: 'This month', rings: 'Today’s rings', medals: 'Medals', rank: 'Rank', calendar: 'Your month', next: (name) => `Next rank: ${name}`, toGo: (xp) => `${fmtNum(xp)} XP to go` },
   locker: { title: 'Locker', cards: 'Cards', patches: 'Patches', journal: 'Journal', gold: 'Gold', locked: 'Locked', earned: 'Earned', share: 'Share card', practise: 'Practise this day again', unlocksWith: (day) => `Unlocks with Day ${day}`, clearToEarn: (stage) => `Clear Stage ${stage} to earn this patch.` },
   shorts: { title: 'Shorts', play: 'Play', youtube: 'Watch on YouTube', next: 'Next Short', swipe: 'Swipe up for the next Short', loading: 'Loading', length: 'About 60 seconds' },

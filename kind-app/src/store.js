@@ -10,6 +10,7 @@ import {
   allSeries, getSeries, codeFor, dayInfo, epOf, stageOf, stageDays, stageStats, seriesProgress, modeOf, currentDay, isUnlocked,
   nextUnlockAt, estimateMinutes, teaserFor, dayLabel, dayEyebrow, keyOfDay, dayOfKey, addDays, diffDays, weekdayOf,
   isKey, msToMidnight, isPlayable, keyToDate, title as sentence, deckFor, deckLength, activeSeriesId, hasContent, quizCount,
+  isGameDay, GAME_IDS,
 } from './lib.js'
 import { now, today } from './now.js'
 import { reportCheckin } from './api.js'
@@ -33,6 +34,8 @@ export const XP = {
   rare: 20,            // …whose code card is gold
   perfect: 10,         // …with every check right first time
   shieldOverflow: 25,  // a shield earned while holding the maximum becomes this much XP instead
+  gamePlay: 5,         // Game Day: each game's first run of the day (+ its stars), once per game per Game Day
+  gameDay: 30,         // Game Day: all three games played — paid once per Sunday, with the day's completion
 }
 export const MILESTONES = [3, 7, 14, 21, 31, 50, 75, 100, 150, 200, 365]
 export const MILESTONE_XP = { 3: 15, 7: 30, 14: 50, 21: 75, 31: 120, 50: 150, 75: 200, 100: 300, 150: 400, 200: 500, 365: 1000 }
@@ -93,6 +96,8 @@ export function freshState(salt) {
     daily: zeroTally(null), log: {}, saves: {}, stats: emptyStats(),
     achievements: {}, achSeen: [], claims: {}, notices: [], flags: {},
     series: {},
+    // Game Day (additive, no schema bump): games[id] = { best, stars, plays, last }; gameDays['sid:day'] = { played:[id], done:key|null }
+    games: {}, gameDays: {},
   }
 }
 
@@ -185,6 +190,16 @@ export function migrate(raw, at = now()) {
   for (const [k, v] of Object.entries(plain(raw.flags))) if (typeof k === 'string' && k.length <= 60 && (v === true || isKey(v))) st.flags[k] = v
 
   for (const [id, sub] of Object.entries(plain(raw.series))) st.series[id] = cleanSub(sub, st.lastDone || keyNow)
+  for (const [id, v] of Object.entries(plain(raw.games))) {
+    if (!GAME_IDS.includes(id)) continue
+    const o = plain(v)
+    st.games[id] = { best: int(o.best), stars: int(o.stars, 0, 3), plays: int(o.plays), last: key_(o.last) }
+  }
+  for (const [k, v] of Object.entries(plain(raw.gameDays))) {
+    if (!/^[\w-]{1,60}:\d{1,2}$/.test(k)) continue
+    const o = plain(v)
+    st.gameDays[k] = { played: (Array.isArray(o.played) ? o.played : []).filter((g, i, a) => GAME_IDS.includes(g) && a.indexOf(g) === i), done: key_(o.done) }
+  }
 
   if (fromV < SCHEMA) {
     // derive the heat-map log from finished dates (a lower bound: every finished day paid at least the completion bonus)
@@ -426,7 +441,8 @@ const GRACE_TYPES = new Set(['selah', 'rest', 'review'])
  */
 export function graceKind(k) {
   const hit = allSeries.find((s) => dayOfKey(s, k) != null)
-  if (hit) return GRACE_TYPES.has(dayInfo(hit, dayOfKey(hit, k)).type) ? 'selah' : null
+  // A Game Day (a guide-series Sunday) keeps Selah grace: playing is the reward, never the price of the streak.
+  if (hit) return GRACE_TYPES.has(dayInfo(hit, dayOfKey(hit, k)).type) || isGameDay(hit, dayOfKey(hit, k)) ? 'selah' : null
   return weekdayOf(k) === 0 ? 'selah' : null
 }
 
@@ -626,7 +642,10 @@ export const ACHIEVEMENTS = [
   medal('wide-orbit', 'Wide Orbit', 'Finish a lesson in two different missions.', 'bronze', 'orbit', at_least(F('seriesStarted'), 2)),
   medal('chest-1', 'First Chest', 'Open a daily chest.', 'bronze', 'chest', at_least(F('chests'), 1)),
   medal('chest-7', 'Seven Chests', 'Open 7 daily chests.', 'silver', 'chest', at_least(F('chests'), 7)),
+  medal('game-day', 'Game Day', 'Play all three games on a Game Day.', 'bronze', 'target', at_least(gameDaysDone, 1)),
+  medal('game-day-4', 'Arcade Regular', 'Complete 4 Game Days.', 'silver', 'trophy', at_least(gameDaysDone, 4)),
 ]
+function gameDaysDone(st) { return Object.values(st.gameDays || {}).filter((g) => g && g.done).length }
 
 /** Adds any newly satisfied medals (dated k) to the state. → { st, earned:[ids] }; st is the same object when nothing was earned. */
 function sweep(st, k) {
@@ -1047,6 +1066,57 @@ export function finishDay(seriesId, day, lessonXp = 0, meta = {}) {
 }
 
 /* ======================================================================== *
+ *  Game Day (Sundays)
+ * ======================================================================== */
+const gdKey = (seriesId, day) => `${seriesId}:${day}`
+/** One game's record: { best, stars, plays, last } (zeros when never played). */
+export const gameStats = (st, id) => st.games?.[id] || { best: 0, stars: 0, plays: 0, last: null }
+/** A Game Day's ring: { played:[id], done:key|null, count, of, complete }. */
+export function gameDayFor(st, seriesId, day) {
+  const g = st.gameDays?.[gdKey(seriesId, day)] || { played: [], done: null }
+  return { ...g, count: g.played.length, of: GAME_IDS.length, complete: Boolean(g.done) }
+}
+/**
+ * Record one finished game on a Game Day: (state, { seriesId, day, game, score, stars }, instant) → { next, result } | null.
+ * Best/plays/last are kept per game. The first run of each game on a Game Day pays XP.gamePlay + stars. When the third distinct
+ * game lands, the day is finished through finishPure (streak, drop, code card, medals) with XP.gameDay as its "lesson" XP —
+ * exactly once per Sunday: a replay after that only moves best scores.
+ * → result { game, score, stars, best, newBest, plays, xp, played:[id], count, of, complete:finishResult|null }
+ */
+export function gamePure(st0, { seriesId, day, game, score = 0, stars = 0 }, at) {
+  const s = allSeries.find((x) => x.id === seriesId)
+  if (!s || !GAME_IDS.includes(game) || !Number.isInteger(day) || !isGameDay(s, day) || !isUnlocked(s, day, st0, at)) return null
+  const k = today(at)
+  const sc = int(score), sr = int(stars, 0, 3)
+  const prev = gameStats(st0, game)
+  const rec = { best: Math.max(prev.best, sc), stars: Math.max(prev.stars, sr), plays: prev.plays + 1, last: k }
+  const key = gdKey(s.id, day)
+  const gd0 = st0.gameDays?.[key] || { played: [], done: null }
+  const first = !gd0.played.includes(game)
+  const gd = { played: first ? [...gd0.played, game] : gd0.played, done: gd0.done }
+  let st = { ...st0, games: { ...(st0.games || {}), [game]: rec }, gameDays: { ...(st0.gameDays || {}), [key]: gd } }
+  const xp = first && !gd0.done ? XP.gamePlay + sr : 0
+  if (xp) st = addXp(st, xp, k)
+  let complete = null
+  if (!gd.done && gd.played.length >= GAME_IDS.length) {
+    st = addXp(st, XP.gameDay, k)
+    const out = finishPure(st, { seriesId: s.id, day, lessonXp: XP.gameDay, meta: { right: 0, asked: 0, perfect: false, game: true } }, at)
+    if (out) { st = out.next; complete = out.result }
+    st = { ...st, gameDays: { ...st.gameDays, [key]: { ...gd, done: k } } }
+  }
+  return {
+    next: st,
+    result: { game, score: sc, stars: sr, best: rec.best, newBest: sc > prev.best && prev.plays > 0, plays: rec.plays, xp, played: gd.played, count: gd.played.length, of: GAME_IDS.length, complete },
+  }
+}
+export function recordGame(seriesId, day, game, { score = 0, stars = 0 } = {}) {
+  const out = gamePure(state, { seriesId, day, game, score, stars }, now())
+  if (!out) return null
+  commit(out.next)
+  return out.result
+}
+
+/* ======================================================================== *
  *  Launch Bar
  * ======================================================================== */
 /**
@@ -1093,7 +1163,7 @@ export function launchBarContext(s, st, at = now()) {
   const L = launchState(s, st, at)
   const info = streakInfo(st, at)
   const type = dayInfo(s, L.day).type
-  const kind = type === 'selah' || type === 'rest' || type === 'review' ? 'selah' : type === 'intro' ? 'intro' : type === 'celebration' ? 'celebration' : 'teaching'
+  const kind = isGameDay(s, L.day) ? 'game' : type === 'selah' || type === 'rest' || type === 'review' ? 'selah' : type === 'intro' ? 'intro' : type === 'celebration' ? 'celebration' : 'teaching'
   const prog = seriesProgress(s, st)
   const k = today(at)
   const pos = posFor(st, s.id, L.day)
@@ -1110,7 +1180,7 @@ export function launchBarContext(s, st, at = now()) {
   else if (resumable) state = 'progress'
   else if (info.atRisk && info.hoursLeft <= AT_RISK_HOURS) state = 'atRisk'
   else if (L.state === 'archive') state = 'archive'
-  else if (kind === 'selah') state = 'selah'
+  else if (kind === 'selah' || kind === 'game') state = 'selah'
   else state = 'ready'
   const countdown = state === 'atRisk' ? info.msLeft : L.countdown
   return {

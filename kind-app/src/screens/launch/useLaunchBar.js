@@ -22,6 +22,7 @@ const ACT = {
   archive:  { run: 'launch', icon: 'rocket' },
   atRisk:   { run: 'launch', icon: 'flame' },
   selah:    { run: 'open', icon: 'moon' },
+  game:     { run: 'launch', icon: 'target' },  // Sunday: Game Day (ctx.kind 'game')
   waiting:  { run: 'open', iconRight: 'chevronRight', variant: 'ghost', size: 'md' },
   complete: { run: 'open', icon: 'trophy' },
   upcoming: { run: 'remind', icon: 'bell' },
@@ -54,7 +55,7 @@ export function useLaunchBar(s) {
     const cont = ctx.state === 'archive' && ctx.done > 0
     const cta = cont ? `Continue Day ${ctx.day}` : bar.cta
     const ctaAria = cont ? `Continue Day ${ctx.day}${ctx.title ? ': ' + ctx.title : ''}` : bar.ctaAria || bar.cta
-    const act = ACT[bar.state] || ACT.ready
+    const act = (ctx.kind === 'game' && bar.cta === 'Play' ? ACT.game : ACT[bar.state]) || ACT.ready
     const hasClock = ctx.countdown != null && Boolean(bar.readout)
     const target = hasClock ? at.getTime() + ctx.countdown : null
     // the top-edge status strip: 0..1, or null for "lit hairline, no quantity"

@@ -119,6 +119,71 @@ export const shortFor = (s, d) => (d.episode ? s.shorts.find((x) => x.n === d.ep
 export const codeFor = (s, day) => s.codes.find((c) => c.day === day) || null
 /** A 'rest' day has no content to learn; it is never required (but can still be opened). */
 export const isPlayable = (s, day) => dayInfo(s, day).type !== 'rest'
+
+/* ---- Game Day: Sundays are arcade days ----------------------------------- */
+export const GAME_IDS = ['orbit', 'blitz', 'match']
+/**
+ * Is this day a Game Day? Every calendar Sunday of a guide series (Sep/Oct), and any Sunday Selah of the older series.
+ * Intro and finale days keep their own ceremony. A Game Day keeps Selah grace (store.graceKind).
+ */
+export function isGameDay(s, day) {
+  const d = dayInfo(s, day)
+  if (!d || d.type === 'intro' || d.type === 'celebration') return false
+  if (weekdayOf(keyOfDay(s, d.day)) !== 0) return false
+  return s.kind === 'guide' || d.type === 'selah'
+}
+const shortLine = (t, max = 64) => {
+  const f = String(t || '').split('\n')[0].replace(/\*+/g, '').trim()
+  if (f.length <= max) return f.replace(/[.,;:]+$/, '')
+  const cut = f.slice(0, max)
+  return cut.slice(0, Math.max(cut.lastIndexOf(' '), 24)).replace(/[.,;:]+$/, '')
+}
+/**
+ * The game material for a day: the week's code lines and quiz facts, oldest first.
+ * → { words:[string], facts:[{ q, options:[4], answer }], days:[n] }   Pure and deterministic; never empty for a series with codes.
+ * The week is the stage the day sits in, up to and including the day; a thin week borrows from the stage before it.
+ */
+export function gameDataFor(s, day) {
+  const n = dayInfo(s, day).day
+  const all = stageDays(s)
+  const stg = stageOf(s, n)
+  let days = all[stg].filter((x) => x <= n)
+  const teach = (list) => list.filter((x) => dayInfo(s, x).episode && s.episodes?.[dayInfo(s, x).episode])
+  if (teach(days).length < 4 && stg > 0) days = [...all[stg - 1], ...days]
+  if (teach(days).length < 3) days = s.calendar.map((x) => x.day).filter((x) => x <= n)
+  if (teach(days).length < 3) days = s.calendar.map((x) => x.day)
+  const words = [], seen = new Set()
+  const addWord = (t) => { const w = shortLine(t); if (w && w.length >= 3 && !seen.has(w.toLowerCase())) { seen.add(w.toLowerCase()); words.push(w) } }
+  for (const x of days) { const c = codeFor(s, x); if (c) addWord(c.line) }
+  for (const x of teach(days)) { const ep = s.episodes[dayInfo(s, x).episode]; if (words.length < 6) addWord(ep.truth) }
+  if (words.length < 4) (s.declaration || []).forEach(addWord)
+  const facts = [], qs = new Set()
+  const addFact = (q, options, answer) => {
+    if (!q || qs.has(q) || options.length !== 4 || new Set(options.map((o) => o.toLowerCase())).size !== 4 || options.some((o) => !o)) return
+    qs.add(q); facts.push({ q, options, answer })
+  }
+  for (const x of teach(days)) {
+    const ep = s.episodes[dayInfo(s, x).episode]
+    for (const f of ep.quiz || []) if (f.type === 'choice' && f.options.length === 4) addFact(f.q, f.options.slice(), f.answer)
+  }
+  // Thin weeks (older series carry no quiz[]): which scripture anchored which day, distractors from the same series.
+  if (facts.length < 6) {
+    const refs = [...new Set(Object.values(s.episodes || {}).map((e) => e?.scripture?.ref).filter(Boolean))]
+    for (const x of teach(days)) {
+      const ep = s.episodes[dayInfo(s, x).episode]
+      const ref = ep.scripture?.ref
+      if (!ref || refs.length < 4) continue
+      const i = refs.indexOf(ref)
+      const others = refs.filter((r) => r !== ref)
+      const pick3 = [0, 1, 2].map((k) => others[(i * 7 + k * 5 + x) % others.length]).filter((r, k, a) => a.indexOf(r) === k)
+      for (let k = 0; pick3.length < 3 && k < others.length; k++) if (!pick3.includes(others[k])) pick3.push(others[k])
+      const at = (x * 3) % 4
+      const options = [...pick3]; options.splice(at, 0, ref)
+      addFact(`Which scripture anchored “${title(ep.title)}”?`, options, at)
+    }
+  }
+  return { words, facts, days }
+}
 /** False for a teaching day whose episode is not in the library yet ("Coming soon"). */
 export function hasContent(s, day) {
   const d = dayInfo(s, day)
@@ -260,7 +325,7 @@ export function dayState(s, day, st, at = now()) {
   const current = !done && d.day === currentDay(s, st, at) && unlocked
   const code = codeFor(s, d.day)
   return {
-    day: d.day, type: d.type, stage: stageOf(s, d.day),
+    day: d.day, type: d.type, stage: stageOf(s, d.day), game: isGameDay(s, d.day),
     title: dayLabel(s, d.day), eyebrow: dayEyebrow(s, d.day),
     done, unlocked, current, published: hasContent(s, d.day),
     state: done ? 'done' : !unlocked ? 'locked' : current ? 'current' : 'open',

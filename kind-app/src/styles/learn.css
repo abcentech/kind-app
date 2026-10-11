@@ -101,6 +101,15 @@
   }
   .learn-mark[data-kind='celebration'] { background: var(--gold); color: var(--ink-on-ignite); box-shadow: var(--bevel), var(--shadow-1), 0 0 var(--s-4) -2px var(--gold-glow); }
   .learn-mark[data-kind='intro'] { color: var(--tele); }
+  /* Game Day (Sundays): controller glyph in the hex, an ignition ring around it, an ignite chip */
+  .learn-mark[data-kind='game'] { background: var(--ignite); color: var(--ink-on-ignite); box-shadow: var(--bevel), var(--shadow-1), 0 0 var(--s-4) -2px var(--ignite-glow); }
+  .learn-gamering { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+  .learn-gamering polygon { fill: none; stroke: var(--ignite); stroke-width: 2; vector-effect: non-scaling-stroke; stroke-linejoin: round; stroke-dasharray: 6 4; }
+  .learn-node[data-game][data-state='done'] .learn-gamering polygon { stroke-dasharray: none; opacity: .6; }
+  .learn-node[data-game] .learn-pad { color: var(--ignite-3); }
+  .learn-node[data-game][data-state='current'] .learn-pad { color: var(--ink-on-ignite); }
+  .learn-node[data-game] .learn-label__day { color: var(--ignite-3); }
+  .learn-node[data-game] .learn-label__title { font-family: var(--font-mono); letter-spacing: var(--track-mono); font-size: var(--fs-xs); }
 
   .learn-label {
     display: grid; justify-items: center; gap: var(--s-1); max-width: calc(var(--s-20) * 2); margin-top: var(--s-2); text-align: center; pointer-events: none;

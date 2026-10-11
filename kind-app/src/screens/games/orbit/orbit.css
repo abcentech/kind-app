@@ -1,0 +1,249 @@
+/* Game Day · ORBIT RUN. Loaded only by the lazy game chunk.
+   The canvas draws the world and the HUD; the DOM carries what must be pressable or read aloud (pause, ignite, fact gate, sheets).
+   The host should give .orbit a definite height (a full-screen layer); without one it is 420px tall. */
+@layer screen {
+  .orbit {
+    --orbit-top: env(safe-area-inset-top, 0px);
+    --orbit-bot: env(safe-area-inset-bottom, 0px);
+    position: relative;
+    inline-size: 100%;
+    block-size: 100%;
+    min-block-size: 420px;
+    overflow: hidden;
+    background: #05060c;
+    color: var(--ink);
+    font-family: var(--font-ui);
+    isolation: isolate;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .orbit-stage {
+    position: absolute;
+    inset: var(--orbit-top) 0 var(--orbit-bot) 0;
+    touch-action: none;
+    cursor: grab;
+  }
+  .orbit-stage:active { cursor: grabbing; }
+  .orbit-canvas { display: block; inline-size: 100%; block-size: 100%; }
+
+  .orbit-sr {
+    position: absolute;
+    inline-size: 1px; block-size: 1px;
+    margin: -1px; padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .orbit-label {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  /* pause: chamfered, top-left, over the canvas HUD gutter */
+  .orbit-pause {
+    position: absolute;
+    z-index: 2;
+    inset-block-start: calc(var(--orbit-top) + 8px);
+    inset-inline-start: 8px;
+    inline-size: 44px; block-size: 44px;
+    display: grid; place-items: center;
+    padding: 0;
+    border: 1px solid var(--line-2);
+    background: rgba(17, 20, 31, .72);
+    color: var(--ink-2);
+    cursor: pointer;
+    clip-path: var(--clip-cut-sm);
+  }
+  .orbit-pause svg { fill: currentColor; }
+  .orbit-pause:hover { background: var(--carbon-3); color: var(--ink); }
+  .orbit-pause[hidden] { display: none; }
+
+  /* the three-word brief under the countdown */
+  .orbit-hint {
+    position: absolute;
+    z-index: 1;
+    inset-inline: var(--s-4);
+    inset-block-end: calc(var(--orbit-bot) + 70px);
+    margin: 0;
+    display: flex; flex-direction: column; align-items: center; gap: var(--s-1);
+    font-family: var(--font-display);
+    font-size: var(--fs-md);
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    pointer-events: none;
+    animation: orbit-rise .5s var(--ease-out) both;
+  }
+  .orbit-hint span::before { content: ''; display: inline-block; inline-size: 5px; block-size: 5px; margin-inline-end: var(--s-2); vertical-align: middle; background: var(--ignite-flat); transform: translateY(-2px) rotate(45deg); }
+
+  /* ignite: appears when the meter is full; a tap anywhere does the same */
+  .orbit-ignite {
+    position: absolute;
+    z-index: 2;
+    inset-inline-start: 50%;
+    inset-block-end: calc(var(--orbit-bot) + 52px);
+    translate: -50% 0;
+    min-inline-size: 148px; min-block-size: 48px;
+    padding: 0 var(--s-6);
+    border: 0;
+    background: var(--ignite);
+    color: var(--ink-on-ignite);
+    font: 700 var(--fs-lg) var(--font-display);
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    cursor: pointer;
+    clip-path: var(--clip-cut-sm);
+    box-shadow: var(--glow-ignite);
+    animation: orbit-pop .35s var(--ease-out) both, orbit-throb 1.1s ease-in-out .35s infinite alternate;
+  }
+
+  /* fact gate: one tap, never longer than six seconds */
+  .orbit-gate {
+    position: absolute;
+    z-index: 3;
+    inset-inline: var(--s-3);
+    inset-block-start: calc(var(--orbit-top) + 72px);
+    display: grid;
+    gap: var(--s-3);
+    padding: var(--s-4);
+    background: linear-gradient(180deg, rgba(24, 28, 42, .96), rgba(11, 13, 21, .96));
+    border: 1px solid rgba(255, 138, 28, .45);
+    clip-path: var(--clip-cut);
+    animation: orbit-rise .28s var(--ease-out) both;
+  }
+  .orbit-gate .orbit-label { color: var(--ignite-flat); }
+  .orbit-gate__q {
+    margin: 0;
+    font-size: var(--fs-md);
+    line-height: 1.35;
+    font-weight: 600;
+    color: var(--ink);
+    overflow-wrap: anywhere;
+  }
+  .orbit-gate__opts { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-2); }
+  .orbit-gate__opt {
+    display: flex; align-items: center; gap: var(--s-2);
+    min-block-size: 56px;
+    padding: var(--s-2) var(--s-3);
+    border: 1px solid var(--line-2);
+    background: var(--carbon-2);
+    color: var(--ink);
+    font: 600 var(--fs-sm)/1.25 var(--font-ui);
+    text-align: start;
+    cursor: pointer;
+    overflow-wrap: anywhere;
+    clip-path: var(--clip-cut-sm);
+  }
+  .orbit-gate__opt:hover { background: var(--carbon-3); border-color: rgba(255, 138, 28, .6); }
+  .orbit-gate__opt:active { background: var(--carbon-4); }
+  .orbit-gate__opt kbd {
+    flex: none;
+    display: grid; place-items: center;
+    inline-size: 20px; block-size: 20px;
+    font: 600 10px var(--font-mono);
+    color: var(--ink-3);
+    border: 1px solid var(--line-2);
+  }
+  .orbit-gate__timer {
+    display: block;
+    block-size: 3px;
+    background: var(--ignite-flat);
+    transform-origin: 0 50%;
+    animation: orbit-drain 6s linear both;
+  }
+  .orbit-gate[data-paused] .orbit-gate__timer { animation-play-state: paused; }
+
+  /* sheets: pause + mission report */
+  .orbit-sheet {
+    position: absolute;
+    z-index: 4;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: calc(var(--orbit-top) + var(--s-4)) var(--s-4) calc(var(--orbit-bot) + var(--s-4));
+    background: rgba(5, 6, 12, .72);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    animation: orbit-fade .2s ease-out both;
+  }
+  .orbit-card {
+    inline-size: min(100%, 340px);
+    display: grid;
+    gap: var(--s-3);
+    padding: var(--s-6) var(--s-5) var(--s-5);
+    background: var(--plate);
+    border: 1px solid var(--line-2);
+    clip-path: var(--clip-cut);
+    text-align: center;
+    animation: orbit-rise .3s var(--ease-out) both;
+  }
+  .orbit-card__title {
+    margin: 0 0 var(--s-2);
+    font: 700 var(--fs-2xl)/1 var(--font-display);
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+  .orbit-sheet--end .orbit-card__title { color: var(--ignite-flat); }
+
+  .orbit-btn {
+    min-block-size: 48px;
+    border: 1px solid var(--line-2);
+    background: var(--carbon-2);
+    color: var(--ink);
+    font: 700 var(--fs-md) var(--font-display);
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    cursor: pointer;
+    clip-path: var(--clip-cut-sm);
+  }
+  .orbit-btn:hover { background: var(--carbon-3); }
+  .orbit-btn--go { border: 0; background: var(--ignite); color: var(--ink-on-ignite); }
+  .orbit-btn--go:hover { background: var(--ignite); filter: brightness(1.08); }
+  .orbit-btn--ghost { background: transparent; border-color: transparent; color: var(--ink-2); }
+  .orbit-pause:focus-visible, .orbit-ignite:focus-visible, .orbit-gate__opt:focus-visible, .orbit-btn:focus-visible { outline: 2px solid var(--ignite-flat); outline-offset: -4px; }
+
+  .orbit-stars { display: flex; justify-content: center; gap: var(--s-3); }
+  .orbit-stars svg { inline-size: 40px; block-size: 40px; fill: var(--carbon-4); stroke: var(--line-2); stroke-width: 1; }
+  .orbit-stars svg.is-on { fill: var(--ignite-3); stroke: var(--ignite-1); animation: orbit-star .45s var(--ease-out) calc(.25s + var(--i) * .16s) both; }
+
+  .orbit-stats {
+    margin: var(--s-2) 0 0;
+    display: grid;
+    grid-template-columns: 1fr 1.2fr 1fr;
+    gap: var(--s-2);
+  }
+  .orbit-stats div { display: grid; gap: 2px; padding: var(--s-2) 0; border-block: 1px solid var(--line); min-inline-size: 0; }
+  .orbit-stats dt { font: 600 10px var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
+  .orbit-stats dd { margin: 0; font: 700 var(--fs-lg)/1.1 var(--font-display); overflow-wrap: anywhere; }
+  .orbit-stats .is-main dd { font-size: var(--fs-xl); color: var(--ignite-flat); }
+  .orbit-mini { margin: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: var(--s-1) var(--s-3); font: 500 var(--fs-xs) var(--font-mono); color: var(--ink-2); }
+  .orbit-next { margin: 0 0 var(--s-2); font-size: var(--fs-xs); color: var(--ink-3); }
+
+  @keyframes orbit-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  @keyframes orbit-fade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes orbit-pop { from { opacity: 0; scale: .7; } to { opacity: 1; scale: 1; } }
+  @keyframes orbit-throb { from { filter: brightness(1); } to { filter: brightness(1.18); } }
+  @keyframes orbit-drain { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+  @keyframes orbit-star { 0% { opacity: 0; scale: .3; rotate: -30deg; } 70% { scale: 1.18; } 100% { opacity: 1; scale: 1; rotate: 0deg; } }
+
+  html[data-fx="lite"] .orbit-sheet { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(5, 6, 12, .9); }
+  html[data-fx="lite"] .orbit-ignite { animation: none; }
+  html[data-fx="lite"] .orbit-hint,
+  html[data-fx="lite"] .orbit-gate,
+  html[data-fx="lite"] .orbit-card,
+  html[data-fx="lite"] .orbit-sheet,
+  html[data-fx="lite"] .orbit-stars svg.is-on { animation: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .orbit-ignite, .orbit-hint, .orbit-gate, .orbit-card, .orbit-sheet, .orbit-stars svg.is-on { animation: none; }
+  }
+}

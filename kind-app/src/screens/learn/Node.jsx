@@ -17,9 +17,18 @@ const MARK = { intro: 'flag', selah: 'star', celebration: 'trophy' }
 const KIND = { intro: labels.learn.intro, selah: labels.learn.selah, celebration: labels.learn.finale }
 const HEX_PTS = '50,0 100,28.87 100,86.6 50,115.47 0,86.6 0,28.87'   // the Hex outline in its own 100 x 115.47 box
 
+/** Game Day (Sundays): a drawn controller, not an emoji. currentColor so the hex state tints it. */
+export const PadGlyph = ({ size = 28 }) => (
+  <svg className="learn-pad" width={size} height={size} viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+    <path d="M9.5 9h13c3.6 0 6 2.6 6.6 6.4l.8 5.4c.4 2.7-1.4 4.7-3.6 4.7-1.5 0-2.6-.8-3.4-2.1L21.6 21H10.4l-1.3 2.4c-.8 1.3-1.9 2.1-3.4 2.1-2.2 0-4-2-3.6-4.7l.8-5.4C3.5 11.6 5.9 9 9.5 9z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+    <path d="M10 13v5M7.5 15.5h5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    <circle cx="21.5" cy="14" r="1.5" fill="currentColor" /><circle cx="24.5" cy="17" r="1.5" fill="currentColor" />
+  </svg>
+)
+
 const same = (a, b) =>
   a.here === b.here && a.live === b.live && a.f === b.f && a.tilt === b.tilt && a.onOpen === b.onOpen &&
-  a.n.day === b.n.day && a.n.state === b.n.state && a.n.rare === b.n.rare && a.n.title === b.n.title &&
+  a.n.day === b.n.day && a.n.game === b.n.game && a.n.state === b.n.state && a.n.rare === b.n.rare && a.n.title === b.n.title &&
   a.n.published === b.n.published && (a.n.unlockAt?.getTime() ?? 0) === (b.n.unlockAt?.getTime() ?? 0)
 
 const Node = memo(function Node({ n, here, live, f, tilt, onOpen }) {
@@ -27,8 +36,9 @@ const Node = memo(function Node({ n, here, live, f, tilt, onOpen }) {
   const state = n.rare && n.state === 'open' ? 'rare' : n.state
   const tone = n.state === 'done' ? (n.rare ? 'gold' : 'stage') : undefined
   const size = here ? SIZE.here : SIZE.node
-  const kind = KIND[n.type]
-  const mark = MARK[n.type]
+  const game = Boolean(n.game)
+  const kind = game ? labels.learn.game : KIND[n.type]
+  const mark = game ? null : MARK[n.type]
   const sub = !n.published ? 'Coming soon' : locked ? (n.unlockAt ? `Unlocks ${fmtDate(n.unlockAt)}` : 'Locked') : ''
   const today = here && live && n.state === 'current'
   const name = aria.day({
@@ -37,19 +47,23 @@ const Node = memo(function Node({ n, here, live, f, tilt, onOpen }) {
   })
 
   return (
-    <div className="learn-node" data-state={n.state} data-type={n.type}>
+    <div className="learn-node" data-state={n.state} data-type={n.type} data-game={game ? '' : undefined}>
       <div className="learn-hexwrap" data-pt={'d' + n.day} data-f={f} data-here={here ? '' : undefined} style={{ width: size }}>
         <Hex
           className="learn-hex" size={size} state={state} tone={tone} ring={here && n.state === 'current' ? true : undefined}
           aria-label={name} onClick={(e) => onOpen(n, e.currentTarget)}
         >
-          {locked || n.state === 'done' ? undefined : n.day}
+          {locked || n.state === 'done' ? undefined : game ? <PadGlyph size={here ? 36 : 28} /> : n.day}
         </Hex>
+        {game && !locked ? (
+          <svg className="learn-gamering" viewBox="-6 -6 112 127.47" aria-hidden="true" focusable="false"><polygon points={HEX_PTS} /></svg>
+        ) : null}
         {here && n.state === 'current' ? (
           <svg className="learn-pulse" viewBox="0 0 100 115.47" aria-hidden="true" focusable="false">
             <polygon points={HEX_PTS} /><polygon points={HEX_PTS} />
           </svg>
         ) : null}
+        {game ? <span className="learn-mark" data-kind="game" aria-hidden="true"><PadGlyph size={16} /></span> : null}
         {mark ? <span className="learn-mark" data-kind={n.type} aria-hidden="true"><Icon name={mark} size={16} weight="solid" /></span> : null}
         {here ? (
           <div className="learn-rocket" aria-hidden="true">
@@ -62,7 +76,7 @@ const Node = memo(function Node({ n, here, live, f, tilt, onOpen }) {
           {`Day ${n.day}`}{kind ? ` · ${kind}` : ''}{today ? ` · ${labels.learn.today}` : ''}
           {n.rare && !locked ? <Icon name="star" size={16} weight="solid" className="learn-label__gold" /> : null}
         </span>
-        {sub ? <span className="learn-label__sub">{sub}</span> : <span className="learn-label__title">{n.title}</span>}
+        {sub ? <span className="learn-label__sub">{sub}</span> : <span className="learn-label__title">{game ? 'GAME DAY · Orbit Run, Quiz Blitz, Signal Match' : n.title}</span>}
       </span>
     </div>
   )

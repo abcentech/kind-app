@@ -16,7 +16,7 @@
     background: var(--carbon-0);
     contain: layout paint;
   }
-  @media (min-width: 720px) and (min-height: 640px) {
+  @media (min-width: 720px) and (min-height: 640px) and (pointer: fine) {
     .shell-frame {
       height: min(calc(100% - 48px), 940px);
       border-radius: var(--r-xl);
@@ -30,12 +30,14 @@
     background: linear-gradient(180deg, rgba(255, 255, 255, .07), rgba(255, 255, 255, 0) 14%);
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .035);
   }
-  @media (max-width: 719px), (max-height: 639px) { .shell-frame::after { display: none; } }
+  @media (max-width: 719px), (max-height: 639px), (pointer: coarse) { .shell-frame::after { display: none; } }
+  /* A touch device is always full-bleed, even when the browser is in "desktop site" mode (wide layout viewport). */
+  @media (pointer: coarse) { .shell-frame { max-width: none; border-radius: 0; box-shadow: none; } }
   .shell-frame.is-arrive { animation: shell-arrive var(--t-base) var(--ease-out) both; }
   @keyframes shell-arrive { from { opacity: 0; } to { opacity: 1; } }
 
   /* On a laptop the dark around the instrument carries a faint nameplate, like a bench unit. */
-  @media (min-width: 720px) and (min-height: 640px) {
+  @media (min-width: 720px) and (min-height: 640px) and (pointer: fine) {
     .shell::after {
       content: 'KIND  ·  ASCENT  ·  MISSION CONSOLE'; position: absolute; left: 0; right: 0; bottom: 10px; text-align: center; pointer-events: none;
       font: 500 var(--fs-2xs)/1 var(--font-mono); letter-spacing: .32em; color: var(--ink-4, rgba(244, 246, 251, .22));

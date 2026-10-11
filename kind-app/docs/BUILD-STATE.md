@@ -50,3 +50,7 @@ Resume point for a fresh context. Read `V7-DESIGN.md`, `V7-CONTRACT.md`, `V7-WAV
 * 2026-10-11 R3b — wf_9c5ef80b/e3357dea/7fad616a stopped (session ended). Relaunched wf_d9370a64-f10 (w7.js): year-engine opus + 9 haiku parsers (sep-meta/1/2, oct-meta/1-6) -> Sonnet verify-sep/verify-oct merge into scripts/year-copy/capacity-superpowers.json + building-nigeria.json. R2 gap roles (bundle/perf/design/retention: w5.js) NOT yet rerun; src/copy/, WelcomeBack.jsx, FamilyRecap.jsx exist on disk. Next: rerun R2 roles on haiku, Sonnet review year-copy, QA, ship.
 
 * 2026-10-11 — wf_d9370a64-f10 DONE: guide JSONs merged (Sep 30 days, Oct 30 days), year-engine built guide+light kinds. Launched quiz-fix (Sonnet agent) and wf_ee63bca4-200 (w8.js: bundle/perf/design/retention on Haiku). Next: Sonnet review of year-copy, QA, build, ship.
+
+* 2026-10-11 — SHIPPED 82606d4 (Jan-Oct, guides, quiz fixes, perf, welcome-back, recap). QA 7/7 pass. Open: first-load ~260kB gz (goal 170), Oct guide accuracy review by founder.
+
+* 2026-10-11 — Founder feedback from phone: (1) app shown in a phone bezel not full screen (desktop-site mode); fixed shell.css pointer:coarse = full-bleed. (2) Oct showed 'opens 1 Oct, T-30d' = a sticky ?now= in sessionStorage; now.js persists time travel only in dev. (3) Sundays -> GAME DAY: wf_aa5bf1a8-56f (w9.js: orbit-run opus, blitz+memory haiku, game-day opus, verify sonnet). Edits uncommitted until games verified.

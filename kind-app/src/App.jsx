@@ -6,7 +6,7 @@ import { Button, Dock, ToastHost, toast, useBackClose } from './ui/index.js'
 import FxLayer from './fx/FxLayer.jsx'
 import { sound } from './fx/sound.js'
 import { haptic } from './fx/haptics.js'
-import { activeSeriesId, contentReady, ensureContent, getSeries, isUnlocked, modeOf, nextUnlockAt, subscribeContent } from './lib.js'
+import { activeSeriesId, contentReady, ensureContent, getSeries, isGameDay, isUnlocked, modeOf, nextUnlockAt, subscribeContent } from './lib.js'
 import { ackNotices, settleStreak, snapshot, useStore, useToday } from './store.js'
 import { persistStorage, registerSW, removeBoot, useOnline } from './pwa.js'
 import { errorCopy, noticeCopy, toastCopy } from './copy.js'
@@ -20,6 +20,7 @@ const Shorts = lazy(() => import('./screens/Shorts.jsx'))
 const Locker = lazy(() => import('./screens/Locker.jsx'))
 const Me = lazy(() => import('./screens/Me.jsx'))
 const Lesson = lazy(() => import('./screens/Lesson.jsx'))
+const GameDay = lazy(() => import('./screens/games/GameDay.jsx'))   // Sundays: Game Day (its games load on demand)
 const WelcomeBack = lazy(() => import('./screens/WelcomeBack.jsx'))
 const ShareStudio = lazy(() => import('./screens/ShareStudio.jsx'))
 
@@ -102,7 +103,7 @@ function Shell() {
   const [seriesId, setSeriesId] = useState(() => (Q.get('series') && getSeries(Q.get('series')).id) || activeSeriesId())
   const [tab, setTab] = useState(() => (TAB_IDS.includes(Q.get('tab')) ? Q.get('tab') : 'learn'))
   const [visited, setVisited] = useState(() => new Set(['learn']))
-  const [lesson, setLesson] = useState(null)          // { sid, day }
+  const [lesson, setLesson] = useState(null)          // { sid, day, read? } — read: a Game Day's own lesson, opened from its hub
   const [shareReq, setShareReq] = useState(null)      // { kind, data }
   const s = getSeries(seriesId)
 
@@ -228,7 +229,11 @@ function Shell() {
           {lesson && (
             <div className="shell-layer" role="dialog" aria-modal="true" aria-label={`Day ${lesson.day}`}>
               <Fault inline resetKey={lesson.sid + lesson.day} onLeave={closeLesson} leaveLabel="Back to Learn">
-                <Suspense fallback={<Skel />}><WhenContent sid={lesson.sid}><Lesson key={lesson.sid + lesson.day} s={L} day={lesson.day} close={closeLesson} /></WhenContent></Suspense>
+                <Suspense fallback={<Skel />}><WhenContent sid={lesson.sid}>
+                  {isGameDay(L, lesson.day) && !lesson.read
+                    ? <GameDay key={'g' + lesson.sid + lesson.day} s={L} day={lesson.day} close={closeLesson} openLesson={() => setLesson({ ...lesson, read: true })} />
+                    : <Lesson key={lesson.sid + lesson.day} s={L} day={lesson.day} close={closeLesson} />}
+                </WhenContent></Suspense>
               </Fault>
             </div>
           )}
