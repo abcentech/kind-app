@@ -4,10 +4,10 @@
 //   form = { name, role, familyName, kids, goal, reminder:{ on, hour, min } }     onDone({ openDay })
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useShell } from '../../shell.jsx'
-import { Button, Panel } from '../../ui/index.js'
+import { Button, Panel, Segmented } from '../../ui/index.js'
 import { Icon } from '../../icons.jsx'
-import { completeOnboarding, updateProfile, useStore } from '../../store.js'
-import { currentDay, dayLabel, estimateMinutes, teaserFor } from '../../lib.js'
+import { completeOnboarding, setFlag, updateProfile, useStore } from '../../store.js'
+import { currentDay, dayLabel, modeOf, estimateMinutes, teaserFor } from '../../lib.js'
 import { prefs } from '../../prefs.js'
 import { fx } from '../../fx/fx.js'
 import { sound } from '../../fx/sound.js'
@@ -25,7 +25,12 @@ export default function Launch({ form, onDone, step, steps }) {
   const { s } = useShell()
   const st = useStore()
   const lite = useFxLevel() === 'lite'
-  const N = useMemo(() => currentDay(s, st), [s, st])
+  // a live mission already past Day 1: catch up gently from the start (default), or join where the crew is today
+  const todayNo = useMemo(() => currentDay(s, { ...st, flags: {} }), [s, st])
+  const late = modeOf(s) === 'live' && todayNo > 1
+  const [from, setFrom] = useState('start')
+  const first = useMemo(() => s.calendar.find((d) => d.day <= todayNo && d.type !== 'rest')?.day || 1, [s, todayNo])
+  const N = late && from === 'start' ? first : todayNo
   const day = s.calendar.find((d) => d.day === N)
   const title = dayLabel(s, N)
   const bar = launchBarCopy({ state: 'first', day: N, title, mins: estimateMinutes(s, N), kind: day?.type, role: form.role, seed: s.id })
@@ -58,6 +63,7 @@ export default function Launch({ form, onDone, step, steps }) {
     busy.current = true
     const day0 = N
     completeOnboarding({ name: form.name, role: form.role, familyName: form.familyName, kids: form.kids, dailyGoal: form.goal })
+    setFlag('catchup:' + s.id, late && from === 'start')
     if (rem.on) updateProfile({ reminderHour: rem.hour })
     prefs.set('reminder', { on: !!rem.on, hour: rem.hour ?? 20, min: rem.min ?? 0 })
     sound.play('ignite'); haptic.launch()
@@ -85,6 +91,13 @@ export default function Launch({ form, onDone, step, steps }) {
         </p>
         <h2 className="onb-ready__title">{title}</h2>
         <p className="onb-ready__teaser">{teaserFor(s, N)}</p>
+        {late ? (
+          <div className="onb-from">
+            <Segmented label="Where to begin" size="sm" value={from} onChange={setFrom}
+              options={[{ id: 'start', label: 'Start from Day 1' }, { id: 'today', label: `Join today, Day ${todayNo}` }]} />
+            <p className="onb-from__hint">{from === 'start' ? 'Catch up at your own pace. Every day is already open.' : 'Skip ahead and fly with everyone else today.'}</p>
+          </div>
+        ) : null}
         <ul className="onb-check" aria-label={settingsHelp.sections.commitment}>
           {rows.map((r, i) => (
             <li key={r.k} className="onb-check__row" data-lit={i < lit ? '' : undefined} data-off={r.off ? '' : undefined}>

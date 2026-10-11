@@ -1,0 +1,7 @@
+/* owner: retention (prefix .obf-) — Family week recap on Objectives */
+@layer screen {
+  .obf-crew { display: flex; flex-wrap: wrap; gap: var(--s-2); margin: 0; padding: 0; list-style: none; }
+  .obf-crew li { min-width: 0; }
+  .obf-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-4); }
+  .obf-note { margin: 0; font-size: var(--fs-sm); line-height: 1.4; color: var(--ink-3); }
+}

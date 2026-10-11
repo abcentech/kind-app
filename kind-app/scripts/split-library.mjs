@@ -7,6 +7,7 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
 export const EP_HEAVY = ['points', 'supporting', 'illustration', 'challenge', 'prayer', 'declaration', 'transition', 'questions', 'apply', 'talk']
+const GUIDE_HEAVY = ['truth', 'hook', 'scripture', 'mirrors', 'christ', 'rhyme', 'code', 'quiz']
 const SUN_LIGHT = ['n', 'date', 'title']
 const SHORT_LIGHT = ['n', 'title', 'hook']
 
@@ -26,15 +27,18 @@ export function splitLibrary(libFile) {
   const heavy = {}
   for (const [id, s] of Object.entries(lib.series)) {
     const eps = Object.entries(s.episodes || {})
+    // A light series' truth is its code-card line word for word: the core keeps it once (codes), the lesson chunk the rest.
+    // A guide series (Sep/Oct) also keeps its long-form fields and quiz in the chunk; its card line is codes[].line.
+    const heavyKeys = s.kind === 'light' ? [...EP_HEAVY, 'truth'] : s.kind === 'guide' ? [...EP_HEAVY, ...GUIDE_HEAVY] : EP_HEAVY
     core.series[id] = {
       ...omit(s, ['episodes', 'sundays', 'shorts']),
-      episodes: Object.fromEntries(eps.map(([k, e]) => [k, omit(e, EP_HEAVY)])),
+      episodes: Object.fromEntries(eps.map(([k, e]) => [k, omit(e, heavyKeys)])),
       sundays: Object.fromEntries(Object.entries(s.sundays || {}).map(([k, u]) => [k, pick(u, SUN_LIGHT)])),
       shorts: (s.shorts || []).map((x) => pick(x, SHORT_LIGHT)),
       meta: meta[id],
     }
     heavy[id] = {
-      episodes: Object.fromEntries(eps.map(([k, e]) => [k, pick(e, EP_HEAVY)])),
+      episodes: Object.fromEntries(eps.map(([k, e]) => [k, pick(e, heavyKeys)])),
       sundays: Object.fromEntries(Object.entries(s.sundays || {}).map(([k, u]) => [k, omit(u, SUN_LIGHT)])),
       shorts: (s.shorts || []).map((x) => omit(x, SHORT_LIGHT)),
     }

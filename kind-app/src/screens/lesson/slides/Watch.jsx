@@ -3,19 +3,24 @@
 import { Icon } from '../../../icons.jsx'
 import { lessonCopy } from '../../../copy.js'
 import { useOnline } from '../../../pwa.js'
+import { useShell } from '../../../shell.jsx'
 import * as Lite from '../../../ui/LiteYouTube.jsx'
 import { Eyebrow, rootProps, typo } from './Read.jsx'
 
-const LiteYouTube = Lite.default || Lite.LiteYouTube
+const ARCHIVE_LABEL = lessonCopy.slide.watchArchive || 'Watch the episode'
+const LiteYouTube =Lite.default || Lite.LiteYouTube
 // copy.js has no line for this one yet (see REQUESTS); it will win as soon as it appears.
 const SKIP = lessonCopy.watch.skip || 'Offline? Skip this one'
 
 export default function Watch({ card, scale, active, next }) {
   const online = useOnline()
   const shown = active !== false
+  const shell = useShell()
+  // "Tonight's" is only true on a live mission; an archive day is watched whenever you open it
+  const label = shell?.mode === 'archive' ? ARCHIVE_LABEL : (card.label || lessonCopy.slide.watch)
   return (
-    <article className="slr slr-watch" aria-label={card.label} {...rootProps('watch', { scale, active })}>
-      <Eyebrow>{card.label || lessonCopy.slide.watch}</Eyebrow>
+    <article className="slr slr-watch" aria-label={label} {...rootProps('watch', { scale, active })}>
+      <Eyebrow>{label}</Eyebrow>
       {card.title ? <h2 className="slr-watch__title slr-in" style={{ '--i': 1 }}>{typo(card.title)}</h2> : null}
       <div className="slr-watch__bezel slr-in" style={{ '--i': 2 }}>
         <div className="slr-watch__frame">

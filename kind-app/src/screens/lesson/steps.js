@@ -11,7 +11,7 @@
 // running tally of the checks (xp earned, answers right on the first try, which misses are still owed a retry), and
 // finishDay needs it. That lives in sessionStorage for the length of the session: a lesson closed and relaunched the
 // same evening resumes exactly; one resumed after the app was killed rewinds to the first check (see Lesson.jsx).
-import { deckFor } from '../../lib.js'
+import { deckFor, isLight, isGuide, guideChecks } from '../../lib.js'
 import { quizFor } from '../../quiz.js'
 
 export function buildSteps(s, day) {
@@ -19,7 +19,11 @@ export function buildSteps(s, day) {
   const declare = deck.filter((c) => c.kind === 'declare').pop() || null
   const cards = deck.filter((c) => c.kind !== 'declare').map((card) => ({ id: 'c:' + card.id, type: 'card', kind: card.kind, card }))
   let exs = []
-  try { exs = quizFor(s, day) || [] } catch (err) { console.error('[kind] quizFor failed — lesson runs without checks', err) }
+  // A light ("Watch and Reflect") series has no script to check against: its lessons carry no exercises.
+  // A guide day leads with the guide's own questions; the engine tops the set up to four, interleaved so they alternate.
+  const own = isGuide(s) ? guideChecks(s, day) : []
+  if (!isLight(s)) try { exs = quizFor(s, day, own.length ? { count: Math.max(1, 4 - own.length) } : undefined) || [] } catch (err) { console.error('[kind] quizFor failed — lesson runs without checks', err) }
+  if (own.length) { const gen = exs; exs = []; own.forEach((ex, i) => { exs.push(ex); if (gen[i]) exs.push(gen[i]) }); exs.push(...gen.slice(own.length)) }
   const checks = exs.map((ex, i) => ({ id: 'x:' + (ex.id ?? i), type: 'ex', ex, retry: false }))
   const end = declare ? [{ id: 'c:' + declare.id, type: 'card', kind: 'declare', card: declare }] : []
   return [...cards, ...checks, ...end]

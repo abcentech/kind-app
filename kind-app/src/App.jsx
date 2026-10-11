@@ -20,6 +20,7 @@ const Shorts = lazy(() => import('./screens/Shorts.jsx'))
 const Locker = lazy(() => import('./screens/Locker.jsx'))
 const Me = lazy(() => import('./screens/Me.jsx'))
 const Lesson = lazy(() => import('./screens/Lesson.jsx'))
+const WelcomeBack = lazy(() => import('./screens/WelcomeBack.jsx'))
 const ShareStudio = lazy(() => import('./screens/ShareStudio.jsx'))
 
 const Q = new URLSearchParams(location.search)
@@ -137,7 +138,8 @@ function Shell() {
     st.notices.forEach((ev, i) => {
       let spec
       try { spec = noticeCopy(ev, { streak: st.streak, shields: st.shields }, ev.id) } catch { spec = null }
-      if (spec && (spec.title || spec.body)) setTimeout(() => toast({ key: 'notice-' + ev.id, tone: ev.type === 'lost' ? 'default' : 'tele', icon: ev.type === 'lost' ? 'flame' : 'shield', ...spec }), 600 + i * 900)
+      // a lost streak is told by the Welcome-back sheet (kinder than a toast); only the quiet notices toast
+      if (spec && ev.type !== 'lost' && (spec.title || spec.body)) setTimeout(() => toast({ key: 'notice-' + ev.id, tone: ev.type === 'lost' ? 'default' : 'tele', icon: ev.type === 'lost' ? 'flame' : 'shield', ...spec }), 600 + i * 900)
       shown.push(ev.id)
     })
     ackNotices(shown)
@@ -231,6 +233,7 @@ function Shell() {
             </div>
           )}
           <Suspense fallback={null}>
+            <WelcomeBack s={s} enabled={phase === 'app' && !lesson && !shareReq} onLaunch={(d) => openDay(d)} />
             {shareReq && <ShareStudio req={shareReq} onClose={() => setShareReq(null)} />}
           </Suspense>
         </ShellContext.Provider>

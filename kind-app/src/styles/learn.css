@@ -38,7 +38,7 @@
     position: absolute; inset: 0 0 calc(var(--sab) + var(--s-3)) 0; z-index: var(--z-content);   /* ends where the dock's floor does: no art peeks under it */
     overflow-x: hidden; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch;
     padding-top: calc(var(--sat) + var(--hud-h));
-    padding-bottom: calc(var(--launch-h, 148px) + var(--dock-h) + var(--s-3) + var(--s-6));
+    padding-bottom: calc(var(--launch-h, 148px) + var(--dock-h) + var(--s-3) + var(--s-6) + var(--s-4));
     scrollbar-width: none;
   }
   .learn-scroll::-webkit-scrollbar { display: none; }
@@ -68,7 +68,8 @@
   .learn-curve__core { stroke: var(--ignite-3); stroke-width: calc(var(--s-1) / 2); opacity: .75; }
   @keyframes learn-draw { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
 
-  .learn-stage { position: relative; }
+  /* a stage far off-screen skips style/layout/paint and its infinite pulses; "auto" remembers its real height once painted */
+  .learn-stage { position: relative; content-visibility: auto; contain-intrinsic-size: auto 640px; }
   .learn-nodes { list-style: none; margin: 0; padding: 0; }
   .learn-row { position: relative; min-height: var(--learn-row); }
 

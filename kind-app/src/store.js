@@ -9,7 +9,7 @@ import { useEffect, useState, useSyncExternalStore } from 'react'
 import {
   allSeries, getSeries, codeFor, dayInfo, epOf, stageOf, stageDays, stageStats, seriesProgress, modeOf, currentDay, isUnlocked,
   nextUnlockAt, estimateMinutes, teaserFor, dayLabel, dayEyebrow, keyOfDay, dayOfKey, addDays, diffDays, weekdayOf,
-  isKey, msToMidnight, isPlayable, keyToDate, title as sentence, deckFor, deckLength, activeSeriesId, hasContent, QUIZ_COUNT,
+  isKey, msToMidnight, isPlayable, keyToDate, title as sentence, deckFor, deckLength, activeSeriesId, hasContent, quizCount,
 } from './lib.js'
 import { now, today } from './now.js'
 import { reportCheckin } from './api.js'
@@ -1097,7 +1097,7 @@ export function launchBarContext(s, st, at = now()) {
   const prog = seriesProgress(s, st)
   const k = today(at)
   const pos = posFor(st, s.id, L.day)
-  const steps = deckLength(s, L.day) + QUIZ_COUNT
+  const steps = deckLength(s, L.day) + quizCount(s)
   const resumable = pos > 0 && !sub(st, s.id).done[L.day]
   const shieldUsed = info.alive && (info.pending.shield > 0 || st.saves[addDays(k, -1)] === 'shield') // a shield only "saved" a streak that is still alive
   const missed = !info.doneToday && (shieldUsed || (info.state === 'lost' && info.lostFrom > 0))

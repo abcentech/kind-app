@@ -23,7 +23,7 @@ import { emptyResponse, gradeExercise, isAnswerComplete, XP_PER_EXERCISE } from 
 import { answerLabel, lessonCopy, seq, verdictRight, verdictWrong, xpDelta } from '../../copy.js'
 import { getSeries } from '../../lib.js'
 import { VIEWS } from './ex/index.js'
-import Verdict from './ex/Verdict.jsx'
+import Verdict, { explainIsNew } from './ex/Verdict.jsx'
 
 const ARM_MS = 380                          // the sheet takes ~420 ms to arrive; a tap before it is a double-tap on CHECK
 const COMBO_AT = [3, 5, 8, 12, 20]          // mirrors copy.js: the rights-in-a-row that earn a combo line (and the combo chime)
@@ -191,7 +191,7 @@ function Step({ ex, isRetry = false, index, total, seriesId: sid, day: dayProp, 
   const hasNumKeys = ex.type === 'choice' || ex.type === 'blank'
   const stop = (t) => (/[.!?…”"’)]$/.test(t) ? t : `${t}.`)
   const announce = graded
-    ? [graded.verdict.aria, graded.right ? '' : stop(`${answerLabel(ex)}: ${graded.answerText}`), graded.explain && stop(graded.explain), graded.right && graded.xp ? xpDelta(graded.xp) : '']
+    ? [graded.verdict.aria, graded.right ? '' : stop(`${answerLabel(ex)}: ${graded.answerText}`), explainIsNew(graded.explain, graded.answerText, !graded.right) && stop(graded.explain), graded.right && graded.xp ? xpDelta(graded.xp) : '']
         .filter(Boolean).join(' ')
     : ''
 

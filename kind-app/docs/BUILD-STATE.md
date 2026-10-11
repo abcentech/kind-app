@@ -40,3 +40,13 @@ Resume point for a fresh context. Read `V7-DESIGN.md`, `V7-CONTRACT.md`, `V7-WAV
 * 2026-10-09 — assemble wave DONE (all 3 workflows). Next: build, fix test-store deckFor videoId failure, QA, critics, ship.
 
 * 2026-10-09 — build OK (main 156kB gz, SW 2.2MB precache), test-store 78/78 x4 TZ. Critics launched: wf_108a990c-0d9 (product/design/engineering, Sonnet). Next: merge fixes, final build, commit kind-app/ only, push abcentech/kind-app main, verify live URL, give test link.
+
+* 2026-10-09 — SHIPPED: commit 5b6b5fc pushed, live https://abcentech.github.io/kind-app/ verified. Await founder test. Open: bundle 263kB gz, perf on real device, month share caption, Dialog focus return.
+
+* 2026-10-09 R2 — Founder: "fix remaining gaps, keep polishing, do it from January till date (Jan-Oct is on YouTube)". Built scripts/year-series.json from public playlists (months 1-6, 9, 10; Jul/Aug already in app). Round-2 workflows: wf_9c5ef80b-e0f (year-engine opus, copy-a/b/c haiku), wf_e3357dea-e06 (bundle, perf, design, retention sonnet). Script w5.js (args.roles). Next: Sonnet review of year-copy for accuracy, QA, ship. YouTube note: yt-dlp watch pages are bot-gated (429) - only flat public listings used; do not scrape/cookies.
+
+* 2026-10-09 R3 — Founder supplied real guides: series/capacity-superpowers/teaching-guide.md (Sep) + series/building-nigeria/teaching-guide.md (Oct). year-engine (R2) died on DNS; relaunched as wf_7fad616a-cef (w6.js: year-engine opus + parse-sep/parse-oct sonnet -> scripts/year-copy/capacity-superpowers.json, building-nigeria.json). Copy drafts for Jan-Jun done (scripts/year-copy). R2 gap workflow wf_e3357dea-e06 still running (bundle/perf/design/retention). Next: Sonnet copy review (esp. faith-in-his-name), QA, build, push.
+
+* 2026-10-11 R3b — wf_9c5ef80b/e3357dea/7fad616a stopped (session ended). Relaunched wf_d9370a64-f10 (w7.js): year-engine opus + 9 haiku parsers (sep-meta/1/2, oct-meta/1-6) -> Sonnet verify-sep/verify-oct merge into scripts/year-copy/capacity-superpowers.json + building-nigeria.json. R2 gap roles (bundle/perf/design/retention: w5.js) NOT yet rerun; src/copy/, WelcomeBack.jsx, FamilyRecap.jsx exist on disk. Next: rerun R2 roles on haiku, Sonnet review year-copy, QA, ship.
+
+* 2026-10-11 — wf_d9370a64-f10 DONE: guide JSONs merged (Sep 30 days, Oct 30 days), year-engine built guide+light kinds. Launched quiz-fix (Sonnet agent) and wf_ee63bca4-200 (w8.js: bundle/perf/design/retention on Haiku). Next: Sonnet review of year-copy, QA, build, ship.

@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(here, '..', '..', 'series')
-const OUT = join(here, '..', 'src', 'content', 'library.json')
+const OUT = process.env.KIND_CONTENT_OUT || join(here, '..', 'src', 'content', 'library.json') // override: dry runs
 
 const CHANNEL = 'https://www.youtube.com/@KidsInspiringNation'
 
@@ -341,6 +341,327 @@ function buildSeries(cfg, videos) {
   }
 }
 
+/* ---- archive-light series ------------------------------------------------
+ * Months we have no scripts for, only the public YouTube playlist (scripts/year-series.json) and the copy the team wrote per
+ * video (scripts/year-copy/<id>.json: { declaration:[3], days:[{ n, takeaway, reflect, doToday, scripture?:{ref,text?} }] }).
+ * Each becomes a "Watch and Reflect" series (kind:'light'): one lesson per episode, stages of seven days, no quiz.
+ * The live month (October) is a dated series of daily trailers: day N = the trailer for October N; days without one are
+ * left unpublished ("Coming soon") and open at 06:00 on their date like any live day. Missing copy never breaks the build:
+ * every field falls back to the video title and the month theme.
+ * ------------------------------------------------------------------------- */
+const YEAR = join(here, 'year-series.json')
+const YEAR_COPY = join(here, 'year-copy')
+const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+const LIGHT = {
+  'daniel-fast-giving-praying-fasting': {
+    subtitle: 'The Daniel Fast', tagline: 'Give, pray and fast in secret.', accent: '#8a5a2b', accentDark: '#d4a373',
+    themeScripture: { text: 'That thine alms may be in secret: and thy Father which seeth in secret himself shall reward thee openly.', ref: 'Matthew 6:4 (KJV)' },
+  },
+  'rhythm-of-a-praying-life': {
+    subtitle: 'Prayer as breathing', tagline: 'Pray with boldness, keys and rhythm.', accent: '#3b5ba5', accentDark: '#7fa0ec',
+    themeScripture: { text: 'Pray without ceasing.', ref: '1 Thessalonians 5:17 (KJV)' },
+  },
+  'the-voice-of-influence': {
+    subtitle: 'How influence is built', tagline: 'Value others. Use words that build.', accent: '#9b3d6e', accentDark: '#e07ab0',
+    themeScripture: { text: 'Let your light so shine before men, that they may see your good works, and glorify your Father which is in heaven.', ref: 'Matthew 5:16 (KJV)' },
+  },
+  'power-of-positive-habits': {
+    subtitle: 'Godly habits that hold', tagline: 'Replace the pattern, one day at a time.', accent: '#2f7d6d', accentDark: '#5cc9b1',
+    themeScripture: { text: 'Be not conformed to this world: but be ye transformed by the renewing of your mind.', ref: 'Romans 12:2 (KJV)' },
+  },
+  'the-genius-code': {
+    subtitle: 'The mind under God', tagline: 'Prepare, decide, excel.', accent: '#6b4fb3', accentDark: '#a38cf0',
+    themeScripture: { text: 'For the LORD giveth wisdom: out of his mouth cometh knowledge and understanding.', ref: 'Proverbs 2:6 (KJV)' },
+  },
+  'faith-in-his-name': {
+    subtitle: 'Faith and healing', tagline: 'One word from God changes everything.', accent: '#b5452f', accentDark: '#ef8a6f',
+    themeScripture: { text: 'I am the LORD that healeth thee.', ref: 'Exodus 15:26 (KJV)' },
+  },
+  'building-capacity': {
+    subtitle: 'Before your Goliath', tagline: 'Sharpen your tools in private.', accent: '#5b6b2a', accentDark: '#a8c25a',
+    themeScripture: { text: 'The LORD that delivered me out of the paw of the lion, and out of the paw of the bear, he will deliver me out of the hand of this Philistine.', ref: '1 Samuel 17:37 (KJV)' },
+  },
+  'building-nigeria-trailers': {
+    subtitle: 'Ordinary Nigerians who built', tagline: 'Arise and build.', accent: '#1f7a3a', accentDark: '#3fcf6e', live: true,
+    themeScripture: { text: 'The God of heaven, he will prosper us; therefore we his servants will arise and build.', ref: 'Nehemiah 2:20 (KJV)' },
+  },
+}
+const STAGE_NAMES = ['IGNITION', 'LIFTOFF', 'ASCENT', 'ORBIT', 'HORIZON', 'DEEP SPACE']
+const TRAILER_MAX_SECS = 180
+
+// YouTube titles carry hashtags, emoji and the odd stray space; the lesson title is the words alone.
+const cleanVideoTitle = (t) => (t || '')
+  .replace(/#[\p{L}\p{N}_]+/gu, '')
+  .replace(/[\p{Extended_Pictographic}\u{FE0F}\u{200D}]/gu, '')
+  .replace(/\s+([?!.,:])/g, '$1')
+  .replace(/\s{2,}/g, ' ')
+  .trim()
+  .replace(/[\s|:\-–—]+$/, '')
+const str = (x) => (typeof x === 'string' ? x.trim() : '')
+
+function readCopy(id) {
+  const f = join(YEAR_COPY, id + '.json')
+  if (!existsSync(f)) return { declaration: [], days: {} }
+  try {
+    const j = JSON.parse(readFileSync(f, 'utf8'))
+    const days = {}
+    for (const d of Array.isArray(j.days) ? j.days : []) if (d && Number.isInteger(+d.n)) days[+d.n] = d
+    return { declaration: (Array.isArray(j.declaration) ? j.declaration : []).map(str).filter(Boolean), days }
+  } catch (err) {
+    console.warn(`content: ${id} — year-copy unreadable (${err.message}); using fallbacks`)
+    return { declaration: [], days: {} }
+  }
+}
+
+function buildLightSeries(m, year) {
+  const cfg = LIGHT[m.id] || {}
+  const copy = readCopy(m.id)
+  const total = new Date(year, m.month, 0).getDate()
+  const live = Boolean(cfg.live)
+  const shortsAll = (m.shorts || []).filter((v) => v && v.id)
+  // Lesson videos: the long-form episodes in order; for the live month, the daily trailers on their own dates.
+  let lessons
+  if (live) {
+    const trailers = shortsAll.filter((v) => !v.secs || v.secs <= TRAILER_MAX_SECS)
+    const byDay = new Map()
+    let next = 1
+    for (const v of trailers) {
+      const named = +((v.title || '').match(/october\s+(\d{1,2})\b/i) || [])[1]
+      const day = named >= 1 && named <= total ? named : next
+      if (!byDay.has(day)) byDay.set(day, v)
+      next = Math.max(next, day + 1)
+    }
+    lessons = [...byDay].filter(([d]) => d <= total).sort((a, b) => a[0] - b[0]).map(([day, v]) => ({ day, ...v }))
+  } else {
+    lessons = (m.episodes || []).filter((v) => v && v.id).slice(0, total).map((v, i) => ({ day: i + 1, ...v }))
+  }
+  const len = live ? total : lessons.length
+  if (!len) return null
+  const nStages = Math.ceil(len / 7)
+  const theme = str(m.theme)
+  const firstThemeSentence = (theme.match(/^.+?[.!?](?=\s|$)/) || [theme])[0]
+  const declaration = copy.declaration.length ? copy.declaration : [cfg.tagline || m.title]
+  // Stage lines: the month's theme opens, then one declaration line per stage (the divider falls back to "Days a–b").
+  const weeks = Array.from({ length: nStages }, (_, i) => {
+    const a = i * 7 + 1, b = Math.min(len, a + 6)
+    const question = i === 0 ? firstThemeSentence : copy.declaration[i - 1] || ''
+    return { f: STAGE_NAMES[i] || `STAGE ${i + 1}`, title: `Days ${a}–${b}`, emoji: '', question, passage: '' }
+  })
+  const seen = new Map()
+
+  const episodes = {}
+  const calendar = []
+  const byDay = new Map(lessons.map((v) => [v.day, v]))
+  for (let day = 1; day <= len; day++) {
+    const v = byDay.get(day)
+    const week = Math.floor((day - 1) / 7)
+    if (!v) { calendar.push({ day, type: 'teaching', week, videoId: null }); continue }
+    const n = live ? day : v.n || day
+    const c = copy.days[n] || {}
+    let name = cleanVideoTitle(v.title) || `${m.title} · Day ${day}`
+    const k = name.toLowerCase(); seen.set(k, (seen.get(k) || 0) + 1)
+    if (seen.get(k) > 1) name += ` (${seen.get(k)})` // two uploads under one title (the October launch trailers)
+    const sc = c.scripture && typeof c.scripture === 'object' ? { text: str(c.scripture.text), ref: str(c.scripture.ref) } : { text: '', ref: '' }
+    episodes[day] = {
+      num: day, title: name, date: live ? day : null, week, secs: +v.secs || 0,
+      scripture: sc,
+      truth: str(c.takeaway) || firstThemeSentence,
+      hook: '', points: [], supporting: [], illustration: '',
+      challenge: str(c.doToday) || 'Tell one person the line from today’s video that stayed with you.',
+      prayer: '', declaration: '', transition: '',
+      questions: [str(c.reflect) || `What does “${name}” say to you about ${m.title.toLowerCase().startsWith('the ') ? m.title : 'the ' + m.title} this week?`],
+      apply: [],
+    }
+    calendar.push({ day, type: 'teaching', episode: day, week, videoId: v.id })
+  }
+  const codes = calendar.filter((d) => d.episode).map((d, i) => ({
+    no: i + 1, day: d.day, episode: d.episode, week: d.week,
+    title: episodes[d.episode].title, line: firstLine(episodes[d.episode].truth), rare: (i + 1) % 7 === 0,
+  }))
+  // Shorts that ride with the month: spread across its lessons (or, live, each trailer on its own day).
+  const extra = live ? lessons : shortsAll
+  const shortsVideos = extra.map((v, i) => ({
+    day: live ? v.day : Math.min(len, Math.max(1, Math.round(((i + 0.5) * len) / extra.length))),
+    videoId: v.id, title: cleanVideoTitle(v.title),
+  }))
+  return {
+    id: m.id, kind: 'light',
+    title: m.title, subtitle: cfg.subtitle || '', tagline: cfg.tagline || firstThemeSentence, theme,
+    audience: 'Teens & families',
+    month: MONTH_NAMES[m.month - 1], year, monthNum: m.month,
+    accent: cfg.accent || '#5a6b8c', accentDark: cfg.accentDark || cfg.accent || '#8fa3c8',
+    themeScripture: cfg.themeScripture || { text: firstThemeSentence, ref: '' },
+    declaration,
+    weeks, channel: CHANNEL, shortsUrl: CHANNEL + '/shorts',
+    calendar, episodes, sundays: {}, shorts: [], codes, intro: null,
+    shortsVideos, shortsPlaylist: null,
+  }
+}
+function firstLine(t) { return (t || '').split('\n')[0].trim() }
+
+/* ---- guide series ----------------------------------------------------------
+ * Months the founder wrote a full teaching guide for (series/<dir>/teaching-guide.md), parsed into
+ * scripts/year-copy/<id>.json: { title, tagline, bigIdea, openLine?, closeLine?, declaration[], weeks|parts[{n,name,power|value,days[]}],
+ * days[{ n, date, kind:'episode'|'discussion', title, scripture, psalm?, hook, story, points[{head,body}], mirrors?, christ?,
+ * challenge, prayer, declaration?, rhyme?, centralTruth, codeLine, quiz[] }] }. A guide supersedes the light build of its month.
+ * Dated like August: the calendar day is the day's own date; discussion days are Selah (rest + family talk); a day of the month
+ * the guide leaves empty is the finale when it is the last one, otherwise a rest day. Videos map conservatively: September's
+ * playlist by order only when its count equals the guide's episodes; October's trailers only by an exact title match.
+ * ------------------------------------------------------------------------- */
+const GUIDES = {
+  9: {
+    id: 'capacity-superpowers', title: 'Capacity — Developing SuperPowers', subtitle: 'Developing SuperPowers', tagline: 'Don’t wait for your Goliath to start developing your sling.',
+    accent: '#5b6b2a', accentDark: '#a8c25a', passage: '1 Samuel 17',
+    themeScripture: { text: 'The LORD that delivered me out of the paw of the lion, and out of the paw of the bear, he will deliver me out of the hand of this Philistine.', ref: '1 Samuel 17:37 (KJV)' },
+  },
+  10: {
+    id: 'building-nigeria', title: 'Building the Nigeria God Intends', subtitle: '30 days of nation-building', tagline: 'Righteousness exalts a nation.',
+    accent: '#1f7a3a', accentDark: '#3fcf6e', passage: 'Psalm 119',
+    themeScripture: { text: 'Righteousness exalteth a nation: but sin is a reproach to any people.', ref: 'Proverbs 14:34 (KJV)' },
+  },
+}
+const normTitle = (t) => cleanVideoTitle(t).toLowerCase().replace(/[’'"“”]/g, '').replace(/[^a-z0-9]+/g, ' ').trim()
+const lines = (x) => (Array.isArray(x) ? x : [x]).map(str).filter(Boolean).join('\n')
+// Guides shout the week names in their declarations ("I will build in THE CAVE"); the app sets them in its own type: "The Cave".
+const decaps = (t) => t.replace(/\b(?!LORD\b|GOD\b)[A-Z]{2,}\b/g, (w) => w[0] + w.slice(1).toLowerCase())
+const titleCase = (t) => str(t).toLowerCase().replace(/(^|[\s&(“"-])(\p{L})/gu, (_, a, b) => a + b.toUpperCase())
+
+function readGuide(id) {
+  const f = join(process.env.KIND_GUIDE_DIR || YEAR_COPY, id + '.json')
+  if (!existsSync(f)) return null
+  try {
+    const g = JSON.parse(readFileSync(f, 'utf8'))
+    return Array.isArray(g.days) && g.days.length ? g : null
+  } catch (err) { console.warn(`content: ${id} — guide unreadable (${err.message}); keeping the light build`); return null }
+}
+
+function buildGuideSeries(m, g, cfg, year) {
+  const total = new Date(year, m.month, 0).getDate()
+  const groups = (g.weeks || g.parts || []).filter((w) => w && Array.isArray(w.days))
+  const isParts = !g.weeks && Boolean(g.parts)
+  const weeks = groups.map((w) => {
+    const name = str(w.name).replace(/^the\s+/i, ''), power = str(w.power || w.value)
+    const same = name.toLowerCase() === power.toLowerCase()
+    return {
+      f: (isParts ? power.split(/\s*&\s*/)[0] : name).toUpperCase() || 'STAGE',
+      title: isParts || same ? power : `${titleCase(name)} · ${power}`,
+      emoji: '',
+      // The stage question is quiz material, so a template repeated across stages would make ambiguous checks: the guides
+      // give none, so it stays empty and the reflective prompt lives in `ask`.
+      question: '', ask: isParts ? `Where can you practise ${power.toLowerCase()} this week?` : `Where is God building ${power.toLowerCase()} in you right now?`,
+      passage: cfg.passage || '',
+      rhyme: lines(w.rhyme), declaration: decaps(lines(w.declaration)),
+    }
+  })
+  // weeks[].days count episodes (September's Sundays are not numbered in them), so a day's week is found by its episode ordinal.
+  const weekOfN = (k) => { const i = groups.findIndex((w) => w.days.map(Number).includes(k)); return i < 0 ? null : i }
+  // September's guide words its devotional "prayer" as a question for the child: that belongs on the answer card, not the prayer card.
+  const asQuestion = (t) => /\?[”"]?\s*(\([^)]*\))?\s*$/.test(str(t))
+  // Calendar day for each guide day: its date when it has one in this month, else its order.
+  const byDay = new Map()
+  g.days.forEach((d, i) => {
+    const dm = /^(\d{4})-(\d{2})-(\d{2})$/.exec(str(d.date))
+    const day = dm && +dm[1] === year && +dm[2] === m.month ? +dm[3] : i + 1
+    if (day >= 1 && day <= total && !byDay.has(day)) byDay.set(day, d)
+  })
+  // A discussion day is a Sunday talk guide with no teaching of its own; a "discussion" that carries a full hook is a teaching day.
+  const isTalk = (d) => d.kind === 'discussion' && !str(d.hook)
+  const epDays = [...byDay].filter(([, d]) => !isTalk(d)).sort((a, b) => a[0] - b[0])
+  // Videos: September's long-form playlist by order (only when it lines up 1:1); October's trailers by exact title.
+  const vids = new Map()
+  const eps = (m.episodes || []).filter((v) => v && v.id)
+  if (eps.length && eps.length === epDays.length) epDays.forEach(([day], i) => vids.set(day, eps[i]))
+  // Trailers come out one a day in order: the first whose title is a guide day's title anchors the run, and the ones after it
+  // follow day by day (October: "The Ones Who Showed Up" = day 3, then Innoson = Nnewi on day 7, Ajaokuta = the furnace on day 9).
+  const trailers = (m.shorts || []).filter((v) => v && v.id && (!v.secs || v.secs <= TRAILER_MAX_SECS))
+  const series = normTitle(g.title)
+  if (epDays.length && trailers[0] && normTitle(trailers[0].title) === series) vids.set(epDays[0][0], trailers[0]) // the series trailer opens day 1
+  const at = trailers.findIndex((v) => epDays.some(([, d]) => normTitle(d.title) === normTitle(v.title)))
+  if (at >= 0) {
+    let k = epDays.findIndex(([, d]) => normTitle(d.title) === normTitle(trailers[at].title))
+    for (const v of trailers.slice(at)) { if (k >= epDays.length) break; if (!vids.has(epDays[k][0])) vids.set(epDays[k][0], v); k++ }
+  }
+
+  const episodes = {}, sundays = {}, calendar = []
+  let lastWeek = null, nSun = 0, nEp = 0
+  const lastGuideDay = Math.max(0, ...byDay.keys())
+  for (let day = 1; day <= total; day++) {
+    const d = byDay.get(day)
+    if (!d) {
+      calendar.push(day > lastGuideDay && day === total ? { day, type: 'celebration', week: lastWeek, videoId: null } : { day, type: 'rest', week: lastWeek, videoId: null })
+      continue
+    }
+    const sc = d.scripture && typeof d.scripture === 'object' ? { text: str(d.scripture.text), ref: str(d.scripture.ref) } : { text: '', ref: '' }
+    const pts = (Array.isArray(d.points) ? d.points : []).map((p) => ({ title: str(p?.head || p?.title), body: str(p?.body) })).filter((p) => p.title || p.body)
+    if (isTalk(d)) {
+      const n = ++nSun
+      const q = asQuestion(d.prayer)
+      sundays[n] = {
+        n, date: day, title: titleCase(str(d.title)) || `Discussion ${n}`,
+        recap: [lines([d.hook, d.story]) || str(d.centralTruth), pts.map((p) => `- ${p.title}${p.body ? ': ' + p.body : ''}`).join('\n')].filter(Boolean).join('\n\n'),
+        reading: sc.ref ? `${sc.text ? sc.text + ' ' : ''}(${sc.ref})` : '',
+        questions: [...(Array.isArray(d.questions) ? d.questions : []), q ? d.prayer : ''].map(str).filter(Boolean),
+        prayer: q ? '' : str(d.prayer), declaration: decaps(lines(d.declaration)),
+      }
+      calendar.push({ day, type: 'selah', sunday: n, week: lastWeek, videoId: null })
+      continue
+    }
+    const wk = weekOfN(++nEp)
+    if (wk != null) lastWeek = wk
+    const v = vids.get(day)
+    const quiz = (Array.isArray(d.quiz) ? d.quiz : []).filter((q) => q && str(q.q) && (
+      (q.type === 'tf' && typeof q.answer === 'boolean') ||
+      (Array.isArray(q.options) && q.options.length >= 2 && Number.isInteger(q.answer) && q.answer >= 0 && q.answer < q.options.length &&
+        new Set(q.options.map((o) => str(o).toLowerCase())).size === q.options.length && q.options.every((o) => str(o)))
+    )).map((q) => (q.type === 'tf' ? { type: 'tf', q: str(q.q), answer: q.answer } : { type: 'choice', q: str(q.q), options: q.options.map(str), answer: q.answer }))
+    const psalm = d.psalm && str(d.psalm.ref) ? { text: str(d.psalm.text), ref: str(d.psalm.ref) } : null
+    episodes[day] = {
+      num: day, title: str(d.title) || `Day ${day}`, date: day, week: wk, secs: v ? +v.secs || 0 : 0,
+      scripture: sc, truth: str(d.centralTruth), hook: str(d.hook),
+      points: pts, supporting: psalm ? [psalm] : [], illustration: str(d.story),
+      challenge: str(d.challenge), prayer: asQuestion(d.prayer) ? '' : str(d.prayer), declaration: decaps(lines(d.declaration)), transition: '',
+      questions: asQuestion(d.prayer) ? [str(d.prayer)] : [], apply: [],
+      mirrors: d.mirrors && (str(d.mirrors.ot) || str(d.mirrors.nt)) ? { ot: str(d.mirrors.ot), nt: str(d.mirrors.nt) } : null,
+      christ: str(d.christ), rhyme: /^stanza/i.test(str(d.rhyme)) ? '' : lines(d.rhyme), code: str(d.codeLine), quiz,
+    }
+    calendar.push({ day, type: 'teaching', episode: day, week: wk, videoId: v ? v.id : null })
+  }
+  const codes = calendar.filter((d) => d.episode).map((d, i) => {
+    const ep = episodes[d.episode]
+    return { no: i + 1, day: d.day, episode: d.episode, week: d.week ?? 0, title: ep.title, line: firstLine(ep.code || ep.truth || ep.title), rare: (i + 1) % 7 === 0 }
+  })
+  const declaration = (Array.isArray(g.declaration) ? g.declaration : [g.declaration]).flatMap((x) => str(x).split('\n')).map((x) => decaps(str(x))).filter(Boolean)
+  const shortsVideos = [...vids].filter(([, v]) => !v.secs || v.secs <= TRAILER_MAX_SECS).map(([day, v]) => ({ day, videoId: v.id, title: cleanVideoTitle(v.title) }))
+  return {
+    id: cfg.id, kind: 'guide', stageWord: isParts ? 'Part' : 'Week',
+    title: cfg.title || titleCase(str(g.title)).replace(/\s+—\s+/, ' — ') || m.title,
+    subtitle: cfg.subtitle || '', tagline: cfg.tagline || str(g.bigIdea), bigIdea: str(g.bigIdea),
+    openLine: str(g.openLine), closeLine: str(g.closeLine),
+    audience: 'Teens & families',
+    month: MONTH_NAMES[m.month - 1], year, monthNum: m.month,
+    accent: cfg.accent, accentDark: cfg.accentDark,
+    themeScripture: cfg.themeScripture,
+    declaration: declaration.length ? declaration : [cfg.tagline],
+    weeks, channel: CHANNEL, shortsUrl: CHANNEL + '/shorts',
+    calendar, episodes, sundays, shorts: [], codes, intro: null,
+    shortsVideos, shortsPlaylist: null,
+  }
+}
+
+function buildYear(skip) {
+  if (!existsSync(YEAR)) return []
+  let y
+  try { y = JSON.parse(readFileSync(YEAR, 'utf8')) } catch (err) { console.warn('content: year-series.json unreadable — ' + err.message); return [] }
+  const year = y.year || 2026
+  return (y.months || [])
+    .filter((m) => m && m.id && !skip.has(m.month))
+    .map((m) => {
+      const cfg = GUIDES[m.month], g = cfg && readGuide(cfg.id)
+      return g ? buildGuideSeries(m, g, cfg, year) : buildLightSeries(m, year)
+    })
+    .filter(Boolean)
+}
+
 /* ---- run ---------------------------------------------------------------- */
 const VIDEOS = join(here, 'videos.json')
 const rawVideos = existsSync(VIDEOS) ? JSON.parse(readFileSync(VIDEOS, 'utf8')) : {}
@@ -357,6 +678,9 @@ if (!built.length) {
   console.error('content: no series markdown and no committed library.json — cannot build')
   process.exit(1)
 }
+// The scripted months win over a light build of the same month; then everything newest first.
+built.push(...buildYear(new Set(built.map((s) => s.monthNum))))
+built.sort((a, b) => b.year - a.year || b.monthNum - a.monthNum)
 
 const library = {
   activeId: built[0].id,

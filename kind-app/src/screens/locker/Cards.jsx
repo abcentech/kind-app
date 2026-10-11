@@ -62,6 +62,15 @@ export default function Tab({ s }) {
   const gridRef = useRef(null)
   useEffect(() => { setSid(s.id) }, [s.id])
 
+  // gold glints only run for tiles that are on screen: 26 infinite compositor animations cost a low-end GPU even when clipped
+  useEffect(() => {
+    const g = gridRef.current
+    if (!g || typeof IntersectionObserver === 'undefined') return undefined
+    const io = new IntersectionObserver((es) => { for (const e of es) { if (e.isIntersecting) e.target.setAttribute('data-vis', ''); else e.target.removeAttribute('data-vis') } }, { rootMargin: '80px 0px' })
+    g.querySelectorAll('.lcc-cell').forEach((el) => io.observe(el))
+    return () => io.disconnect()
+  }, [sid, s.id, st])
+
   const cards = useMemo(() => lockerCards(st, sid), [st, sid])
   const owned = useMemo(() => cards.filter((c) => c.owned), [cards])
   const gold = owned.filter((c) => c.rare).length

@@ -2,16 +2,20 @@
 // Renders nothing in lite (the canvas is the cost); the engine releases it and sleeps.
 import { useEffect, useRef } from 'react'
 import { useFxLevel } from './motion.js'
-import { _attachLayer } from './fx.js'
 
 export function FxLayer() {
   const level = useFxLevel()
   const canvas = useRef(null)
   const flash = useRef(null)
 
+  // The engine is a lazy chunk (fx.js warms it after first paint); attaching waits for it so the first-load bundle does not carry it.
   useEffect(() => {
     if (level === 'lite' || !canvas.current) return undefined
-    return _attachLayer(canvas.current, flash.current)
+    let dead = false, off = null
+    import('./engine.js')
+      .then((m) => { if (!dead) off = m._attachLayer(canvas.current, flash.current) })
+      .catch(() => {})
+    return () => { dead = true; if (off) off() }
   }, [level])
 
   if (level === 'lite') return null

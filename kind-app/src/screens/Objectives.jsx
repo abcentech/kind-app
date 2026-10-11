@@ -12,6 +12,7 @@ import Rank from './objectives/Rank.jsx'
 import Month from './objectives/Month.jsx'
 import MedalsPreview from './objectives/MedalsPreview.jsx'
 import Recap from './objectives/Recap.jsx'
+import FamilyRecap from './objectives/FamilyRecap.jsx'
 // Styles load with the screen, not with the shell (first-load budget: docs/V7-DESIGN.md §10).
 import '../styles/objectives.css'
 import '../styles/objectives-streak.css'
@@ -33,6 +34,7 @@ export default function Objectives() {
       <Month s={s} />
       <MedalsPreview s={s} />
       <Recap s={s} />
+      <FamilyRecap />
     </main>
   )
 }

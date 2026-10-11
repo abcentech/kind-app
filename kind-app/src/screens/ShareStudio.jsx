@@ -52,7 +52,7 @@ function captionInput(kind, d = {}, series) {
   const decl = d.declaration || series.declaration
   const lines = Array.isArray(decl) ? decl : decl ? [decl] : []
   const text = lines.join(' ')
-  return { ...base, days: d.done ?? d.days ?? d.total, declaration: text.length <= 160 ? text : lines[0] }
+  return { ...base, days: d.done ?? d.days ?? d.total, total: d.total, complete: d.complete, declaration: text.length <= 160 ? text : lines[0] }
 }
 
 /** Callers pass light data ({ seriesId, day } / { n } / { streak, xp } / { text, ref }): fill the rest from the store so the image is never half-empty. */

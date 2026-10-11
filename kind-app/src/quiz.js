@@ -281,6 +281,12 @@ function parseRefRaw(r) {
   return { book: lc(m[1]), ch: +m[2], vs }
 }
 function refsOverlap(a, b) {
+  // a multi-part ref ("1 Samuel 17:52–54; Acts 13:36") is one unit: it clashes if any part clashes
+  const pa = refShort(a).split(/\s*;\s*/).filter(Boolean), pb = refShort(b).split(/\s*;\s*/).filter(Boolean)
+  if (pa.length > 1 || pb.length > 1) return pa.some((x) => pb.some((y) => refsOverlap1(x, y)))
+  return refsOverlap1(a, b)
+}
+function refsOverlap1(a, b) {
   const x = parseRef(a), y = parseRef(b)
   if (x.book !== y.book || x.ch !== y.ch) return false
   if (!x.vs || !y.vs) return true
@@ -1010,7 +1016,7 @@ function teachingCands(C, L, o) {
     const pairs = []
     for (const p of L.points) {
       const g = gistOf(p, L, true)
-      if (g && g.length <= 84) pairs.push({ left: p.title, right: g })
+      if (g && g.length <= 84 && p.title.length <= 56) pairs.push({ left: p.title, right: g })
     }
     if (pairs.length >= 3) {
       const use = pairs.slice(0, 4)
@@ -1370,7 +1376,9 @@ function plan(cands, count, rnd) {
     if (!real) continue
     const kinds = new Set(seq).size, srcs = new Set(real.chosen.map((c) => c.source)).size
     const posScore = seq.reduce((a, t, p) => a + (POSITION[p === 0 ? 'first' : p === count - 1 ? 'last' : 'mid'][t] || 0.5), 0) * 0.22
-    const score = real.total + posScore + kinds * 0.35 + srcs * 0.18
+    // a lesson of 4+ should span 3 types whenever the pool offers 3 (days that only offer 2 are exempt)
+    const thin = count >= 4 && types.length >= 3 && kinds < 3 ? 5 : 0
+    const score = real.total + posScore + kinds * 0.35 + srcs * 0.18 - thin
     if (!best || score > best.score) best = { score, chosen: real.chosen }
   }
   if (best) return best.chosen

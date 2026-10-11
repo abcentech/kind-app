@@ -106,6 +106,7 @@
     animation: lcc-sweep var(--lcc-loop) var(--ease-io) infinite;
     animation-delay: calc(var(--i, 0) * var(--lcc-loop) / -6);
   }
+  .lcc-cell:not([data-vis]) .lcc-shine { animation-play-state: paused; }   /* off-screen (IntersectionObserver in Cards.jsx): no glint */
   @keyframes lcc-sweep { 0%, 58% { transform: translateX(-130%); } 100% { transform: translateX(130%); } }
 
   /* a locked card refuses */

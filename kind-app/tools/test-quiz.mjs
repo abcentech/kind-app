@@ -16,7 +16,8 @@ const args = process.argv.slice(2)
 const flag = (f) => args.includes(f)
 const arg = (f) => (args.includes(f) ? args[args.indexOf(f) + 1] : null)
 const only = arg('--series')
-const seriesList = lib.order.filter((id) => !only || id === only).map((id) => lib.series[id])
+// Light ("Watch and Reflect") series carry no quiz: lesson/steps.js never asks quizFor for them.
+const seriesList = lib.order.filter((id) => !only || id === only).map((id) => lib.series[id]).filter((x) => x.kind !== 'light')
 const OUT = join(here, 'out', 'quiz')
 
 /* ── tiny assertion harness ── */
@@ -168,7 +169,9 @@ function checkLesson(qs, series, day, count, o) {
   ok(new Set(qs.map((q) => q.id)).size === qs.length, 'ids unique within a lesson')
   for (let i = 1; i < qs.length; i++) ok(qs[i].type !== qs[i - 1].type, `two ${qs[i].type} in a row (${i - 1},${i})`)
   if (qs.length >= 3) ok(new Set(qs.map((q) => q.type)).size >= 2, 'fewer than 2 distinct types')
-  if (qs.length >= 4) ok(new Set(qs.map((q) => q.type)).size >= 3, 'fewer than 3 distinct types in a lesson of ' + qs.length)
+  // a day whose pool can only ever yield 2 exercise types cannot honour the 3-type rule
+  if (qs.length >= 4 && new Set(qs.map((q) => q.type)).size < 3 && Object.keys(Q.exercisePool(series, day, o).byType).length < 3) { /* 2-type pool: exempt */ }
+  else if (qs.length >= 4) ok(new Set(qs.map((q) => q.type)).size >= 3, 'fewer than 3 distinct types in a lesson of ' + qs.length)
   for (const q of qs) checkExercise(q, series, day)
 }
 

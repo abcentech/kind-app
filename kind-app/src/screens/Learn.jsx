@@ -25,7 +25,7 @@ import ArchiveBanner from './learn/ArchiveBanner.jsx'
 import { stageVars } from './learn/StageDivider.jsx'
 import LaunchBar from './LaunchBar.jsx'
 
-const HERE_AT = 0.55     // where the live node settles in the visible window (0 = under the HUD, 1 = on the Launch Bar)
+const HERE_AT = 0.5     // where the live node settles in the visible window (0 = under the HUD, 1 = on the Launch Bar)
 const LINE_AT = 0.28     // where the "reading line" that picks the stage chip sits in that window
 
 const stageOfDay = (j) => Math.max(0, j.stages.findIndex((x) => x.days.includes(j.currentDay)))
@@ -55,7 +55,8 @@ export default function Learn() {
   const [active, setActive] = useState(() => stageOfDay(j))
   const [away, setAway] = useState(null)                           // where the live node is when it is out of the window: 'up' | 'down'
 
-  useScrollVar(scroller, '--scroll', { invert: true, target: skyRef })
+  // the sky restyles its whole subtree on every write: 1 % steps keep it reading as a climb at a fraction of the style work
+  useScrollVar(scroller, '--scroll', { invert: true, target: skyRef, step: 0.01 })
 
   // taps. openDay is gated by the shell (a locked day toasts); locked nodes also get a tiny local shake + haptic.
   const open = useRef(openDay)

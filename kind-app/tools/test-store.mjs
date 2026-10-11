@@ -11,21 +11,38 @@ import assert from 'node:assert/strict'
 const VERBOSE = process.argv.includes('--verbose')
 if (!process.env.KIND_TEST_CHILD && !process.argv.includes('--once')) {
   let bad = 0
+  // Two universes per zone: "classic" (July + August only: the engine suite, written when October had no live series) and
+  // "year" (the real library, January to October, with the archive-light series): the light: tests.
   for (const tz of ['Africa/Lagos', 'America/New_York', 'Pacific/Auckland', 'UTC']) {
-    const r = spawnSync(process.execPath, [fileURLToPath(import.meta.url), ...process.argv.slice(2)], {
-      env: { ...process.env, TZ: tz, KIND_TEST_CHILD: '1' }, stdio: 'inherit',
-    })
-    if (r.status) bad++
+    for (const uni of ['classic', 'year']) {
+      const r = spawnSync(process.execPath, [fileURLToPath(import.meta.url), ...process.argv.slice(2)], {
+        env: { ...process.env, TZ: tz, KIND_TEST_CHILD: '1', KIND_TEST_UNIVERSE: uni }, stdio: 'inherit',
+      })
+      if (r.status) bad++
+    }
   }
   console.log(bad ? `\nFAILED in ${bad} time zone(s)` : '\nall time zones green')
   process.exit(bad ? 1 : 0)
 }
 
+const YEAR = process.env.KIND_TEST_UNIVERSE === 'year'
 register('data:text/javascript,' + encodeURIComponent(`
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
+const CLASSIC = ${JSON.stringify(!YEAR)}
+const ALT = ${JSON.stringify(process.env.KIND_TEST_LIBRARY || '')} // a dry-run library.json (KIND_CONTENT_OUT) instead of src/content's
+// The classic universe drops the archive-light and guide series, so the engine suite keeps its premise (nothing live in October).
+const classic = (j) => {
+  const lib = JSON.parse(j)
+  if (!lib.series) return j
+  const keep = lib.order.filter((id) => !lib.series[id].kind)
+  return JSON.stringify({ activeId: keep[0], order: keep, series: Object.fromEntries(keep.map((id) => [id, lib.series[id]])) })
+}
 export async function load(url, context, nextLoad) {
-  if (url.endsWith('.json')) return { format: 'module', source: 'export default ' + readFileSync(fileURLToPath(url), 'utf8'), shortCircuit: true }
+  if (url.endsWith('.json')) {
+    const raw = readFileSync(ALT && url.endsWith('library.json') ? ALT : fileURLToPath(url), 'utf8')
+    return { format: 'module', source: 'export default ' + (CLASSIC && url.endsWith('library.json') ? classic(raw) : raw), shortCircuit: true }
+  }
   return nextLoad(url, context)
 }`), import.meta.url)
 
@@ -60,6 +77,7 @@ let passed = 0
 const failures = []
 const notes = []
 function t(name, fn) {
+  if (YEAR !== /^(light|guide):/.test(name)) return
   try { fn(); passed++; if (VERBOSE) console.log('  ok  ' + name) } catch (e) { failures.push({ name, e }) }
 }
 const note = (s) => notes.push(s)
@@ -1214,8 +1232,158 @@ t('economy: a daily player (80 % accuracy, claims chests) is promoted every 3–
   assert.ok(avg(6) <= 62, 'Pioneer is reachable by finishing both missions: ' + avg(6))
 })
 
+/* ======================================================================== *
+ *  The year: archive-light ("Watch and Reflect") series, January–October
+ * ======================================================================== */
+// October is a light trailer month until its teaching guide is parsed; then it is the guide series 'building-nigeria'.
+const OCTS = L.allSeries.find((x) => x.year === 2026 && x.monthNum === 10)?.id
+const OCT_LIGHT = L.isLight(L.getSeries(OCTS))
+const lightAll = () => L.allSeries.filter((x) => L.isLight(x))
+const EMOJI = /\p{Extended_Pictographic}/u
+t('light: the year is on the board, newest first; October opens the app on 9 Oct', () => {
+  const months = L.allSeries.map((x) => x.year * 12 + x.monthNum)
+  assert.ok(L.allSeries.length >= 10, 'ten months')
+  assert.ok(months.every((m, i) => i === 0 || m < months[i - 1]), 'newest first')
+  assert.equal(L.seriesIds[0], OCTS)
+  assert.equal(L.activeSeriesId(new Date(2026, 9, 9, 9)), OCTS)
+  assert.equal(L.activeSeriesId(new Date(2026, 7, 12, 9)), AUG)
+  assert.equal(L.activeSeriesId(new Date(2026, 2, 10, 9)), 'the-voice-of-influence')
+  for (const x of lightAll()) if (x.id !== OCTS) assert.equal(L.modeOf(x, new Date(2026, 9, 9, 9)), 'archive', x.id)
+  assert.equal(L.quizCount(L.getSeries('the-genius-code')), 0); assert.equal(L.quizCount(augS), L.QUIZ_COUNT)
+})
+t('light: an archive month is one lesson per episode, all open, self-paced', () => {
+  const g = L.getSeries('the-genius-code')
+  const at = new Date(2026, 9, 9, 9)
+  assert.equal(L.isLight(g), true)
+  assert.equal(g.calendar.length, Object.keys(g.episodes).length)
+  assert.ok(g.calendar.every((d) => d.videoId && d.episode === d.day))
+  assert.equal(L.modeOf(g, new Date(2026, 4, 10, 9)), 'live'); assert.equal(L.modeOf(g, new Date(2026, 3, 30, 9)), 'upcoming')
+  assert.ok(g.calendar.every((d) => L.isUnlocked(g, d.day, {}, at)))
+  assert.equal(L.isUnlocked(g, g.calendar.length + 1, {}, at), false)
+  const done = (days) => ({ series: { [g.id]: { done: Object.fromEntries(days.map((d) => [d, '2026-10-01'])) } } })
+  assert.equal(L.currentDay(g, { series: {} }, at), 1)
+  assert.equal(L.currentDay(g, done([1, 2, 3]), at), 4)
+  assert.equal(L.currentDay(g, done(range(1, g.calendar.length)), at), g.calendar.length)
+  assert.equal(L.stages(g, {}, at).reduce((a, x) => a + x.days.length, 0), g.calendar.length)
+  assert.equal(L.journey(g, {}, at).mode, 'archive')
+})
+if (OCT_LIGHT) t('light: October is live: day N is the trailer for October N, opens at 06:00, later days are coming soon', () => {
+  const o = L.getSeries(OCTS)
+  const at = new Date(2026, 9, 9, 9)
+  const have = Object.keys(o.episodes).length
+  assert.equal(o.calendar.length, 31); assert.ok(have >= 1)
+  assert.equal(L.modeOf(o, at), 'live'); assert.equal(L.currentDay(o, { series: {} }, at), 9)
+  assert.equal(L.isUnlocked(o, 9, {}, at), true); assert.equal(L.isUnlocked(o, 10, {}, at), false)
+  assert.equal(L.isUnlocked(o, 9, {}, new Date(2026, 9, 9, 5, 59)), false, 'not before 06:00')
+  assert.deepEqual(L.nextUnlockAt(o, 10, at), new Date(2026, 9, 10, 6, 0))
+  assert.equal(L.hasContent(o, have), true); assert.equal(L.hasContent(o, have + 1), false)
+  assert.equal(L.deckFor(o, have + 1)[0].title, 'Coming soon')
+  assert.equal(L.dayState(o, 12, {}, at).state, 'locked')
+  const w = L.deckFor(o, 1).find((c) => c.kind === 'watch')
+  assert.equal(w.label, 'Today’s trailer'); assert.equal(w.videoId, o.calendar[0].videoId)
+})
+t('light: deckFor is watch and reflect: open, watch, truth, ask, do, declare (every day of every light month)', () => {
+  for (const x of lightAll()) {
+    for (const d of x.calendar) {
+      if (!d.episode) continue
+      const deck = L.deckFor(x, d.day)
+      const kinds = deck.map((c) => c.kind).filter((k) => k !== 'verse')
+      assert.deepEqual(kinds, ['open', 'watch', 'truth', 'ask', 'do', 'declare'], `${x.id} d${d.day}`)
+      assert.equal(new Set(deck.map((c) => c.id)).size, deck.length)
+      assert.equal(deck.find((c) => c.kind === 'watch').videoId, d.videoId)
+      assert.ok(deck.at(-1).lines.length >= 1 && deck.at(-1).lines.every(Boolean), `${x.id} declaration`)
+      assert.ok(deck.every((c) => !EMOJI.test(JSON.stringify(c))), `${x.id} d${d.day} has an emoji`)
+      assert.ok(deck.find((c) => c.kind === 'ask').prompt.length > 10)
+      const m = L.estimateMinutes(x, d.day); assert.ok(m >= 2 && m <= 45, `${x.id} d${d.day} ${m} min`)
+      assert.ok(L.teaserFor(x, d.day).length > 10); assert.ok(L.codeFor(x, d.day)?.line)
+      assert.ok(!EMOJI.test(L.dayLabel(x, d.day)), `${x.id} d${d.day} title`)
+    }
+  }
+})
+t('light: finishing a light lesson (no checks) pays XP, keeps the streak, deals the code card', () => {
+  begin('2026-10-09T19:00')
+  const G = 'the-genius-code', o = L.getSeries(G)
+  const r = S.finishDay(G, 3, 0, { right: 0, asked: 0 })
+  assert.ok(r && r.xp.total > 0, 'xp'); assert.equal(r.streak.to, 1); assert.ok(r.code && r.code.line, 'card')
+  assert.equal(S.isDayDone(S.snapshot(), G, 3), true)
+  assert.equal(S.finishDay(OCTS, 10, 0, { right: 0, asked: 0 }), null, 'a locked October day cannot be finished')
+  assert.equal(L.seriesProgress(o, S.snapshot()).done, 1)
+  assert.equal(S.lockerCards(S.snapshot(), G).filter((c) => c.owned).length, 1)
+  const ctx = S.launchBarContext(o, S.snapshot(), new Date(2026, 9, 9, 20))
+  assert.equal(ctx.steps, L.deckLength(o, ctx.day), 'no quiz steps on a light lesson')
+  S.saveNote(G, 3, 'my answer'); assert.equal(S.noteFor(S.snapshot(), G, 3), 'my answer')
+})
+
+/* ======================================================================== *
+ *  Teaching-guide series (September + October 2026), when their guides are parsed
+ * ======================================================================== */
+const guides = () => L.allSeries.filter((x) => L.isGuide(x))
+if (YEAR && guides().length) {
+  const Q = await import('../src/quiz.js')
+  const { buildSteps } = await import('../src/screens/lesson/steps.js')
+  const SEP = L.allSeries.find((x) => L.isGuide(x) && x.monthNum === 9)
+  const OCT = L.allSeries.find((x) => L.isGuide(x) && x.monthNum === 10)
+  const at = new Date(2026, 9, 9, 9)
+  if (OCT) t('guide: October is live on 9 Oct: the app opens on it, day 9 current, day 10 locked until 06:00 on the 10th', () => {
+    assert.equal(L.activeSeriesId(at), OCT.id); assert.equal(L.seriesIds[0], OCT.id)
+    assert.equal(L.modeOf(OCT, at), 'live'); assert.equal(L.currentDay(OCT, { series: {} }, at), 9)
+    assert.equal(L.isUnlocked(OCT, 9, {}, at), true); assert.equal(L.isUnlocked(OCT, 10, {}, at), false)
+    assert.equal(L.isUnlocked(OCT, 9, {}, new Date(2026, 9, 9, 5, 59)), false, 'not before 06:00')
+    assert.deepEqual(L.nextUnlockAt(OCT, 10, at), new Date(2026, 9, 10, 6, 0))
+    assert.equal(L.dayState(OCT, 9, {}, at).state, 'current'); assert.equal(L.dayState(OCT, 12, {}, at).state, 'locked')
+    assert.equal(L.isUnlocked(OCT, 31, {}, new Date(2026, 10, 1, 9)), true, 'archive in November')
+    assert.equal(OCT.calendar.length, 31); assert.equal(OCT.calendar[30].type, 'celebration')
+    assert.equal(L.deckFor(OCT, 31).at(-1).kind, 'declare')
+  })
+  if (SEP) t('guide: September is archive in October: every day open, self-paced, Sundays are Selah', () => {
+    assert.equal(L.modeOf(SEP, at), 'archive'); assert.equal(L.modeOf(SEP, new Date(2026, 8, 12, 9)), 'live')
+    assert.ok(SEP.calendar.every((d) => L.isUnlocked(SEP, d.day, {}, at)))
+    const done = (days) => ({ series: { [SEP.id]: { done: Object.fromEntries(days.map((d) => [d, '2026-10-01'])) } } })
+    assert.equal(L.currentDay(SEP, { series: {} }, at), 1); assert.equal(L.currentDay(SEP, done([1, 2, 3]), at), 4)
+    const sel = SEP.calendar.filter((d) => d.type === 'selah').map((d) => d.day)
+    assert.ok(sel.length >= 4 && sel.every((d) => L.weekdayOf(L.keyOfDay(SEP, d)) === 0), 'Selah on Sundays: ' + sel)
+    assert.equal(L.deckFor(SEP, sel[0])[0].icon, 'moon')
+    assert.equal(L.stages(SEP, {}, at).reduce((a, x) => a + x.days.length, 0), SEP.calendar.length)
+  })
+  t('guide: every teaching day decks the founder’s text in order, with checks from that day only', () => {
+    for (const x of guides()) for (const d of x.calendar) {
+      if (!d.episode) continue
+      const ep = x.episodes[d.episode], deck = L.deckFor(x, d.day), tag = `${x.id} d${d.day}`
+      assert.equal(deck[0].kind, 'open', tag); assert.equal(deck.at(-1).kind, 'declare', tag)
+      assert.equal(new Set(deck.map((c) => c.id)).size, deck.length, tag)
+      assert.ok(deck.at(-1).lines.length >= 1 && deck.at(-1).lines.every(Boolean), tag + ' declaration')
+      if (x.openLine) assert.equal(deck.find((c) => c.id === 'open-line')?.body, x.openLine, tag)
+      if (x.closeLine) assert.equal(deck.find((c) => c.id === 'close-line')?.body, x.closeLine, tag)
+      if (ep.truth) assert.ok(deck.some((c) => c.kind === 'truth' && c.body === ep.truth), tag + ' truth')
+      if (ep.points.length) assert.equal(deck.filter((c) => c.kind === 'point').length, ep.points.length, tag)
+      if (d.videoId) assert.equal(deck.find((c) => c.kind === 'watch')?.videoId, d.videoId, tag)
+      assert.ok(deck.every((c) => !EMOJI.test(JSON.stringify(c))), tag + ' has an emoji')
+      assert.ok(L.teaserFor(x, d.day).length > 3 && L.codeFor(x, d.day)?.line, tag + ' teaser/card')
+      const own = L.guideChecks(x, d.day)
+      assert.equal(own.length, (ep.quiz || []).length, tag)
+      own.forEach((ex, i) => {
+        const src = ep.quiz[i]
+        if (ex.type === 'tf') { assert.equal(Q.gradeExercise(ex, src.answer).right, true, tag); return }
+        assert.equal(new Set(ex.options.map((o) => o.text)).size, ex.options.length, tag + ' duplicate option')
+        assert.equal(Q.gradeExercise(ex, ex.answer).right, true); assert.equal(Q.gradeExercise(ex, ex.answer).answerText, src.options[src.answer], tag)
+      })
+      const steps = buildSteps(x, d.day), exs = steps.filter((s) => s.type === 'ex')
+      assert.ok(exs.length >= Math.min(4, own.length + 1) && own.every((o) => exs.some((s) => s.ex.id === o.id)), tag + ' steps')
+      assert.equal(steps.at(-1).kind, 'declare', tag)
+    }
+    const slots = guides().flatMap((x) => x.calendar.filter((d) => d.episode).flatMap((d) => L.guideChecks(x, d.day).filter((e) => e.type === 'choice').map((e) => e.answer)))
+    if (slots.length > 20) assert.ok(new Set(slots).size >= 3, 'the right answer is not always in one slot')
+  })
+  if (SEP) t('guide: finishing a September day pays XP and deals its code card line', () => {
+    begin('2026-10-09T19:00')
+    const r = S.finishDay(SEP.id, 1, 30, { right: 3, asked: 3 })
+    assert.ok(r && r.xp.total > 0); assert.equal(r.code?.line, L.codeFor(SEP, 1).line)
+    assert.equal(L.seriesProgress(SEP, S.snapshot()).done, 1)
+  })
+}
+
 /* ---- report ---------------------------------------------------------------- */
-const tz = process.env.TZ || Intl.DateTimeFormat().resolvedOptions().timeZone
+const tz = (process.env.TZ || Intl.DateTimeFormat().resolvedOptions().timeZone) + (YEAR ? ' (year)' : '')
 if (failures.length) {
   console.log(`\n✗ ${tz}: ${failures.length} failed, ${passed} passed`)
   for (const { name, e } of failures) console.log(`\n  ✗ ${name}\n    ${String(e.message || e).split('\n').slice(0, 14).join('\n    ')}`)

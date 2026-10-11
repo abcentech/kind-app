@@ -127,10 +127,17 @@ const NEVER = [/^sw\.js$/, /^_headers$/, /\.map$/, /^splash\//, /^screenshots\//
 const NON_LATIN_FONT = /-(latin-ext|vietnamese|cyrillic(-ext)?|greek(-ext)?)-|\.woff$/   // cached on demand, not up front
 const ROOT_FILES = /^(index\.html|manifest\.webmanifest|icon[\w.-]*\.(png|svg)|favicon[\w.-]*|apple-touch-icon[\w.-]*)$/
 
+// The series on air at build time. Its lesson bodies go in the offline pack; the other series' bodies (~0.4 MB) are cached on first use.
+const ACTIVE_SERIES = (() => {
+  try { return JSON.parse(readFileSync(fileURLToPath(new URL('./src/content/library.json', import.meta.url)), 'utf8')).activeId || null }
+  catch { return null }
+})()
+
 /** Is this dist file part of the offline pack? App shell + every chunk + latin fonts + icons. */
 export function isPrecached(f) {
   if (NEVER.some((re) => re.test(f))) return false
   if (/\.woff2?$/.test(f) && NON_LATIN_FONT.test(f)) return false
+  if (/^assets\/content-/.test(f)) return !!ACTIVE_SERIES && f.startsWith('assets/content-' + ACTIVE_SERIES + '-')
   return f.startsWith('assets/') || ROOT_FILES.test(f)
 }
 

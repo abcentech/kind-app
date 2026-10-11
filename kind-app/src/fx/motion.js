@@ -240,9 +240,11 @@ export function useInView(ref, { once = true, margin = '0px', threshold = 0 } = 
  *   ref     the scroller (pass document.documentElement's ref, or any element with overflow)
  *   invert  1 - p. Learn starts at the bottom and climbs, so it wants invert:true to get 0 on the pad, 1 in orbit.
  *   target  where the variable lands: 'self' (default, the scroller) | 'root' (<html>) | an element | a ref
+ *   step    quantise to steps of this size (e.g. .01). A var on a big subtree restyles every descendant on each write, so
+ *           a sky that only needs to read as "darker higher up" should not be rewritten every frame.
  * In lite the variable updates in 2 % steps: the information survives, the style churn does not.
  */
-export function useScrollVar(ref, name = '--scroll', { invert = false, target = 'self' } = {}) {
+export function useScrollVar(ref, name = '--scroll', { invert = false, target = 'self', step = 0 } = {}) {
   useEffect(() => {
     const el = ref.current
     if (!el) return undefined
@@ -258,7 +260,9 @@ export function useScrollVar(ref, name = '--scroll', { invert = false, target = 
       const max = isDoc ? root.scrollHeight - window.innerHeight : el.scrollHeight - el.clientHeight
       let p = max > 0 ? clamp(top / max, 0, 1) : 0
       if (invert) p = 1 - p
-      const eps = level === 'lite' ? 0.02 : 0.0005
+      const q = level === 'lite' ? Math.max(step, 0.02) : step
+      if (q) p = Math.round(p / q) * q
+      const eps = q ? 1e-9 : level === 'lite' ? 0.02 : 0.0005
       if (last < 0 || Math.abs(p - last) >= eps || ((p === 0 || p === 1) && p !== last)) {
         last = p
         out.style.setProperty(name, p.toFixed(4))
@@ -277,7 +281,7 @@ export function useScrollVar(ref, name = '--scroll', { invert = false, target = 
       raf.remove(tick)
       out.style.removeProperty(name)
     }
-  }, [ref, name, invert, target])
+  }, [ref, name, invert, target, step])
 }
 
 /* ═════════════════════════ usePointerTilt ═════════════════════════ */

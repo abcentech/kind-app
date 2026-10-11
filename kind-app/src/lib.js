@@ -142,7 +142,16 @@ export function todayNumber(s, at = now()) {
 export function currentDay(s, st, at = now()) {
   const n = s.calendar.length
   const mode = modeOf(s, at)
-  if (mode === 'live') return Math.min(at.getDate(), n)
+  if (mode === 'live') {
+    const t = Math.min(at.getDate(), n)
+    // "Start from Day 1" (onboarding, mid-month): the path follows you, not the calendar, until you have caught up to today
+    if (st?.flags?.['catchup:' + s.id]) {
+      const done = doneMap(st, s)
+      const first = s.calendar.find((d) => d.day <= t && d.type !== 'rest' && !done[d.day])
+      if (first) return first.day
+    }
+    return t
+  }
   if (mode === 'upcoming') return 1
   const done = doneMap(st, s)
   const first = s.calendar.find((d) => d.type !== 'rest' && !done[d.day])
@@ -345,6 +354,64 @@ export function deckFor(s, day) {
   }
 
   const ep = epOf(s, d)
+  // Archive-light ("Watch and Reflect"): the video is the lesson; then one takeaway, one question, one action, the declaration.
+  if (ep && isLight(s)) {
+    const vid = videoOf(s, d)
+    const live = ep.date != null // the live month's daily trailers carry their October date
+    push({
+      kind: 'open', ...ref, icon: 'video',
+      eyebrow: `Day ${n} · ${s.month}`, title: title(ep.title), tag: ep.scripture?.ref || 'Watch and reflect',
+    })
+    if (vid) {
+      push({
+        kind: 'watch', label: live ? 'Today’s trailer' : 'Today’s episode', videoId: vid, title: title(ep.title),
+        url: `https://www.youtube.com/watch?v=${vid}`, thumb: `https://i.ytimg.com/vi/${vid}/hqdefault.jpg`,
+        secs: Math.max(0, Math.round(ep.secs || 0)),
+      })
+    }
+    if (ep.truth) push({ kind: 'truth', label: 'The one thing', body: ep.truth })
+    if (ep.scripture?.text) push({ kind: 'verse', label: 'The Word', body: ep.scripture.text, ref: ep.scripture.ref })
+    push({ kind: 'ask', label: 'Reflect', prompt: ep.questions?.[0] || wk?.question || 'What is one thing from this video you want to carry into today?', extra: [] })
+    if (ep.challenge) push({ kind: 'do', id: 'move', label: 'Do this today', body: ep.challenge })
+    push({ kind: 'declare', label: 'Say it out loud', lines: s.declaration.filter(Boolean) })
+    return cardsOfDeck(cards)
+  }
+  // A teaching guide day (Sep/Oct): the founder's own text, in the guide's order. Open and close lines frame every episode.
+  if (ep && isGuide(s)) {
+    const vid = videoOf(s, d)
+    push({
+      kind: 'open', ...ref, icon: 'book',
+      eyebrow: `Day ${n} · ${s.stageWord || 'Stage'} ${stg + 1}${wk ? ' · ' + cap(wk.f) : ''}`,
+      title: title(ep.title), tag: ep.scripture?.ref || '',
+    })
+    if (s.openLine) push({ kind: 'truth', id: 'open-line', label: 'The open line', body: s.openLine })
+    if (vid) {
+      push({
+        kind: 'watch', label: ep.secs && ep.secs <= 180 ? 'Today’s trailer' : 'Today’s episode', videoId: vid, title: title(ep.title),
+        url: `https://www.youtube.com/watch?v=${vid}`, thumb: `https://i.ytimg.com/vi/${vid}/hqdefault.jpg`,
+        secs: Math.max(0, Math.round(ep.secs || 0)),
+      })
+    }
+    if (ep.hook) push({ kind: 'read', id: 'hook', label: 'Start here', body: ep.hook })
+    if (ep.scripture?.text) push({ kind: 'verse', label: 'The Word', body: ep.scripture.text, ref: ep.scripture.ref })
+    ;(ep.supporting || []).slice(0, 1).forEach((v) => v.text && push({ kind: 'verse', id: 'psalm', label: 'Psalm 119 today', body: v.text, ref: v.ref }))
+    if (ep.illustration) push({ kind: 'read', id: 'story', label: 'The story', body: ep.illustration })
+    const pts = (ep.points || []).filter((p) => p.title || p.body)
+    pts.forEach((p, i) => push({ kind: 'point', id: 'p' + (i + 1), label: `Truth ${i + 1} of ${pts.length}`, title: title(p.title), body: p.body }))
+    if (ep.mirrors) {
+      push({ kind: 'read', id: 'mirrors', label: 'Then and now', body: [ep.mirrors.ot && 'Old Testament: ' + ep.mirrors.ot, ep.mirrors.nt && 'New Testament: ' + ep.mirrors.nt].filter(Boolean).join('\n\n') })
+    }
+    if (ep.christ) push({ kind: 'read', id: 'christ', label: 'Christ at the centre', body: ep.christ })
+    if (ep.truth) push({ kind: 'truth', label: 'The one thing', body: ep.truth })
+    if (ep.challenge) push({ kind: 'do', id: 'move', label: 'Your move today', body: ep.challenge })
+    push({ kind: 'ask', label: 'Your answer', prompt: ep.questions?.[0] || wk?.ask || wk?.question || 'Where does this land in your life today?', extra: [] })
+    if (ep.prayer) push({ kind: 'pray', label: 'Pray', body: ep.prayer })
+    const rhyme = ep.rhyme || wk?.rhyme
+    if (rhyme) push({ kind: 'read', id: 'rhyme', label: 'The rhyme', body: rhyme.split('\n').filter(Boolean).join('\n\n') })
+    if (s.closeLine) push({ kind: 'truth', id: 'close-line', label: 'The close line', body: s.closeLine })
+    push({ kind: 'declare', label: 'Say it out loud', lines: (ep.declaration || wk?.declaration || s.declaration.join('\n')).split('\n').filter(Boolean) })
+    return cardsOfDeck(cards)
+  }
   // A celebration day with no episode of its own (July) closes the month out of what the month already gave you.
   if (!ep) {
     const finale = d.type === 'celebration'
@@ -411,12 +478,39 @@ export function deckFor(s, day) {
   return cardsOfDeck(cards)
 }
 
+/**
+ * A guide day's own check questions (scripts/year-copy: quiz[] built only from that day's text) as quiz.js exercises.
+ * The correct option is moved to a slot fixed by (series, day, i) so the guide's habit of listing it first never leaks it.
+ */
+export function guideChecks(s, day) {
+  const d = dayInfo(s, day)
+  const q = (isGuide(s) && d.episode && s.episodes[d.episode]?.quiz) || []
+  return q.map((x, i) => {
+    const id = `${s.id}:${d.day}:g${i + 1}`
+    const base = { id, type: x.type, prompt: x.q, xp: 10, explain: '', source: 'point', kind: 'guide' }
+    if (x.type === 'tf') return { ...base, prompt: 'True or false?', statement: x.q, answer: x.answer }
+    const opts = x.options.slice()
+    let h = 0
+    for (const ch of id) h = (h * 31 + ch.charCodeAt(0)) >>> 0
+    const slot = h % opts.length
+    ;[opts[x.answer], opts[slot]] = [opts[slot], opts[x.answer]]
+    const ids = 'abcdefgh'
+    return { ...base, options: opts.map((text, k) => ({ id: ids[k], text })), answer: ids[slot] }
+  })
+}
+
 /** The YouTube id for a day's episode: the calendar's own mapping first, then an optional `videos` override map. */
 export const videoOf = (s, d) => d.videoId || s.videos?.[d.day] || null
 
 /* ---- planning helpers --------------------------------------------------- */
 /** Check questions in a lesson (quiz.js's default) and the seconds each takes; estimateMinutes assumes them. */
 export const QUIZ_COUNT = 4
+/** An archive-light ("Watch and Reflect") series: built from public video titles + written copy; no quiz. */
+export const isLight = (s) => s?.kind === 'light'
+/** A teaching-guide series (Sep/Oct 2026): full text + its own quiz from the founder's guide. */
+export const isGuide = (s) => s?.kind === 'guide'
+/** Check questions a lesson of this series carries: none for a light series. */
+export const quizCount = (s) => (isLight(s) ? 0 : QUIZ_COUNT)
 const QUIZ_SECS = 16
 /** Number of lesson cards for a day (the Launch Bar's "step n of N"): precomputed in the split build so it needs no lesson text. */
 export const deckLength = (s, day) => (s.meta ? s.meta.steps[Math.min(Math.max(1, day), s.calendar.length) - 1] : deckFor(s, day).length)
@@ -427,8 +521,9 @@ export function estimateMinutes(s, day) {
   const key = `${s.id}:${day}`
   let m = minutesMemo.get(key)
   if (m == null) {
-    const secs = deckFor(s, day).reduce((a, c) => a + c.secs, 0) + QUIZ_COUNT * QUIZ_SECS
-    m = Math.max(2, Math.min(12, Math.round(secs / 60)))
+    const secs = deckFor(s, day).reduce((a, c) => a + c.secs, 0) + quizCount(s) * QUIZ_SECS
+    // A light lesson is mostly the video, so its honest length can run past the 12-minute ceiling of a reading lesson.
+    m = Math.max(2, Math.min(isLight(s) ? 45 : 12, Math.round(secs / 60)))
     minutesMemo.set(key, m)
   }
   return m
@@ -460,6 +555,7 @@ export function teaserFor(s, day) {
   if (d.type === 'rest' || d.type === 'review') return 'Nothing new today — keep the declaration going.'
   const ep = epOf(s, d)
   if (!ep) return d.type === 'celebration' ? 'The whole climb, in one last look.' : 'This day is not published yet.'
+  if (isLight(s) || isGuide(s)) return oneLine(codeFor(s, d.day)?.line || ep.truth || ep.title, 90) // the takeaway; ep.truth only lands with the lesson chunk
   return oneLine(shortFor(s, d)?.hook || ep.hook || ep.truth || ep.scripture?.text || '', 90)
 }
 
