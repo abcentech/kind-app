@@ -786,6 +786,7 @@ function blankCands(C, L, sentence, m, rnd, take = 2) {
     const lead = raw.slice(0, at), trail = raw.slice(at + s0.core.length)
     const before = (cutL ? '… ' : '') + (s0.i > a ? toks.slice(a, s0.i).join(' ') + ' ' : '') + lead
     const after = trail + (b > s0.i + 1 ? ' ' + toks.slice(s0.i + 1, b).join(' ') : '') + (cutR ? ' …' : '')
+    if ((before + after).trim().length < 12) continue                 // context too thin: a short sentence split from a longer text ("Jesus wept.", "I speak life.")
     const filled = (cutL ? '… ' : '') + toks.slice(a, b).join(' ').replace(/[;:,]$/, cutR ? '' : '.') + (cutR ? ' …' : '')
     const options = shuffle([{ text: s0.core, ok: true }, ...wrong.map((p) => ({ text: p.text, ok: false }))], rnd)
     const worst = Math.max(...wrong.map((p) => p.pen))

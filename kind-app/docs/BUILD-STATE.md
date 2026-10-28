@@ -54,3 +54,7 @@ Resume point for a fresh context. Read `V7-DESIGN.md`, `V7-CONTRACT.md`, `V7-WAV
 * 2026-10-11 — SHIPPED 82606d4 (Jan-Oct, guides, quiz fixes, perf, welcome-back, recap). QA 7/7 pass. Open: first-load ~260kB gz (goal 170), Oct guide accuracy review by founder.
 
 * 2026-10-11 — Founder feedback from phone: (1) app shown in a phone bezel not full screen (desktop-site mode); fixed shell.css pointer:coarse = full-bleed. (2) Oct showed 'opens 1 Oct, T-30d' = a sticky ?now= in sessionStorage; now.js persists time travel only in dev. (3) Sundays -> GAME DAY: wf_aa5bf1a8-56f (w9.js: orbit-run opus, blitz+memory haiku, game-day opus, verify sonnet). Edits uncommitted until games verified.
+
+* 2026-10-11 — SHIPPED v7.2 (Game Day, full-bleed touch, now.js not sticky). Verified by Sonnet.
+
+* 2026-10-29 — November 'Jesus: The Life' guide supplied (series/jesus-the-life/teaching-guide.md). wf_8a2da9fc-eb5 (w10.js): 6 haiku parsers -> Sonnet merge/verify -> scripts/year-copy/jesus-the-life.json; Opus engine integrates month 11 as guide series (Sundays incl. Nov 1 = Game Day). Must be live by 1 Nov 06:00. Next: QA, ship.

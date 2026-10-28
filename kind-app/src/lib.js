@@ -5,6 +5,20 @@
 import library from './content/library.json'
 import { now, today } from './now.js'
 
+// The bundled core drops fields it can re-derive (scripts/split-library.mjs compactSeries); put them back. No-op on the full JSON.
+for (const s of Object.values(library.series)) {
+  const cal = new Map(s.calendar.map((d) => [d.day, d]))
+  for (const d of s.calendar) if (!('videoId' in d)) d.videoId = null
+  for (const [k, e] of Object.entries(s.episodes)) { if (!('num' in e)) e.num = +k; if (!('date' in e)) e.date = +k }
+  s.codes.forEach((c, i) => {
+    if (!('no' in c)) c.no = i + 1
+    if (!('rare' in c)) c.rare = (i + 1) % 7 === 0
+    if (!('episode' in c)) c.episode = c.day
+    if (!('week' in c)) c.week = cal.get(c.day)?.week ?? 0
+    if (!('title' in c)) c.title = s.episodes[c.episode]?.title
+  })
+}
+
 export const seriesIds = library.order
 export const allSeries = seriesIds.map((id) => library.series[id])
 export const getSeries = (id) => library.series[id] || library.series[library.activeId]
@@ -106,6 +120,9 @@ export const isLive = (s, at = now()) => modeOf(s, at) === 'live'
 /** The series the app opens on: the live one; else the newest finished one; else the soonest upcoming. */
 export function activeSeriesId(at = now()) {
   const live = allSeries.find((s) => modeOf(s, at) === 'live')
+  // Handover: until a new month's Day 1 opens (06:00 on the 1st) the month that just ended stays in front.
+  const prev = live && at < new Date(live.year, live.monthNum - 1, 1, UNLOCK_HOUR) && allSeries.find((s) => +seriesEnd(s) === +seriesStart(live))
+  if (prev) return prev.id
   if (live) return live.id
   const past = allSeries.filter((s) => modeOf(s, at) === 'archive').sort((a, b) => seriesEnd(b) - seriesEnd(a))
   if (past[0]) return past[0].id
@@ -139,6 +156,26 @@ const shortLine = (t, max = 64) => {
   return cut.slice(0, Math.max(cut.lastIndexOf(' '), 24)).replace(/[.,;:]+$/, '')
 }
 /**
+ * A month's definition (November: "LIFE is God's own life — found IN HIM, living IN ME, flowing THROUGH ME.") as drill
+ * material: its phrases (game words) and one fill-the-blank per capitalised key phrase after the first (4 options each).
+ */
+const defCache = new WeakMap()
+export function definitionParts(s) {
+  if (!s?.definition) return null
+  if (defCache.has(s)) return defCache.get(s)
+  const text = s.definition.replace(/\s+/g, ' ').trim()
+  const phrases = text.split(/\s*[—–,;]\s*/).map((x) => x.replace(/[.!]+$/, '').trim()).filter((x) => x.length >= 3)
+  const caps = [...new Set(text.match(/\b[A-Z][A-Z’']+(?:\s+[A-Z][A-Z’']+)*\b/g) || [])]
+  const blanks = caps.length < 4 ? [] : caps.slice(1).map((c) => {
+    const options = caps.includes(c) && caps.indexOf(c) < 4 ? caps.slice(0, 4) : [c, ...caps.slice(1, 4)]
+    const q = 'Finish the definition: ' + text.replace(new RegExp('\\b' + c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b'), '____')
+    return { q, options, answer: options.indexOf(c) }
+  })
+  const out = { text, phrases, blanks }
+  defCache.set(s, out)
+  return out
+}
+/**
  * The game material for a day: the week's code lines and quiz facts, oldest first.
  * → { words:[string], facts:[{ q, options:[4], answer }], days:[n] }   Pure and deterministic; never empty for a series with codes.
  * The week is the stage the day sits in, up to and including the day; a thin week borrows from the stage before it.
@@ -150,11 +187,15 @@ export function gameDataFor(s, day) {
   let days = all[stg].filter((x) => x <= n)
   const teach = (list) => list.filter((x) => dayInfo(s, x).episode && s.episodes?.[dayInfo(s, x).episode])
   if (teach(days).length < 4 && stg > 0) days = [...all[stg - 1], ...days]
+  // A month with a definition (November) never borrows ahead: its first Sunday plays the Day 1 definition instead.
   if (teach(days).length < 3) days = s.calendar.map((x) => x.day).filter((x) => x <= n)
-  if (teach(days).length < 3) days = s.calendar.map((x) => x.day)
+  if (teach(days).length < 3 && !s.definition) days = s.calendar.map((x) => x.day)
   const words = [], seen = new Set()
   const addWord = (t) => { const w = shortLine(t); if (w && w.length >= 3 && !seen.has(w.toLowerCase())) { seen.add(w.toLowerCase()); words.push(w) } }
+  const def = definitionParts(s)
+  if (def && stg === 0) def.phrases.forEach(addWord)
   for (const x of days) { const c = codeFor(s, x); if (c) addWord(c.line) }
+  if (def && words.length < 4) def.phrases.forEach(addWord)
   for (const x of teach(days)) { const ep = s.episodes[dayInfo(s, x).episode]; if (words.length < 6) addWord(ep.truth) }
   if (words.length < 4) (s.declaration || []).forEach(addWord)
   const facts = [], qs = new Set()
@@ -166,6 +207,7 @@ export function gameDataFor(s, day) {
     const ep = s.episodes[dayInfo(s, x).episode]
     for (const f of ep.quiz || []) if (f.type === 'choice' && f.options.length === 4) addFact(f.q, f.options.slice(), f.answer)
   }
+  if (def) for (const f of def.blanks) addFact(f.q, f.options, f.answer) // the definition drill, every Sunday
   // Thin weeks (older series carry no quiz[]): which scripture anchored which day, distractors from the same series.
   if (facts.length < 6) {
     const refs = [...new Set(Object.values(s.episodes || {}).map((e) => e?.scripture?.ref).filter(Boolean))]
@@ -450,6 +492,9 @@ export function deckFor(s, day) {
       title: title(ep.title), tag: ep.scripture?.ref || '',
     })
     if (s.openLine) push({ kind: 'truth', id: 'open-line', label: 'The open line', body: s.openLine })
+    // The month's definition (November): taught in the opening lessons, drilled near the end of every one after.
+    const def = s.definition ? { kind: 'truth', id: 'definition', label: n <= (s.definitionDay || 1) ? 'The definition' : 'Say the definition', body: s.definition } : null
+    if (def && n <= (s.definitionDay || 1)) push(def)
     if (vid) {
       push({
         kind: 'watch', label: ep.secs && ep.secs <= 180 ? 'Today’s trailer' : 'Today’s episode', videoId: vid, title: title(ep.title),
@@ -473,8 +518,13 @@ export function deckFor(s, day) {
     if (ep.prayer) push({ kind: 'pray', label: 'Pray', body: ep.prayer })
     const rhyme = ep.rhyme || wk?.rhyme
     if (rhyme) push({ kind: 'read', id: 'rhyme', label: 'The rhyme', body: rhyme.split('\n').filter(Boolean).join('\n\n') })
+    if (def && n > (s.definitionDay || 1)) push(def)
+    if (ep.commission) push({ kind: 'read', id: 'commission', label: 'The Life-Giver commission', body: ep.commission })
     if (s.closeLine) push({ kind: 'truth', id: 'close-line', label: 'The close line', body: s.closeLine })
-    push({ kind: 'declare', label: 'Say it out loud', lines: (ep.declaration || wk?.declaration || s.declaration.join('\n')).split('\n').filter(Boolean) })
+    push({
+      kind: 'declare', label: s.definition && n === s.calendar.length ? 'The final declaration' : 'Say it out loud',
+      lines: (ep.declaration || wk?.declaration || s.declaration.join('\n')).split('\n').filter(Boolean),
+    })
     return cardsOfDeck(cards)
   }
   // A celebration day with no episode of its own (July) closes the month out of what the month already gave you.
@@ -550,7 +600,11 @@ export function deckFor(s, day) {
 export function guideChecks(s, day) {
   const d = dayInfo(s, day)
   const q = (isGuide(s) && d.episode && s.episodes[d.episode]?.quiz) || []
-  return q.map((x, i) => {
+  // After the day it is taught, a guide month's definition is drilled: one blank per lesson, the blank turning day by day.
+  const dp = q.length && d.day > (s.definitionDay || 1) ? definitionParts(s) : null
+  const blank = dp?.blanks.length ? dp.blanks[d.day % dp.blanks.length] : null
+  const drill = blank ? [{ type: 'choice', ...blank }] : []
+  return [...q, ...drill].map((x, i) => {
     const id = `${s.id}:${d.day}:g${i + 1}`
     const base = { id, type: x.type, prompt: x.q, xp: 10, explain: '', source: 'point', kind: 'guide' }
     if (x.type === 'tf') return { ...base, prompt: 'True or false?', statement: x.q, answer: x.answer }

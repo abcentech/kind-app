@@ -1245,7 +1245,7 @@ t('light: the year is on the board, newest first; October opens the app on 9 Oct
   const months = L.allSeries.map((x) => x.year * 12 + x.monthNum)
   assert.ok(L.allSeries.length >= 10, 'ten months')
   assert.ok(months.every((m, i) => i === 0 || m < months[i - 1]), 'newest first')
-  assert.equal(L.seriesIds[0], OCTS)
+  assert.ok(L.getSeries(L.seriesIds[0]).monthNum >= 10, 'the newest month leads the order')
   assert.equal(L.activeSeriesId(new Date(2026, 9, 9, 9)), OCTS)
   assert.equal(L.activeSeriesId(new Date(2026, 7, 12, 9)), AUG)
   assert.equal(L.activeSeriesId(new Date(2026, 2, 10, 9)), 'the-voice-of-influence')
@@ -1326,7 +1326,7 @@ if (YEAR && guides().length) {
   const OCT = L.allSeries.find((x) => L.isGuide(x) && x.monthNum === 10)
   const at = new Date(2026, 9, 9, 9)
   if (OCT) t('guide: October is live on 9 Oct: the app opens on it, day 9 current, day 10 locked until 06:00 on the 10th', () => {
-    assert.equal(L.activeSeriesId(at), OCT.id); assert.equal(L.seriesIds[0], OCT.id)
+    assert.equal(L.activeSeriesId(at), OCT.id)
     assert.equal(L.modeOf(OCT, at), 'live'); assert.equal(L.currentDay(OCT, { series: {} }, at), 9)
     assert.equal(L.isUnlocked(OCT, 9, {}, at), true); assert.equal(L.isUnlocked(OCT, 10, {}, at), false)
     assert.equal(L.isUnlocked(OCT, 9, {}, new Date(2026, 9, 9, 5, 59)), false, 'not before 06:00')
@@ -1361,9 +1361,10 @@ if (YEAR && guides().length) {
       assert.ok(deck.every((c) => !EMOJI.test(JSON.stringify(c))), tag + ' has an emoji')
       assert.ok(L.teaserFor(x, d.day).length > 3 && L.codeFor(x, d.day)?.line, tag + ' teaser/card')
       const own = L.guideChecks(x, d.day)
-      assert.equal(own.length, (ep.quiz || []).length, tag)
+      const drill = x.definition && d.day > (x.definitionDay || 1) && ep.quiz?.length && L.definitionParts(x).blanks.length ? 1 : 0
+      assert.equal(own.length, (ep.quiz || []).length + drill, tag)
       own.forEach((ex, i) => {
-        const src = ep.quiz[i]
+        const src = ep.quiz[i] || L.definitionParts(x).blanks[d.day % L.definitionParts(x).blanks.length]
         if (ex.type === 'tf') { assert.equal(Q.gradeExercise(ex, src.answer).right, true, tag); return }
         assert.equal(new Set(ex.options.map((o) => o.text)).size, ex.options.length, tag + ' duplicate option')
         assert.equal(Q.gradeExercise(ex, ex.answer).right, true); assert.equal(Q.gradeExercise(ex, ex.answer).answerText, src.options[src.answer], tag)
@@ -1421,6 +1422,57 @@ if (YEAR && guides().length) {
     assert.deepEqual(Object.keys(m.games), ['orbit']); assert.equal(m.games.orbit.best, 12)
     assert.deepEqual(m.gameDays['x:1'].played, ['orbit']); assert.ok(!('bad' in m.gameDays))
     assert.deepEqual(S.migrate({ v: 5 }).games, {})
+  })
+  const NOV = L.allSeries.find((x) => L.isGuide(x) && x.monthNum === 11)
+  if (NOV) t('guide: November is live on 9 Nov: day 9 current, Sunday 8 a Game Day, 10+ locked, October archive, 11 series', () => {
+    const at9 = new Date(2026, 10, 9, 9)
+    assert.equal(L.allSeries.length, 11); assert.equal(L.seriesIds[0], NOV.id); assert.equal(NOV.id, 'jesus-the-life')
+    assert.equal(NOV.stageWord, 'Movement'); assert.equal(NOV.weeks.length, 5); assert.equal(NOV.calendar.length, 30)
+    assert.equal(L.activeSeriesId(at9), NOV.id); assert.equal(L.modeOf(NOV, at9), 'live'); assert.equal(L.currentDay(NOV, { series: {} }, at9), 9)
+    assert.equal(L.isUnlocked(NOV, 9, {}, at9), true)
+    for (let d = 10; d <= 30; d++) assert.equal(L.isUnlocked(NOV, d, {}, at9), false, `day ${d} locked`)
+    assert.equal(L.dayState(NOV, 9, {}, at9).state, 'current'); assert.equal(L.dayState(NOV, 10, {}, at9).state, 'locked')
+    for (const d of [1, 8, 15, 22, 29]) assert.equal(L.isGameDay(NOV, d), true, `Sunday ${d}`)
+    for (const d of [2, 7, 9, 14, 30]) assert.equal(L.isGameDay(NOV, d), false, `weekday ${d}`)
+    assert.equal(L.dayState(NOV, 8, {}, at9).game, true)
+    assert.equal(NOV.calendar[13].type, 'teaching', 'Saturday 14 wrap is a teaching day'); assert.equal(NOV.calendar[29].type, 'teaching')
+    if (OCT) { assert.equal(L.modeOf(OCT, at9), 'archive'); assert.ok(OCT.calendar.every((d) => L.isUnlocked(OCT, d.day, {}, at9))) }
+    assert.deepEqual(L.stageDays(NOV).map((x) => x[0]), [1, 9, 16, 23, 30], 'movements start on 1, 9, 16, 23, 30')
+  })
+  if (NOV && OCT) t('guide: the Oct 31 to Nov 1 handover: October until Day 1 opens at 06:00, then November', () => {
+    assert.equal(L.activeSeriesId(new Date(2026, 9, 29, 9)), OCT.id)
+    assert.equal(L.activeSeriesId(new Date(2026, 9, 31, 23, 59)), OCT.id)
+    assert.equal(L.activeSeriesId(new Date(2026, 10, 1, 5, 59)), OCT.id)
+    assert.equal(L.activeSeriesId(new Date(2026, 10, 1, 6, 0)), NOV.id)
+    assert.equal(L.modeOf(NOV, new Date(2026, 9, 31, 23, 59)), 'upcoming'); assert.equal(L.modeOf(OCT, new Date(2026, 10, 1, 0, 1)), 'archive')
+    assert.equal(L.isUnlocked(NOV, 1, {}, new Date(2026, 10, 1, 5, 59)), false); assert.equal(L.isUnlocked(NOV, 1, {}, new Date(2026, 10, 1, 6, 0)), true)
+    assert.deepEqual(L.nextUnlockAt(NOV, 1, new Date(2026, 9, 31, 20)), new Date(2026, 10, 1, 6, 0))
+    assert.equal(L.currentDay(NOV, { series: {} }, new Date(2026, 10, 1, 6, 0)), 1)
+    assert.equal(L.activeSeriesId(new Date(2026, 8, 1, 3)), AUG, 'the same rule at every handover')
+  })
+  if (NOV) t('guide: November decks: definition on Day 1 and drilled after, one rhyme with actions, commission on the 30th', () => {
+    const d1 = L.deckFor(NOV, 1), d2 = L.deckFor(NOV, 2), d9 = L.deckFor(NOV, 9), d30 = L.deckFor(NOV, 30)
+    assert.equal(d1[1].id, 'definition'); assert.equal(d1[1].label, 'The definition'); assert.equal(d1[1].body, NOV.definition)
+    assert.equal(d2[1].id, 'definition')
+    const def9 = d9.findIndex((c) => c.id === 'definition'), rh9 = d9.findIndex((c) => c.id === 'rhyme')
+    assert.ok(rh9 > 0 && def9 > rh9, 'drilled after the rhyme'); assert.equal(d9[def9].label, 'Say the definition')
+    assert.ok(/In Him was life/.test(d9[rh9].body) && /\(Point up\)/.test(d9[rh9].body), 'rhyme with actions')
+    for (const d of NOV.calendar) if (d.episode) assert.equal(L.deckFor(NOV, d.day).find((c) => c.id === 'rhyme')?.body, d9[rh9].body, `day ${d.day} rhyme`)
+    assert.ok(d30.some((c) => c.id === 'commission' && /SPEAK/.test(c.body))); assert.equal(d30.at(-1).label, 'The final declaration')
+    assert.equal(d9.at(-1).kind, 'declare'); assert.equal(L.guideChecks(NOV, 9).at(-1).prompt.startsWith('Finish the definition'), true)
+    assert.equal(L.guideChecks(NOV, 1).length, (NOV.episodes[1].quiz || []).length, 'no drill on the day it is taught')
+  })
+  if (NOV) t('guide: November Game Days play that week (Nov 1 plays the Day 1 definition)', () => {
+    const g1 = L.gameDataFor(NOV, 1)
+    assert.ok(g1.days.every((x) => x <= 1), 'never borrows ahead: ' + g1.days)
+    assert.ok(L.definitionParts(NOV).phrases.every((p) => g1.words.includes(p)), 'definition words: ' + g1.words)
+    assert.ok(g1.words.length >= 4 && g1.facts.length >= 3 && g1.facts.some((f) => f.q.startsWith('Finish the definition')))
+    for (const [day, lo] of [[8, 1], [15, 9], [22, 16], [29, 23]]) {
+      const g = L.gameDataFor(NOV, day)
+      assert.ok(g.days.every((x) => x >= lo && x <= day), `${day}: ${g.days}`)
+      assert.ok(g.words.length >= 4 && g.facts.length >= 4, `${day} words/facts`)
+      for (const f of [...g.facts, ...g1.facts]) { assert.equal(f.options.length, 4); assert.equal(new Set(f.options).size, 4); assert.ok(f.answer >= 0 && f.answer < 4) }
+    }
   })
   if (SEP) t('guide: finishing a September day pays XP and deals its code card line', () => {
     begin('2026-10-09T19:00')

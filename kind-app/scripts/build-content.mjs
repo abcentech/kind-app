@@ -519,6 +519,22 @@ const GUIDES = {
     accent: '#1f7a3a', accentDark: '#3fcf6e', passage: 'Psalm 119',
     themeScripture: { text: 'Righteousness exalteth a nation: but sin is a reproach to any people.', ref: 'Proverbs 14:34 (KJV)' },
   },
+  // November: five movements dated by the guide's own calendar (Sun 1 premiere, Mon 2 to Mon 30 episodes, Sundays 8/15/22/29
+  // discussion), one rhyme with actions all month, a definition taught on Day 1 and drilled, the Life-Giver commission on the 30th.
+  11: {
+    id: 'jesus-the-life', title: 'Jesus: The Life', subtitle: 'He IS Life, and He lives in you', tagline: 'Jesus doesn’t just give life. He IS Life.',
+    accent: '#8a6d12', accentDark: '#f3dc8c', passage: 'John 1:4', stageWord: 'Movement', seriesRhyme: true,
+    closeLine: 'Jesus doesn’t just give life. He IS Life — and He lives in you.',
+    themeScripture: { text: 'In him was life; and the life was the light of men.', ref: 'John 1:4 (KJV)' },
+    // A movement runs from its first calendar day (the Sunday discussion closes the movement before it).
+    stages: [
+      { start: 1, f: 'IN HIM', title: 'In Him Was Life · I have life', ask: 'Where do you need His life, not just breath, this week?' },
+      { start: 9, f: 'HIS WORD', title: 'His Word Is Life · I speak life', ask: 'Whose day will you fill with a life word this week?' },
+      { start: 16, f: 'HIS WAY', title: 'His Way Is Life · I live life', ask: 'Where is it hardest to walk His way this week?' },
+      { start: 23, f: 'HIS PERSON', title: 'His Person Is Life · I declare life', ask: 'What dry bones will you speak His life over this week?' },
+      { start: 30, f: 'OVERFLOW', title: 'The Overflow · I transform lives', ask: 'Who is the one person you will carry His life to?' },
+    ],
+  },
 }
 const normTitle = (t) => cleanVideoTitle(t).toLowerCase().replace(/[’'"“”]/g, '').replace(/[^a-z0-9]+/g, ' ').trim()
 const lines = (x) => (Array.isArray(x) ? x : [x]).map(str).filter(Boolean).join('\n')
@@ -537,9 +553,16 @@ function readGuide(id) {
 
 function buildGuideSeries(m, g, cfg, year) {
   const total = new Date(year, m.month, 0).getDate()
-  const groups = (g.weeks || g.parts || []).filter((w) => w && Array.isArray(w.days))
+  const arc = g.weeks || g.parts || (Array.isArray(g.arc) ? g.arc : g.arc?.parts) || g.movements || []
+  const groups = arc.filter((w) => w && Array.isArray(w.days))
   const isParts = !g.weeks && Boolean(g.parts)
-  const weeks = groups.map((w) => {
+  // Weekly declarations (November): the guide lists one per movement, in order, then the final one.
+  const declList = (Array.isArray(g.declaration) ? g.declaration : [g.declaration]).map((x) => decaps(lines(x)))
+  const weeks = cfg.stages ? cfg.stages.map((st, i) => ({
+    f: st.f, title: st.title, emoji: '', question: '', ask: st.ask, passage: cfg.passage || '',
+    rhyme: '', declaration: (declList.length > cfg.stages.length - 1 && declList[i]) || decaps(lines(groups[i]?.declaration)) ||
+      (str(groups[i]?.outcome) ? str(groups[i].outcome).charAt(0) + str(groups[i].outcome).slice(1).toLowerCase() + '.' : ''), // "I HAVE LIFE" -> "I have life."
+  })) : groups.map((w) => {
     const name = str(w.name).replace(/^the\s+/i, ''), power = str(w.power || w.value)
     const same = name.toLowerCase() === power.toLowerCase()
     return {
@@ -555,6 +578,20 @@ function buildGuideSeries(m, g, cfg, year) {
   })
   // weeks[].days count episodes (September's Sundays are not numbered in them), so a day's week is found by its episode ordinal.
   const weekOfN = (k) => { const i = groups.findIndex((w) => w.days.map(Number).includes(k)); return i < 0 ? null : i }
+  // Dated stages (November) place a day by its date instead.
+  const stageOfDay = (day) => (cfg.stages ? cfg.stages.reduce((a, st, i) => (day >= st.start ? i : a), 0) : null)
+  // The series rhyme with its actions (one rhyme all month): "line — action", one per line.
+  const rhymeLines = (Array.isArray(g.rhyme) ? g.rhyme : str(g.rhyme).split('\n')).map((x) => str(x).replace(/^>\s*/, '')).filter(Boolean)
+  const acts = Array.isArray(g.actions) ? g.actions : str(g.actions).split('\n').filter(Boolean)
+  const actionOf = (ln, i) => {
+    const a = acts[i], norm = (t) => str(t).toLowerCase().replace(/[^a-z]+/g, '')
+    const hit = acts.find((x) => x && typeof x === 'object' && norm(x.line) === norm(ln)) || (a && typeof a === 'object' && !a.line ? a : null)
+    const t = hit ? str(hit.action) : typeof a === 'string' ? str(a.split(/\s+[|—–-]\s+|:\s+/).pop()) : ''
+    return t && norm(t) !== norm(ln) ? t.replace(/[.]$/, '') : ''
+  }
+  const seriesRhyme = cfg.seriesRhyme ? rhymeLines.map((ln, i) => { const a = actionOf(ln, i); return a ? `${ln}  (${a})` : ln }).join('\n') : ''
+  const clean = (t) => str(t).replace(/^>\s*/gm, '').replace(/\*\*/g, '').trim()
+  const definition = clean(g.definition)
   // September's guide words its devotional "prayer" as a question for the child: that belongs on the answer card, not the prayer card.
   const asQuestion = (t) => /\?[”"]?\s*(\([^)]*\))?\s*$/.test(str(t))
   // Calendar day for each guide day: its date when it has one in this month, else its order.
@@ -567,6 +604,8 @@ function buildGuideSeries(m, g, cfg, year) {
   // A discussion day is a Sunday talk guide with no teaching of its own; a "discussion" that carries a full hook is a teaching day.
   const isTalk = (d) => d.kind === 'discussion' && !str(d.hook)
   const epDays = [...byDay].filter(([, d]) => !isTalk(d)).sort((a, b) => a[0] - b[0])
+  // "Taught on Day 1": the definition opens every lesson up to the first numbered episode, and is drilled after it.
+  const firstEpisodeDay = (epDays.find(([, d]) => d.kind === 'episode') || epDays[0] || [1])[0]
   // Videos: September's long-form playlist by order (only when it lines up 1:1); October's trailers by exact title.
   const vids = new Map()
   const eps = (m.episodes || []).filter((v) => v && v.id)
@@ -603,10 +642,10 @@ function buildGuideSeries(m, g, cfg, year) {
         questions: [...(Array.isArray(d.questions) ? d.questions : []), q ? d.prayer : ''].map(str).filter(Boolean),
         prayer: q ? '' : str(d.prayer), declaration: decaps(lines(d.declaration)),
       }
-      calendar.push({ day, type: 'selah', sunday: n, week: lastWeek, videoId: null })
+      calendar.push({ day, type: 'selah', sunday: n, week: cfg.stages ? stageOfDay(day) : lastWeek, videoId: null })
       continue
     }
-    const wk = weekOfN(++nEp)
+    const wk = cfg.stages ? (++nEp, stageOfDay(day)) : weekOfN(++nEp)
     if (wk != null) lastWeek = wk
     const v = vids.get(day)
     const quiz = (Array.isArray(d.quiz) ? d.quiz : []).filter((q) => q && str(q.q) && (
@@ -622,8 +661,13 @@ function buildGuideSeries(m, g, cfg, year) {
       challenge: str(d.challenge), prayer: asQuestion(d.prayer) ? '' : str(d.prayer), declaration: decaps(lines(d.declaration)), transition: '',
       questions: asQuestion(d.prayer) ? [str(d.prayer)] : [], apply: [],
       mirrors: d.mirrors && (str(d.mirrors.ot) || str(d.mirrors.nt)) ? { ot: str(d.mirrors.ot), nt: str(d.mirrors.nt) } : null,
-      christ: str(d.christ), rhyme: /^stanza/i.test(str(d.rhyme)) ? '' : lines(d.rhyme), code: str(d.codeLine), quiz,
+      christ: str(d.christ), rhyme: seriesRhyme || (/^stanza/i.test(str(d.rhyme)) ? '' : lines(d.rhyme)), code: str(d.codeLine), quiz,
     }
+    // The commission closes the last lesson: its intro, then the three commitments ("SPEAK — one life-word ...").
+    const cm = g.commission && typeof g.commission === 'object'
+      ? [clean(g.commission.intro), ...(g.commission.commitments || []).map((c) => [str(c?.finger), str(c?.body)].filter(Boolean).join(' — '))].filter(Boolean).join('\n')
+      : clean(g.commission)
+    if (day === lastGuideDay && cm) episodes[day].commission = cm
     calendar.push({ day, type: 'teaching', episode: day, week: wk, videoId: v ? v.id : null })
   }
   const codes = calendar.filter((d) => d.episode).map((d, i) => {
@@ -631,17 +675,20 @@ function buildGuideSeries(m, g, cfg, year) {
     return { no: i + 1, day: d.day, episode: d.episode, week: d.week ?? 0, title: ep.title, line: firstLine(ep.code || ep.truth || ep.title), rare: (i + 1) % 7 === 0 }
   })
   const declaration = (Array.isArray(g.declaration) ? g.declaration : [g.declaration]).flatMap((x) => str(x).split('\n')).map((x) => decaps(str(x))).filter(Boolean)
+  const lastDecl = (str(episodes[lastGuideDay]?.declaration).match(/[^.!?]+[.!?]+/g) || []).map(str).filter(Boolean)
   const shortsVideos = [...vids].filter(([, v]) => !v.secs || v.secs <= TRAILER_MAX_SECS).map(([day, v]) => ({ day, videoId: v.id, title: cleanVideoTitle(v.title) }))
   return {
-    id: cfg.id, kind: 'guide', stageWord: isParts ? 'Part' : 'Week',
+    id: cfg.id, kind: 'guide', stageWord: cfg.stageWord || (isParts ? 'Part' : 'Week'),
     title: cfg.title || titleCase(str(g.title)).replace(/\s+—\s+/, ' — ') || m.title,
     subtitle: cfg.subtitle || '', tagline: cfg.tagline || str(g.bigIdea), bigIdea: str(g.bigIdea),
-    openLine: str(g.openLine), closeLine: str(g.closeLine),
+    openLine: str(g.openLine), closeLine: clean(g.closeLine) || cfg.closeLine || '',
+    ...(definition ? { definition, definitionDay: firstEpisodeDay } : {}),
     audience: 'Teens & families',
     month: MONTH_NAMES[m.month - 1], year, monthNum: m.month,
     accent: cfg.accent, accentDark: cfg.accentDark,
     themeScripture: cfg.themeScripture,
-    declaration: declaration.length ? declaration : [cfg.tagline],
+    // No series declaration in the guide (November): the last lesson's declaration is the whole month's, one sentence a line.
+    declaration: declaration.length ? declaration : lastDecl.length ? lastDecl : [cfg.tagline],
     weeks, channel: CHANNEL, shortsUrl: CHANNEL + '/shorts',
     calendar, episodes, sundays, shorts: [], codes, intro: null,
     shortsVideos, shortsPlaylist: null,
@@ -653,7 +700,10 @@ function buildYear(skip) {
   let y
   try { y = JSON.parse(readFileSync(YEAR, 'utf8')) } catch (err) { console.warn('content: year-series.json unreadable — ' + err.message); return [] }
   const year = y.year || 2026
-  return (y.months || [])
+  const months = (y.months || []).slice()
+  // A guide month with no YouTube listing yet (November) still builds from its guide alone.
+  for (const [mo, cfg] of Object.entries(GUIDES)) if (!months.some((m) => m && m.month === +mo)) months.push({ month: +mo, id: cfg.id, title: cfg.title, episodes: [], shorts: [] })
+  return months
     .filter((m) => m && m.id && !skip.has(m.month))
     .map((m) => {
       const cfg = GUIDES[m.month], g = cfg && readGuide(cfg.id)
